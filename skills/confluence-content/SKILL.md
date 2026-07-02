@@ -46,27 +46,16 @@ Confluence usage or confirmed as a Head-of-Engineering standard. Revise once use
 
 Resolve at runtime; never hardcode IDs.
 
-> **Before naming any `mcp__...` tool in the table below**, check `acli/REFERENCE.md`'s command
-> surface for an acli equivalent first (Confluence `space` has full CRUD via acli). Only name MCP
-> directly for a field acli's docs confirm it has no command for — like cloudId, an MCP-only
-> concept — or the page-create/update gap itself. This table is where the space lookup was
-> written straight to MCP despite acli covering it, so re-derive against REFERENCE.md every time
-> you add or edit a row, don't reuse the first MCP tool name that comes to mind.
-
 | Field | Resolution |
 |---|---|
-| **Site / cloudId** | cloudId is an MCP-only concept (acli operates against the authed site directly and never needs it) — resolve via `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several. This is the one lookup here with no acli substitute, since it exists only to feed the page write below, which is MCP-only. |
-| **Space** | Try `acli confluence space list --json` / `acli confluence space view --key <KEY> --json` first — acli has full space CRUD, no MCP needed to resolve this. Fall back to `mcp__plugin_atlassian_atlassian__getConfluenceSpaces` only if acli can't find it. Ask the user if ambiguous. |
+| **Site / cloudId** | Re-derive against `acli/REFERENCE.md` + `acli/SKILL.md` § "When acli can't" before naming any `mcp__...` tool here. cloudId is MCP-only — resolve via `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several. |
+| **Space** | `acli confluence space list --json` / `acli confluence space view --key <KEY> --json` — acli has full space CRUD. Fall back to `mcp__plugin_atlassian_atlassian__getConfluenceSpaces` only if acli can't find it. Ask the user if ambiguous. |
 | **Parent page** | Only if the user wants this nested under an existing page; resolve its `pageId`. Omit for a top-level page. |
 | **Title** | From the spec's subject; confirm with the user. |
 
 ## Step 4 — Preview and confirm
 
-1. Confirm each requirement's Acceptance Criteria covers error + boundary + regression paths, not
-   just the happy path (see `../../templates/acceptance-criteria.md`).
-2. Show resolved metadata (site, space, parent, title) + rendered Thai content as a review surface.
-3. Create/update **only on the user's explicit go-ahead** — this preview-and-confirm gate is the
-   safeguard against unwanted writes. `createConfluencePage`/`updateConfluencePage` have no dry-run.
+Show resolved metadata (site, space, parent, title) + rendered Thai content as a review surface. Confirm each requirement's AC covers error + boundary + regression paths (see `../../templates/acceptance-criteria.md`). Create/update **only on the user's explicit go-ahead** — `createConfluencePage`/`updateConfluencePage` have no dry-run.
 
 ## Step 5 — Create
 

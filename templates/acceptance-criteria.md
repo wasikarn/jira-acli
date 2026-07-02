@@ -79,10 +79,4 @@ block per AC; BAD leaks tech terms, stops at the happy path, or skips the block 
 * เมื่อ: ลูกค้าทำรายการตามปกติ
 * ผลลัพธ์: ทำงานแบบเดิม ไม่ได้รับผลกระทบจากการเปลี่ยนแปลงรอบนี้
 
-**BAD:**
-- `order_status = PAID` ถูก set ใน `orders` table  ← field/enum/table names — PO/QA verify ไม่ได้
-- เรียก `POST /api/v1/checkout` แล้วได้ `201`  ← API path + status code, ไม่ใช่สิ่งที่ผู้ใช้เห็น
-- ลูกค้ามียอดคงเหลือพอ → กดยืนยัน → หักยอดสำเร็จ  ← บรรทัดเดียว ไม่แยก กำหนดให้/เมื่อ/ผลลัพธ์ เป็นบรรทัด — ไม่ตรง format มาตรฐานทีม
-- (และมีแต่ happy path — ไม่มี error / boundary / regression)
-
-_Grounded in real TP work items + Atlassian [acceptance criteria guidance](https://www.atlassian.com/work-management/project-management/acceptance-criteria). Reconciled to one rule when sources disagreed: Given/When/Then, team-wide, per Head of Engineering._
+**BAD:** field/enum/API names; no `กำหนดให้`/`เมื่อ`/`ผลลัพธ์` split; or only the happy path.

@@ -2,6 +2,10 @@
 
 Full command tree for acli `1.3.18-stable`. Verified against the installed binary's `--help`. When in doubt, `acli <path> --help` is authoritative for the installed version.
 
+**Two files:**
+- This one — core: top-level surfaces, auth model, command tables, format overview. Loaded on demand.
+- [`references/REFERENCE-detail.md`](references/REFERENCE-detail.md) — per-flag enumerations, scripting cheatsheet, the `Output & scripting cheatsheet`. Loaded only when hunting for a specific flag or recipe.
+
 ## Install / upgrade (macOS)
 
 ```bash
@@ -71,7 +75,7 @@ acli jira workitem create --summary "New Task" --project TEAM --type Task
 acli jira workitem create --from-file desc.txt --project PROJ --type Bug --assignee user@x.com --label bug,cli
 acli jira workitem create --generate-json          # scaffold, then --from-json workitem.json
 ```
-Flags: `-s/--summary`, `-p/--project`, `-t/--type` (Epic/Story/Task/Bug…), `-a/--assignee` (`@me`|`default`|email), `-d/--description` (plain or ADF), `--description-file`, `-l/--label`, `--parent`, `-e/--editor`, `-f/--from-file`, `--from-json`, `--generate-json`, `--json`.
+Flags → `references/REFERENCE-detail.md` § create.
 
 ### create-bulk
 ```bash
@@ -79,7 +83,7 @@ acli jira workitem create-bulk --from-csv issues.csv     # cols: summary,project
 acli jira workitem create-bulk --from-json issues.json   # { "issues": [ {summary,projectKey,issueType,label[],assignee}, ... ] }
 acli jira workitem create-bulk --generate-json
 ```
-Flags: `--from-csv`, `--from-json`, `--generate-json`, `--ignore-errors`, `--yes`.
+Flags → `references/REFERENCE-detail.md` § create-bulk.
 
 > ⚠️ **`create-bulk --from-json` rejects rich-markdown descriptions** (headings / code fences / backticks / newlines) → ✗ `The request body is missing or invalid.` Verified workaround (TP-558..566): bulk-create with **short placeholder** descriptions, then set the real ADF body per ticket — `bash ${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh KEY desc.md` (or loop `edit --from-json {issues:[KEY],description:<md2adf>}`). Never paste long-form Markdown into a bulk create.
 
@@ -90,13 +94,13 @@ acli jira workitem search --jql "..." --count
 acli jira workitem search --jql "..." --fields key,summary,assignee --csv
 acli jira workitem search --filter 10001 --web
 ```
-Flags: `-j/--jql`, `--filter`, `-f/--fields` (default `issuetype,key,assignee,priority,status,summary`), `-l/--limit`, `--paginate`, `--count`, `--json`, `--csv`, `-w/--web`.
+Flags → `references/REFERENCE-detail.md` § search.
 
 ### view
 ```bash
 acli jira workitem view KEY-123 --fields summary,comment --json
 ```
-`-f/--fields` accepts `*all`, `*navigable`, `field,field`, or `-field` to exclude (default `key,issuetype,summary,status,assignee,description`). `--json`, `-w/--web`.
+Flags → `references/REFERENCE-detail.md` § view.
 
 ### edit
 ```bash
@@ -105,7 +109,7 @@ acli jira workitem edit --jql "project = TEAM" --assignee user@x.com
 acli jira workitem edit --filter 10001 --description "..." --yes
 acli jira workitem edit --generate-json   # then --from-json
 ```
-Flags: `-k/--key`, `--jql`, `--filter`, `-s/--summary`, `-d/--description`, `--description-file`, `-t/--type`, `-a/--assignee`, `--remove-assignee`, `-l/--labels`, `--remove-labels`, `--from-json`, `--generate-json`, `--ignore-errors`, `-y/--yes`, `--json`.
+Flags → `references/REFERENCE-detail.md` § edit.
 
 > ⚠️ **`edit` can't do everything.** It has **no `parent` field** and `--from-json` rejects a `parent` key — re-parenting / setting an Epic parent on an *existing* issue needs the MCP (`editJiraIssue cloudId:<id> issueIdOrKey:"<KEY>" fields:{parent:{key:"…"}}`; `--parent`/`parentIssueId` work only at *create* time for sub-tasks). `--from-json` also rejects `fixVersions` and `update` as `unknown field`. See SKILL.md "When acli can't".
 
@@ -115,11 +119,6 @@ Flags: `-k/--key`, `--jql`, `--filter`, `-s/--summary`, `-d/--description`, `--d
 > bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md                  # append Markdown (or: KEY - < notes.md)
 > bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --remove-section "HEADING" # drop a section by exact heading (incl. nested)
 > bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --replace-section "HEADING" new.md # replace a section in place
->
-> # manual read-modify-write (for surgical in-place edits):
-> acli jira workitem view KEY --fields description --json   # grab .fields.description (ADF)
-> #   …edit the content[] array (append/replace/remove nodes)…
-> acli jira workitem edit --from-json payload.json          # { "issues": ["KEY"], "description": <merged ADF> }
 > ```
 
 ### transition
@@ -128,7 +127,7 @@ acli jira workitem transition --key TP-1 --list      # discover valid statuses f
 acli jira workitem transition --key "K-1,K-2" --status Done
 acli jira workitem transition --jql "project = TEAM" --status "In Progress"
 ```
-Flags: `-k/--key`, `--jql`, `--filter`, `-s/--status`, `--list`, `--ignore-errors`, `-y/--yes`, `--json`. Status names must match the workflow exactly — run `--list` to read the valid transitions before guessing (don't brute-force status strings).
+Flags → `references/REFERENCE-detail.md` § transition. Status names must match the workflow exactly — run `--list` to read the valid transitions before guessing (don't brute-force status strings).
 
 ### assign
 ```bash
@@ -136,7 +135,7 @@ acli jira workitem assign --key K-1 --assignee @me
 acli jira workitem assign --jql "project = TEAM" --assignee user@x.com
 acli jira workitem assign --from-file issues.txt --remove-assignee --json
 ```
-Flags: `-k/--key`, `--jql`, `--filter`, `-f/--from-file`, `-a/--assignee`, `--remove-assignee`, `--ignore-errors`, `-y/--yes`, `--json`.
+Flags → `references/REFERENCE-detail.md` § assign.
 
 > ⚠️ **`--assignee` resolves `@me` | `default` | EMAIL only.** A raw **accountId silently UNassigns** — acli reports "successfully unassigned" and clears the field (verified) — with one exception: passing **your own** accountId works normally (only *other users'* accountIds trigger the silent unassign). Many users hide their email (privacy), so `reporter/assignee.emailAddress` is null and there's no email to pass. Then assign via the Atlassian MCP: `editJiraIssue cloudId:<id> issueIdOrKey:"<KEY>" fields:{assignee:{accountId:"…"}}` (resolve the id with `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`).
 
@@ -146,7 +145,7 @@ acli jira workitem comment create --key K-1 --body "This is a comment"
 acli jira workitem comment create --jql "project = TEAM" --body-file comment.txt --edit-last
 acli jira workitem comment create --jql "..." --editor
 ```
-`create` flags: `-b/--body` (plain text OR a raw ADF string — auto-detected), `-F/--body-file` (same, but a file), `-e/--edit-last`, `--editor`, selectors, `--ignore-errors`, `--json`.
+Flags → `references/REFERENCE-detail.md` § comment.
 
 ⚠️ **`create` vs `update` handle ADF differently — verified against the installed binary's `--help`, not just this doc:**
 - `comment create`: `-b/--body`/`-F/--body-file` auto-detect — pass `python3 md2adf.py note.md` output (bare doc mode, no `-s/-p/-t`) directly and it's used as ADF; anything else is wrapped as one literal plain-text paragraph.
@@ -160,13 +159,13 @@ acli jira workitem link create --out KEY-123 --in KEY-456 --type Blocks
 acli jira workitem link create --from-json links.json   # --generate-json to scaffold
 acli jira workitem link type                            # list available link types
 ```
-`create` flags: `--out`, `--in`, `--type` (outward description, e.g. Blocks), `--from-json`, `--from-csv` (out,in,type; header row ignored), `--generate-json`, `--ignore-errors`, `--yes`.
+Flags → `references/REFERENCE-detail.md` § link.
 
 ### clone
 ```bash
 acli jira workitem clone --key "K-1,K-2" --to-project TEAM
 ```
-Flags: `-k/--key`, `--jql`, `--filter`, `-f/--from-file`, `--to-project`, `--to-site` (default = current authed site), `--ignore-errors`, `-y/--yes`, `--json`.
+Flags → `references/REFERENCE-detail.md` § clone.
 
 ## jira project / sprint / board / filter / dashboard / field
 
@@ -202,8 +201,8 @@ acli jira field create ...
 ```bash
 # page — VIEW ONLY (no create/update via CLI in this version)
 acli confluence page view --id 123456789 --body-format storage   # storage|atlas_doc_format|view
-#   include flags: --include-labels --include-version --include-direct-children --include-properties …
-#   --status current,draft,archived | --version N | --get-draft
+```
+Include/status/version flags → `references/REFERENCE-detail.md` § confluence page view.
 
 # blog — create | list | view
 acli confluence blog create --space-id 12345 --title "Release Notes" --body "<p>XHTML storage format</p>"
@@ -216,7 +215,7 @@ acli confluence space create --key SPACEKEY --name "Space Name" --description ".
 acli confluence space list
 acli confluence space view --key SPACEKEY
 ```
-`blog create` body is **storage format (XHTML)**, not Jira's ADF. `blog create` flags: `--space-id`, `--title`, `--body`, `--status` (current|draft, default current), `--private`, `--created-at` (ISO 8601), `--from-file`, `--from-json`, `--generate-json`, `-j/--json`.
+`blog create` body is **storage format (XHTML)**, not Jira's ADF. Flags → `references/REFERENCE-detail.md` § confluence blog create.
 
 ⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluencePage`/`updateConfluencePage`, which take `contentFormat: "html"|"markdown"|"adf"` — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, `contentFormat: "markdown"` with a raw Markdown body is simplest — see `jira-acli:confluence-content` § `templates/confluence-spec.md` for a Spec/PRD template built on this.
 
@@ -274,30 +273,4 @@ To read back, `cat "${CLAUDE_SKILL_DIR}/scripts/adf2md.py"` shows the inverse �
 acli jira workitem view KEY --json | python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py
 ```
 
-Working GOOD/BAD inputs → `examples/`.
-
-## Output & scripting cheatsheet
-
-| Need | Flag |
-|---|---|
-| Machine-parseable | `--json` |
-| Spreadsheet export | `--csv` (search) |
-| Open in browser | `-w/--web` |
-| Count only | `--count` (search) |
-| All results | `--paginate` (search) |
-| Scaffold input file | `--generate-json` (create/edit/link/bulk/project/blog) |
-| Skip confirm prompt | `-y/--yes` (mutating bulk ops) |
-| Continue past failures | `--ignore-errors` (read the summary after!) |
-| Read body/desc from file | `--from-file` / `--body-file` / `--description-file` |
-| Markdown → ADF for `--from-json` | `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` |
-| Read a work item cheaply (ADF → md) | `acli ... view KEY --json \| python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (~80% fewer tokens) |
-| Create from Markdown in one step | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-new.sh desc.md -s "..." -p TP -t Bug` |
-| Append to a description (no loss) | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md` |
-| Remove a description section | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --remove-section "HEADING"` |
-| Replace a section in place | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --replace-section "HEADING" new.md` |
-| **Replace** the whole description from Markdown | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh KEY desc.md [--dry-run]` (overwrites; for the bulk placeholder→body flow) |
-| List a JQL/key set as a table | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-ls.sh --jql "project = TP AND statusCategory != Done"` (or `--key TP-1,TP-2`) |
-| Render a set as readable cards | loop `view KEY --json \| python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (adf2md also accepts a JSON array) |
-| Relate N items in one shot | `acli jira workitem link create --from-csv links.csv` (header `out,in,type`) |
-
-ADF = Atlassian Document Format (Jira rich text); storage format = Confluence XHTML. Full rules + GOOD/BAD inputs: see **Description & body formats** above and `examples/`.
+Per-flag recipes (cheatsheet, scripting helpers) → `references/REFERENCE-detail.md`. Working GOOD/BAD inputs → `examples/`.

@@ -7,44 +7,28 @@ description: "Mechanical driver for the acli CLI — a backend tool, not a conte
 
 Drive Jira, Confluence, org admin, and Rovo Dev from the terminal. Auth-first, JQL-driven, confirmation-gated.
 
-**When to use:** the mechanical path for Jira/Confluence work that has no template shape to get
-right — search, view, edit metadata, transition, link, clone, bulk ops via JQL, page/space/admin
-ops, auth, ADF↔markdown conversion. This skill executes commands; it does not decide what a
-ticket's *content* should say.
-
-> **Why this skill is model-invokable (no `disable-model-invocation`) despite doing bulk external Jira writes:** it is a *capability* the model uses to carry out tracker work the operator explicitly asked for — not an autonomous decision to mutate Jira. Every write is confirmation-gated in-flow (auth-first, JQL-driven, confirmation-gated) and runs through Bash with its own guards; gating the whole skill user-only would block the model from doing the bulk ops the operator requested. Content authoring routes to `jira-content`/`confluence-content`, which are likewise model-invokable and carry their own preview-and-confirm gate before any write.
-
-**Content creation/editing routes elsewhere — do not build it here:**
-- `jira-acli:jira-content` — creating or editing the *content* of any Bug/Story/Task/Epic/Sub-task,
-  or a templated comment. Jira only.
-- `jira-acli:confluence-content` — creating or editing the *content* of a Confluence Spec/PRD page.
-  Confluence only.
-
-Both are a hard format requirement (team-wide standard, Head of Engineering) — never hand-build
-template-shaped content with a bare `--description` flag or an ad hoc MCP call instead of going
-through the matching skill. This skill (acli) is the tool they call to actually run the
-create/edit once the content is built — exactly like the Atlassian MCP.
-
-**Atlassian MCP is the fallback, not the default** — use it only for the few things acli genuinely can't do (see [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp)). Not for git/gh or non-Atlassian trackers.
+**Content creation/editing routes elsewhere** — `jira-acli:jira-content` (Jira Bug/Story/Task/Epic/Sub-task content) and `jira-acli:confluence-content` (Confluence Spec/PRD page content). They own the template standard and call into this skill's commands to execute. **Atlassian MCP is the fallback, not the default** — only for the closed list in [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp).
 
 ---
 
 ## Always first: auth gate
 
-Auth is two independent layers — global OAuth and per-product. A product can be authed even when the global profile is not.
+Two independent layers — global OAuth and per-product. A product can be authed even when the global profile is not. Check before any command.
 
 ```bash
 acli jira auth status        # check BEFORE any jira command
 acli confluence auth status
 ```
 
-Not authed → pick one:
+Not authed:
 ```bash
 acli jira auth login --web                                              # OAuth, browser
 echo "$TOKEN" | acli jira auth login --site SITE.atlassian.net --email me@x.com --token   # API token via stdin
 ```
 
-Never pass a token as a flag value — `--token` reads stdin only. Token: https://id.atlassian.com/manage-profile/security/api-tokens
+> `--token` reads stdin only — never pass a token as a flag value. Token: https://id.atlassian.com/manage-profile/security/api-tokens
+
+Full auth model + per-product details → `REFERENCE.md` § "Auth model".
 
 ## Core loop (Jira work items)
 
@@ -53,35 +37,30 @@ Never pass a token as a flag value — `--token` reads stdin only. Token: https:
 acli jira workitem search --jql "project = TEAM AND statusCategory != Done" --fields key,summary,status
 acli jira workitem search --jql "..." --json     # parse | --csv export | --web open | --count | --paginate
 
-# 2. INSPECT
-acli jira workitem view KEY-123 --fields summary,comment   # *all / *navigable / -field
-acli jira workitem view KEY-123 --json | python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py   # readable card, ~80% fewer tokens than raw JSON
+# 2. INSPECT — ~80% fewer tokens than raw JSON:
+acli jira workitem view KEY-123 --json | python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py
 
-# 3. CREATE — any description beyond one plain sentence MUST go through md2adf.py first (see below);
-#    a multi-line/markdown body passed to --description lands as ONE literal paragraph, unformatted.
+# 3. CREATE — anything multi-section goes through md2adf.py (--description wraps plain text into ONE literal paragraph — see "Description format" below)
 python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md -s "Summary" -p TEAM -t Task > /tmp/wi.json && acli jira workitem create --from-json /tmp/wi.json
 acli jira workitem create --summary "X" --project TEAM --type Task --assignee @me   # OK ONLY when there's no multi-section description
 acli jira workitem create-bulk --from-csv issues.csv       # or --from-json; --generate-json scaffolds input
 
-# 4. MUTATE — target by --key | --jql | --filter (same selectors)
-acli jira workitem transition --key KEY-1 --list   # discover valid statuses FIRST — names must match the workflow exactly
+# 4. MUTATE — target by --key | --jql | --filter
+acli jira workitem transition --key KEY-1 --list                          # discover valid statuses FIRST
 acli jira workitem transition --jql "project = TEAM AND status = 'To Do'" --status "In Progress" --yes
 acli jira workitem edit --key "KEY-1,KEY-2" --summary "..." --labels a,b
-# ⚠️ edit --description REPLACES the whole description. To add/change without
-#    losing the original, append safely: bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md
-# comment CREATE — same plaintext trap as description: build ADF first for anything beyond one sentence
-#   (a templated comment — status update / QA verification / blocker / decision-record — routes to jira-acli:jira-content)
+# ⚠️ edit --description REPLACES the whole description. Append safely: bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md
+# Templated comments (status update / QA / blocker / decision) route to jira-acli:jira-content.
 python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py note.md > /tmp/note.json && acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json
 acli jira workitem comment create --key KEY-1 --body "..."   # OK ONLY for a single plain sentence
-# comment UPDATE — --body/--body-file are plain-text-only here (no ADF auto-detect, unlike create); use --body-adf for formatted content
-#   (editing an existing *templated* comment — status update / QA verification / blocker / decision-record — routes to jira-acli:jira-content)
+# comment update needs --body-adf FILE (its --body/--body-file are plain-text-only, no ADF auto-detect):
 acli jira workitem comment update --key KEY-1 --id 10001 --body-adf /tmp/note.json
 acli jira workitem assign --key KEY-1 --assignee @me       # @me | default | email
 ```
 
-`@me` self-assign, `default` project default. `--generate-json` scaffolds any complex create/edit/link input. ⚠️ `assign --assignee` resolves `@me`/`default`/**email** only — a raw **accountId silently UNassigns** (acli prints "unassigned" and clears it). For accountId / privacy-hidden emails, see [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp).
+`@me` self-assign, `default` project default. ⚠️ `assign --assignee` resolves `@me`/`default`/**email** only — a raw **accountId silently UNassigns** (acli prints "unassigned" and clears it; verified). For accountId / privacy-hidden emails → [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp). `--generate-json` scaffolds any complex create/edit/link input. Per-flag tables → `REFERENCE.md`.
 
-**Description format:** Jira `description`/comment `body` is ADF. ⚠️ Flags (`--description`/`--body`) wrap plain text into **one literal ADF paragraph — no markdown parsing.** `## heading`, `**bold**`, numbered/bulleted lists typed straight into the flag show up in Jira as those literal characters, not formatting — this is the #1 cause of a ticket or comment rendering as garbled plaintext. Use the flag only for a single unformatted sentence. Anything with headings/lists/bold/multiple sections needs a real ADF object: write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` (bare doc mode — omit `-s/-p/-t` for a comment/append body, an ADF doc with no create-payload wrapper); read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (inverse). How the ADF then gets attached differs by command: `workitem create/edit` → `--from-json`; `comment create` → `--body`/`--body-file` (both auto-detect plain vs. ADF-shaped input — pass the md2adf.py output directly); `comment update` → the dedicated `--body-adf FILE` flag (its own `--body`/`--body-file` are plain-text-only, no auto-detect). Confluence body is storage-format XHTML instead. Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Content standard (what a description/comment should say, Acceptance Criteria format, etc.) is not this skill's concern** — that's `jira-acli:jira-content` § `templates/` (Jira) or `jira-acli:confluence-content` § `templates/` (Confluence).
+**Description format:** Jira `description`/comment `body` is ADF. Flags (`--description`/`--body`) wrap plain text into **one literal ADF paragraph — no markdown parsing.** `## heading`, `**bold**`, numbered/bulleted lists typed straight into the flag show up in Jira as those literal characters, not formatting — this is the #1 cause of a ticket or comment rendering as garbled plaintext. Use the flag only for a single unformatted sentence. Anything with headings/lists/bold/multiple sections needs a real ADF object: write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` (bare doc mode — omit `-s/-p/-t` for a comment/append body). Read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py`. Attachment differs by command: `workitem create/edit` → `--from-json`; `comment create` → `--body`/`--body-file` (auto-detect plain vs. ADF); `comment update` → dedicated `--body-adf FILE` flag. Confluence body is storage-format XHTML. Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Content standard (what a description/comment should say, AC format, etc.) is not this skill's concern** — that's `jira-acli:jira-content` § `templates/` (Jira) or `jira-acli:confluence-content` § `templates/` (Confluence).
 
 ## Bulk-mutation safety
 
@@ -96,7 +75,7 @@ Mutating bulk ops (`edit`, `transition`, `assign`, `delete`, `clone`, `link crea
 `create`/`create-bulk` are outward-facing too — but unlike the mutations above they have no JQL set to preview, so preview the **payload itself** before firing.
 
 1. **Render what you're about to send.** For a `--from-json` create, round-trip it first: `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md -s "..." -p TP -t Bug > /tmp/wi.json && python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py /tmp/wi.json` prints a readable card — `(new) <type>`, project, labels, and the full description. Eyeball it, *then* `acli jira workitem create --from-json /tmp/wi.json`.
-2. **For `create-bulk`**, `--generate-json` first (or render one row) and read it back before the batch — a bad template multiplies across every row. ⚠️ `create-bulk --from-json` **rejects rich-markdown descriptions** (headings/code fences/backticks/newlines) → ✗ "request body is missing or invalid". Pattern that works: bulk-create with **short placeholder** bodies, then set the real description per ticket with `bash ${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh KEY desc.md` (verified TP-558..566).
+2. For `create-bulk`, `--generate-json` first (or render one row) and read it back before the batch — a bad template multiplies across every row. ⚠️ `create-bulk --from-json` **rejects rich-markdown descriptions** (headings/code fences/backticks/newlines) → ✗ "request body is missing or invalid". Pattern that works: bulk-create with **short placeholder** bodies, then set the real description per ticket with `bash ${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh KEY desc.md` (verified TP-558..566).
 3. **Resolve metadata, don't hardcode it.** Project/type/priority/labels/assignee must match the target project; `--generate-json` emits the schema the project actually accepts — scaffold from it when unsure of a type or field. The templates ship `projectKey:"TP"` as a personal default — swap it (or pass `-p`) for any other project. On an unknown project/type/field acli fails: fix it, never strip the field and retry.
 
 ## Confluence / admin / rovodev
@@ -113,29 +92,17 @@ Full command tree, every flag, and JSON schemas → `REFERENCE.md`.
 
 ## Confluence & admin write safety
 
-`confluence blog create`, `confluence space create`, and every `admin user` lifecycle command
-(`activate`/`deactivate`/`delete`/`cancel-delete`) have **no native `--yes`/confirm flag** — unlike
-`jira workitem edit/transition/assign`, nothing in acli itself stops a bad target from firing.
-This skill supplies the safety net manually:
+`confluence blog create`, `confluence space create`, and every `admin user` lifecycle command (`activate`/`deactivate`/`delete`/`cancel-delete`) have **no native `--yes`/confirm flag** — unlike `jira workitem edit/transition/assign`, nothing in acli itself stops a bad target from firing. This skill supplies the safety net manually:
 
-1. **Confluence blog/space create** — same rule as [Create safety](#create-safety) above: no JQL
-   set to preview, so preview the **payload** instead. Render the body/title/space before sending;
-   for `--from-file`/`--from-json`, read the file back and eyeball it first.
-2. **`admin user` lifecycle ops are the highest blast-radius command in this plugin** —
-   deactivate/delete act on real accounts, `--from-file` accepts a bulk target list, and
-   `--ignore-errors` continues past per-account failures with none of it caught by acli itself.
-   Before running any `admin user deactivate|delete|cancel-delete`:
-   - Resolve and print the **exact target list** (emails/accountIds) and get explicit user
-     go-ahead — the missing native confirm flag is this skill's job to backfill, not a license to
-     skip confirmation.
-   - Leave `--ignore-errors` off by default, same as [Bulk-mutation safety](#bulk-mutation-safety)
-     — a partial failure across accounts must be loud, not swallowed.
-   - `activate`/`cancel-delete` are recoverable; `deactivate`/`delete` are not (or not cheaply) —
-     weight the confirmation ask accordingly.
+1. **Confluence blog/space create** — same rule as [Create safety](#create-safety) above: no JQL set to preview, so preview the **payload** instead. Render the body/title/space before sending; for `--from-file`/`--from-json`, read the file back and eyeball it first.
+2. **`admin user` lifecycle ops are the highest blast-radius command in this plugin** — deactivate/delete act on real accounts, `--from-file` accepts a bulk target list, and `--ignore-errors` continues past per-account failures with none of it caught by acli itself. Before running any `admin user deactivate|delete|cancel-delete`:
+   - Resolve and print the **exact target list** (emails/accountIds) and get explicit user go-ahead — the missing native confirm flag is this skill's job to backfill, not a license to skip confirmation.
+   - Leave `--ignore-errors` off by default, same as [Bulk-mutation safety](#bulk-mutation-safety) — a partial failure across accounts must be loud, not swallowed.
+   - `activate`/`cancel-delete` are recoverable; `deactivate`/`delete` are not (or not cheaply) — weight the confirmation ask accordingly.
 
 ## When acli can't (fall back to the Atlassian MCP)
 
-acli is the default. A small, closed set of operations genuinely need `mcp__plugin_atlassian_atlassian__*` (or the Jira UI) — this list is the full accounting, not a sample: if you're about to name an MCP tool anywhere in this plugin for something not on this list, check `REFERENCE.md`'s command surface first and add the row here if it's genuine, don't let it live undocumented in `jira-content`/`confluence-content` (that drift already happened once — see those skills' Step 3 checkpoints). Reach for the MCP **only** here:
+acli is the default. A small, closed set of operations genuinely need `mcp__plugin_atlassian_atlassian__*` (or the Jira UI) — this list is the full accounting, not a sample. If you're about to name an MCP tool anywhere in this plugin for something not on this list, check `REFERENCE.md`'s command surface first and add the row here if it's genuine, don't let it live undocumented in `jira-content`/`confluence-content`. Reach for the MCP **only** here:
 
 - **Set/​change parent on an *existing* issue** — `edit --from-json` has no parent field and rejects a `parent` key; `--parent`/`parentIssueId` work only at *create* time (sub-tasks). → MCP `editJiraIssue cloudId:<id> issueIdOrKey:"TP-NNN" fields:{parent:{key:"TP-505"}}`.
 - **Assign by accountId** when the email is privacy-hidden (`--assignee email` can't resolve, and a raw accountId silently UNassigns). → MCP `editJiraIssue cloudId:<id> issueIdOrKey:"TP-NNN" fields:{assignee:{accountId:"…"}}`; resolve the id with `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`.

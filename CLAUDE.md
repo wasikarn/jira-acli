@@ -30,49 +30,9 @@ No `run-tests.sh` exists in this repo despite one comment in `md2adf.py` referen
 
 `.claude-plugin/plugin.json` + `marketplace.json` declare the plugin; `defaultEnabled: false` means installers must opt in via `settings.json`. Everything else lives under `skills/<name>/`, each with a required `SKILL.md` (frontmatter `name` + `description` is what triggers auto-invocation) plus `scripts/` and/or `references/` loaded on demand.
 
-### The three skills, and why they're split: tool vs. Jira content vs. Confluence content
+### The three skills, and the routing doctrine that ties them
 
-The split is two axes, not one: **mechanics vs. content** (`acli` vs. the other two), then
-**Jira vs. Confluence within content** (`jira-content` vs. `confluence-content`) — because those
-are different products with different content shapes, different backends (acli-first for Jira,
-MCP-only for Confluence), and users think of them as separate work, not a single "content" bucket.
-
-- **`acli`** — pure tool/mechanics for *everything* Jira/Confluence: search, view, edit metadata,
-  transition, comment plumbing, bulk ops, Confluence/admin, auth, ADF↔Markdown conversion. It has
-  no opinion on ticket content or format — it just executes. Model-invokable with no confirmation
-  gate at the skill level because every mutating command is itself confirmation-gated (JQL preview
-  before `--yes`, payload preview before create).
-- **`jira-content`** — owns the team's Jira template standard and decides *what goes in the body*:
-  guided creation of Bug/Story (Thai PO/QA template), payload-driven creation of Task/Epic/
-  Sub-task, templated comments, and template-conforming description edits. Templates live under
-  `skills/jira-content/templates/` (see `templates/README.md`). It has its own preview-and-confirm
-  gate, and calls into `acli`'s commands (via a thin cross-skill wrapper, same pattern as
-  `md2adf.sh`) to actually execute the write.
-- **`confluence-content`** — the Confluence counterpart: owns the Spec/PRD template
-  (`skills/confluence-content/templates/confluence-spec.md`) and template-conforming page edits.
-  MCP-only — acli's `confluence page` command is view-only, so there's no acli-first path here
-  unlike Jira. Same preview-and-confirm discipline; page edits are a manual read-modify-write
-  (`getConfluencePage` → edit → `updateConfluencePage`) since there's no section-patcher script for
-  Confluence.
-- **The Acceptance Criteria rule is shared by both content skills**, so it lives outside either —
-  `templates/acceptance-criteria.md` at the plugin root, not under either skill's directory. Both
-  skills reference it by relative path; neither owns it.
-
-The three skills are not fully separable — `jira-content`'s wrapper scripts (`scripts/md2adf.sh`,
-`scripts/acli-edit.sh`, `scripts/acli-set-desc.sh`) all delegate to `acli`'s Python scripts;
-changes to the ADF schema or script interface in `acli` must be checked against `jira-content`.
-`confluence-content` has no scripts of its own — it calls the Atlassian MCP directly (Confluence's
-`contentFormat: "markdown"` needs no ADF conversion).
-
-Routing between all three (and to the Atlassian MCP fallback) is doctrine encoded in each
-`SKILL.md`'s frontmatter `description` and body — read those before changing behavior, since
-they're what the model uses to decide which skill fires. Every new skill boundary is a
-routing-failure surface (a contradictory or overlapping `description` is exactly how tickets ended
-up bypassing these skills entirely in the past) — keep boundaries crisp: "shapes Jira content to a
-template" → `jira-content`; "shapes Confluence content to a template" → `confluence-content`;
-everything else → `acli`. The product word (Jira/Confluence) is the discriminator between the two
-content skills — don't let their descriptions drift toward generic "content" language that could
-route to either.
+`acli` is the mechanical tool (search, view, edit, transition, bulk ops, Confluence blog/space/admin, auth, ADF↔Markdown). `jira-content` owns the Jira template standard — Bug/Story/Task/Epic/Sub-task + templated comments. `confluence-content` owns the Confluence Spec/PRD template. Each skill's `SKILL.md` frontmatter `description` is the routing contract — that text is what the model reads to decide which skill fires, so keep the descriptions crisp and product-specific (don't let `jira-content`/`confluence-content` drift toward generic "content" language that could route to either). Cross-skill coupling: `jira-content` calls into `acli`'s scripts (changes to ADF schema or script interface in `acli` must be checked against `jira-content`); `confluence-content` has no scripts of its own and calls the Atlassian MCP directly. The shared Acceptance Criteria rule lives outside both content skills at `templates/acceptance-criteria.md` and is referenced, never duplicated.
 
 ### ADF ⟷ Markdown conversion (the core data-flow)
 
