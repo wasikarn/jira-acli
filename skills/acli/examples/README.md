@@ -2,7 +2,7 @@
 
 # acli examples — description & body formats
 
-GOOD/BAD reference for the #1 acli pitfall: **Jira uses ADF, Confluence uses storage XHTML, and `--from-json` is stricter than the flags.** Each pair shows WHY, not just WHAT.
+GOOD/BAD reference for the #1 acli pitfall: **Jira uses ADF, `--from-json` is stricter than the flags, and Confluence's content format depends on which command you're using — `acli confluence blog create` wants storage XHTML, but Confluence *page* create/update (MCP-only — acli's `page` command is view-only) accepts `html`/`markdown`/`adf` via `contentFormat`.** Each pair shows WHY, not just WHAT.
 
 Files here:
 
@@ -13,6 +13,7 @@ Files here:
 - `epic-template.json` — epic template (high-level initiative)
 - `task-template.json` — task (implementation work) template
 - `subtask-template.json` — sub-task template (requires a parent)
+- `confluence-spec-template.md` — Confluence Spec/PRD template (Markdown, for `createConfluencePage` with `contentFormat: "markdown"`)
 
 ---
 
@@ -272,7 +273,9 @@ Why: ADF `text` nodes are literal. `**the docs**` renders as the literal asteris
 
 ---
 
-## 4. Confluence body — storage XHTML, not ADF
+## 4. Confluence body — two different mechanisms, don't conflate them
+
+**`acli confluence blog create` (acli, blogs only) wants storage-format XHTML:**
 
 **GOOD:**
 ```bash
@@ -285,7 +288,30 @@ acli confluence blog create --space-id 12345 --title "Release Notes" \
 acli confluence blog create --space-id 12345 --title "X" \
   --body '{"type":"doc","version":1,...}'
 ```
-Why: Confluence expects storage format (XHTML), the inverse of Jira. ADF here renders as literal JSON text.
+Why: Confluence's storage format is XHTML, the inverse of Jira. ADF here renders as literal JSON text.
+
+**`createConfluencePage`/`updateConfluencePage` (MCP, the only way to create/update a *page* — acli's `confluence page` is view-only) is a different content model entirely:** `contentFormat` is `"html"` (Confluence's own HTML+ dialect — `data-type` attributes for panels/status/task-lists/etc., NOT the same thing as `blog create`'s storage XHTML), `"markdown"`, or `"adf"`. For a plain document with headings/lists/bold — no Confluence-specific panels/macros — pass `contentFormat: "markdown"` and the raw Markdown body directly; skip hand-authoring HTML or ADF entirely. See the Spec/PRD template below.
+
+---
+
+## Confluence: Spec/PRD template
+
+`confluence-spec-template.md` — adapted from the Story template's DNA (business reason → scope → requirements → decision points → references) but for a planning doc that covers *multiple* requirements, each shaped as its own user story so it can be decomposed into separate Jira Stories later (e.g. via `atlassian:spec-to-backlog`). Thai, same plain-language + GWT Acceptance Criteria conventions as everywhere else in this plugin.
+
+⚠️ Same caveat as the comment templates: this is a **starting proposal**, adapted by request from the Story template — not mined from real Confluence usage or confirmed as a Head-of-Engineering standard. Revise once used in practice.
+
+```bash
+cat ${CLAUDE_SKILL_DIR}/examples/confluence-spec-template.md   # fill in placeholders, then send via MCP:
+```
+```
+mcp__plugin_atlassian_atlassian__createConfluencePage
+  cloudId:    <resolved via getAccessibleAtlassianResources>
+  spaceId:    <resolved via getConfluenceSpaces>
+  title:      <spec title>
+  body:       <filled-in template content>
+  contentFormat: "markdown"
+  contentType:   "page"
+```
 
 ---
 
@@ -295,6 +321,7 @@ Why: Confluence expects storage format (XHTML), the inverse of Jira. ADF here re
 |---|---|
 | Jira, via flag | plain text (auto-wrapped to ADF) |
 | Jira, via `--from-json` | ADF `{type:"doc",version:1,content:[...]}` object |
-| Confluence body | storage format XHTML (`<p>`, `<strong>`, `<a>`) |
+| Confluence, via `acli confluence blog create` | storage format XHTML (`<p>`, `<strong>`, `<a>`) |
+| Confluence page, via MCP `createConfluencePage`/`updateConfluencePage` | `contentFormat: "markdown"` + plain Markdown body (or `"html"`/`"adf"` for richer Confluence-specific elements) |
 
 Regenerate the canonical schema any time with `acli jira workitem create --generate-json`.

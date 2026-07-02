@@ -216,7 +216,9 @@ acli confluence space create --key SPACEKEY --name "Space Name" --description ".
 acli confluence space list
 acli confluence space view --key SPACEKEY
 ```
-Confluence body is **storage format (XHTML)**, not Jira's ADF. `blog create` flags: `--space-id`, `--title`, `--body`, `--status` (current|draft, default current), `--private`, `--created-at` (ISO 8601), `--from-file`, `--from-json`, `--generate-json`, `-j/--json`.
+`blog create` body is **storage format (XHTML)**, not Jira's ADF. `blog create` flags: `--space-id`, `--title`, `--body`, `--status` (current|draft, default current), `--private`, `--created-at` (ISO 8601), `--from-file`, `--from-json`, `--generate-json`, `-j/--json`.
+
+⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluencePage`/`updateConfluencePage`, which take `contentFormat: "html"|"markdown"|"adf"` — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, `contentFormat: "markdown"` with a raw Markdown body is simplest — see `examples/README.md` § Confluence for a Spec/PRD template built on this.
 
 ## admin / rovodev / config
 
@@ -241,7 +243,8 @@ Jira and Confluence use **different** rich-text formats. Mixing them is the most
 | Target | Format | Commands |
 |---|---|---|
 | Jira `description` / comment `body` | **ADF** — Atlassian Document Format (structured JSON) | `workitem create/edit/comment` |
-| Confluence page / blog `body` | **storage format** — XHTML (`<p>…</p>`) | `confluence blog create` |
+| Confluence blog `body` (acli) | **storage format** — XHTML (`<p>…</p>`) | `confluence blog create` |
+| Confluence page `body` (MCP only) | `contentFormat`: `html` (Confluence HTML+, not storage XHTML) / `markdown` / `adf` | `createConfluencePage`, `updateConfluencePage` |
 
 ### Jira: plain string vs ADF object — two input paths, two rules
 

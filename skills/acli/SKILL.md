@@ -90,7 +90,7 @@ Mutating bulk ops (`edit`, `transition`, `assign`, `delete`, `clone`, `link crea
 ## Confluence / admin / rovodev
 
 ```bash
-acli confluence page view --id 123 --body-format storage   # page is view-only
+acli confluence page view --id 123 --body-format storage   # page is view-only — create/update needs MCP, see below
 acli confluence blog create --space-id 12345 --title "T" --body "<p>storage-format XHTML</p>"
 acli confluence space create --key KEY --name "Name"       # space: full CRUD
 acli admin user deactivate ...                             # org user lifecycle (admin auth)
@@ -106,7 +106,7 @@ acli is the default, but four operations genuinely need `mcp__plugin_atlassian_a
 - **Set/​change parent on an *existing* issue** — `edit --from-json` has no parent field and rejects a `parent` key; `--parent`/`parentIssueId` work only at *create* time (sub-tasks). → MCP `editJiraIssue cloudId:<id> issueIdOrKey:"TP-NNN" fields:{parent:{key:"TP-505"}}`.
 - **Assign by accountId** when the email is privacy-hidden (`--assignee email` can't resolve, and a raw accountId silently UNassigns). → MCP `editJiraIssue cloudId:<id> issueIdOrKey:"TP-NNN" fields:{assignee:{accountId:"…"}}`; resolve the id with `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`.
 - **fixVersion / release versions** — acli has no `version create`, `edit --from-json` rejects `fixVersions`, and `search --fields fixVersions` errors (read it via `view --json` + parse). → MCP or the Jira UI.
-- **Create/update a Confluence *page*** — acli `confluence page` is view-only (blog + space have full CRUD). → MCP `createConfluencePage` / `updateConfluencePage`.
+- **Create/update a Confluence *page*** — acli `confluence page` is view-only (blog + space have full CRUD). → MCP `createConfluencePage` / `updateConfluencePage`. ⚠️ These take `contentFormat: "html"|"markdown"|"adf"` — a **different content model from `acli confluence blog create`'s storage-format XHTML.** For a plain doc (headings/lists/bold, no Confluence-specific panels/macros) pass `contentFormat: "markdown"` with a raw Markdown body — don't hand-write XHTML for a page, that's the blog-only mechanism. Spec/PRD template → `examples/README.md` § Confluence.
 
 ## METHODOLOGY
 
