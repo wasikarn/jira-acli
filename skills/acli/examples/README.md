@@ -1,5 +1,6 @@
-> **Content templates (Bug/Story/Task/Epic/Sub-task, Confluence Spec/PRD, comments) live in
-> `jira-acli:jira-content` § `templates/`.** This directory is the acli **mechanics** reference —
+> **Content templates live in `jira-acli:jira-content` § `templates/` (Bug/Story/Task/Epic/
+> Sub-task, comments) and `jira-acli:confluence-content` § `templates/` (Confluence Spec/PRD).**
+> This directory is the acli **mechanics** reference —
 > ADF/XHTML shape, the `--from-json` vs flag distinction, and the two different Confluence content
 > models. It has no opinion on what a ticket's content should say.
 
@@ -85,7 +86,7 @@ acli confluence blog create --space-id 12345 --title "X" \
 ```
 Why: Confluence's storage format is XHTML, the inverse of Jira. ADF here renders as literal JSON text.
 
-**`createConfluencePage`/`updateConfluencePage` (MCP, the only way to create/update a *page* — acli's `confluence page` is view-only) is a different content model entirely:** `contentFormat` is `"html"` (Confluence's own HTML+ dialect — `data-type` attributes for panels/status/task-lists/etc., NOT the same thing as `blog create`'s storage XHTML), `"markdown"`, or `"adf"`. For a plain document with headings/lists/bold — no Confluence-specific panels/macros — pass `contentFormat: "markdown"` and the raw Markdown body directly; skip hand-authoring HTML or ADF entirely. Template for this → `jira-acli:jira-content` § `templates/confluence-spec.md`.
+**`createConfluencePage`/`updateConfluencePage` (MCP, the only way to create/update a *page* — acli's `confluence page` is view-only) is a different content model entirely:** `contentFormat` is `"html"` (Confluence's own HTML+ dialect — `data-type` attributes for panels/status/task-lists/etc., NOT the same thing as `blog create`'s storage XHTML), `"markdown"`, or `"adf"`. For a plain document with headings/lists/bold — no Confluence-specific panels/macros — pass `contentFormat: "markdown"` and the raw Markdown body directly; skip hand-authoring HTML or ADF entirely. Template for this → `jira-acli:confluence-content` § `templates/confluence-spec.md`.
 
 ---
 

@@ -1,26 +1,28 @@
-# jira-content templates — the SSOT
+# jira-content templates — Jira SSOT
 
-Every template that defines what a created/edited Jira ticket or Confluence page should contain
-lives here. `jira-acli:acli` is the mechanical backend these templates get sent through (ADF
-conversion, `create --from-json`, MCP fallback) — it owns none of this content.
+Every template that defines what a created/edited Jira ticket should contain lives here.
+`jira-acli:acli` is the mechanical backend these templates get sent through (ADF conversion,
+`create --from-json`, MCP fallback) — it owns none of this content. Confluence's template lives in
+the sibling `jira-acli:confluence-content` skill instead — different product, different skill.
 
 Files here:
 
-- `acceptance-criteria.md` — **the** AC format/register/coverage rule. Every other file points here.
 - `bug.md` / `story.md` — Thai, PO/QA-facing, guided single-ticket creation (used by this skill's
   Step 1–2 gather flow).
 - `bug.payload.json` / `story.payload.json` / `task.payload.json` / `epic.payload.json` /
   `subtask.payload.json` — ADF payloads, ready for `acli jira workitem create --from-json`.
-- `confluence-spec.md` — Confluence Spec/PRD template (Markdown, for `createConfluencePage` with
-  `contentFormat: "markdown"`).
 - `comments.md` — templated comments for an *existing* ticket (status update / QA verification /
   blocker / decision record).
+
+The Acceptance Criteria rule (`../../../templates/acceptance-criteria.md`) lives at the plugin
+root, not in this directory — it's shared with `confluence-content`'s Spec/PRD template, so it
+isn't owned by either product skill.
 
 **Wording rules — apply everywhere in this directory:** concise, plain, on-point.
 - One idea per line. State the behavior, not a story. Numbers/IDs/paths over prose.
 - No vague language: not "ใช้ไม่ได้" but *what* fails *when* (Atlassian bug-report guidance).
 - If a section has nothing real to say, delete it — don't pad.
-- Acceptance Criteria format/register/coverage rules → [`acceptance-criteria.md`](acceptance-criteria.md), not restated here.
+- Acceptance Criteria format/register/coverage rules → [`../../../templates/acceptance-criteria.md`](../../../templates/acceptance-criteria.md), not restated here.
 
 ---
 
@@ -33,7 +35,7 @@ don't try to collapse them:
 - `bug.payload.json` / `story.payload.json` — dev-facing ADF payload, used for direct
   `--from-json` create when the content is already fully known (no guided gather needed).
 
-Both share the same [Acceptance Criteria](acceptance-criteria.md) rule where the section applies.
+Both share the same [Acceptance Criteria](../../../templates/acceptance-criteria.md) rule where the section applies.
 
 ## Task / Epic / Sub-task — payload only, no guided gather
 
@@ -76,7 +78,7 @@ User-centric work item. Derived from Atlassian [user stories guidance](https://w
 |---|---|---|
 | User Story | always | "As a <role>, I want <goal> so that <benefit>" |
 | Context | always | background / why — 1–2 sentences, non-technical |
-| Acceptance Criteria | always | see [acceptance-criteria.md](acceptance-criteria.md) |
+| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
 | Technical Notes | if known | approach, constraints (delete if not yet known) |
 | Dependencies | if known | blockers or things that must be waited on |
 | References | if any | plan / Figma / PR / link |
@@ -90,7 +92,7 @@ Implementation work. Derived from TP-466, 467, 473, 479.
 | Context | always | why / goal, 1–2 sentences + plan link |
 | Scope | always | files + what changes (line refs help) |
 | Out of scope | recommended | what this task won't touch |
-| Acceptance Criteria | always | see [acceptance-criteria.md](acceptance-criteria.md) |
+| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
 | Tests | recommended | what to assert |
 | References | if any | plan / Figma / PR links |
 
@@ -121,39 +123,12 @@ A slice of a parent. **Must have a parent** — sub-tasks cannot be top-level. D
 |---|---|---|
 | Scope | always | one clear action + files |
 | Out of scope | recommended | what siblings handle (avoid overlap) |
-| Acceptance Criteria | always | see [acceptance-criteria.md](acceptance-criteria.md) |
+| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
 | Files affected | if known | paths touched |
 
 Sub-task parent: set `parentIssueId` in the JSON (or `--parent <KEY>` on the CLI). `parentIssueId`
 takes the issue **key** (e.g. `TP-479`) — verified by create+delete (sub-task created with
 `parent = TP-479`, no numeric id needed).
-
----
-
-## Confluence: Spec/PRD template
-
-[`confluence-spec.md`](confluence-spec.md) — adapted from the Story template's DNA (business
-reason → scope → requirements → decision points → references) but for a planning doc that covers
-*multiple* requirements, each shaped as its own user story so it can be decomposed into separate
-Jira Stories later (e.g. via `atlassian:spec-to-backlog`). Thai, same plain-language + GWT
-Acceptance Criteria conventions as everywhere else in this directory.
-
-⚠️ Same caveat as the comment templates: this is a **starting proposal**, adapted by request from
-the Story template — not mined from real Confluence usage or confirmed as a Head-of-Engineering
-standard. Revise once used in practice.
-
-```bash
-cat "${CLAUDE_SKILL_DIR}/templates/confluence-spec.md"   # fill in placeholders, then send via MCP:
-```
-```
-mcp__plugin_atlassian_atlassian__createConfluencePage
-  cloudId:    <resolved via getAccessibleAtlassianResources>
-  spaceId:    <resolved via getConfluenceSpaces>
-  title:      <spec title>
-  body:       <filled-in template content>
-  contentFormat: "markdown"
-  contentType:   "page"
-```
 
 ---
 

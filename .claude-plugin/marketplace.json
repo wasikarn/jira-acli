@@ -8,9 +8,9 @@
   "plugins": [
     {
       "name": "jira-acli",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "source": ".",
-      "description": "acli-first Jira/Confluence toolkit: a pure-mechanics acli skill (bulk work-item ops via JQL, ADF↔markdown conversion) paired with jira-content, which owns the team's canonical templates for Bug/Story/Task/Epic/Sub-task, Confluence Spec/PRD, and comments. Atlassian MCP is the fallback, not the default.",
+      "description": "acli-first Jira/Confluence toolkit: a pure-mechanics acli skill (bulk work-item ops via JQL, ADF↔markdown conversion) paired with jira-content (Bug/Story/Task/Epic/Sub-task + comments) and confluence-content (Spec/PRD pages), each owning its product's canonical templates. Atlassian MCP is the fallback, not the default.",
       "author": {
         "name": "KoBig"
       },

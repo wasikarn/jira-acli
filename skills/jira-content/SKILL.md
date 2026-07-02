@@ -1,13 +1,14 @@
 ---
 name: jira-content
-description: "Create or edit template-shaped Jira/Confluence content — Bug/Story/Task/Epic/Sub-task descriptions, Confluence Spec/PRD pages, and templated comments (status update/QA verification/blocker/decision record) — against the team's REQUIRED formats (Head of Engineering standard: GWT Acceptance Criteria, Thai PO/QA structure), no matter whether acli or the Atlassian MCP ends up doing the write. Trigger on ANY intent to create/file/open/log/report/raise a bug, defect, issue, story, task, epic, sub-task, spec, or PRD, or to write/format/fix a ticket's description or a structured comment — in Thai or English, not just literal phrases like 'สร้างบั๊ก'/'สร้าง story' (also matches 'file a bug for X', 'open a ticket about Y', 'write a spec for Z', 'add a status update to TP-123'). Use this BEFORE calling `acli jira workitem create/edit` or any Jira/Confluence-create MCP tool directly — never hand-build template-shaped content. Don't use for search, view, transition, link, clone, bulk ops, JQL export, Confluence blog/space/admin, or a trivial one-line comment (see jira-acli:acli)."
+description: "Create or edit template-shaped Jira content — Bug/Story/Task/Epic/Sub-task descriptions and templated comments (status update/QA verification/blocker/decision record) — against the team's REQUIRED formats (Head of Engineering standard: GWT Acceptance Criteria, Thai PO/QA structure), no matter whether acli or the Atlassian MCP ends up doing the write. Trigger on ANY intent to create/file/open/log/report/raise a bug, defect, issue, story, task, epic, or sub-task, or to write/format/fix a Jira issue's description or a structured comment — in Thai or English, not just literal phrases like 'สร้างบั๊ก'/'สร้าง story' (also matches 'file a bug for X', 'open a ticket about Y', 'add a status update to TP-123'). Use this BEFORE calling `acli jira workitem create/edit` or any Jira-create MCP tool directly — never hand-build template-shaped content. Don't use for Confluence pages/specs/PRDs (see jira-acli:confluence-content), or for search, view, transition, link, clone, bulk ops, JQL export, Confluence blog/space/admin, or a trivial one-line comment (see jira-acli:acli)."
 ---
 
-# Jira & Confluence Content
+# Jira Content
 
-Create or edit the **content** of a Jira Bug/Story/Task/Epic/Sub-task, a Confluence Spec/PRD page,
-or a templated comment — against the team's canonical templates. Defaults to the **TP board** when
-the user doesn't name a project, but works on any project / Atlassian site.
+Create or edit the **content** of a Jira Bug/Story/Task/Epic/Sub-task, or a templated comment —
+against the team's canonical templates. Defaults to the **TP board** when the user doesn't name a
+project, but works on any project / Atlassian site. Jira only — Confluence pages/specs are
+`jira-acli:confluence-content`'s job, a different product with a different content shape.
 
 **Backend: acli-first with Atlassian MCP fallback** — `jira-acli:acli` is the mechanical tool this
 skill drives (search, auth, ADF conversion, create/edit calls); it owns none of the content
@@ -15,10 +16,12 @@ standard. This skill owns *what goes in the body*. Templates live in
 `${CLAUDE_SKILL_DIR}/templates/` — see [`templates/README.md`](templates/README.md) for the full
 index.
 
-## When to use this skill vs acli
+## When to use this skill vs acli vs confluence-content
 
-- **Use this skill** for creating or editing the content of a Bug/Story/Task/Epic/Sub-task, a
-  Confluence Spec/PRD page, or a templated comment — anything that must match a team template.
+- **Use this skill** for creating or editing the content of a Jira Bug/Story/Task/Epic/Sub-task, or
+  a templated comment — anything that must match a team template.
+- **Use `jira-acli:confluence-content`** for a Confluence Spec/PRD page — Confluence work, not
+  Jira work.
 - **Use `jira-acli:acli`** for search, view, transition, link, clone, bulk ops, JQL export,
   Confluence blog/space/admin ops, or a trivial one-line comment — mechanical work that isn't
   about shaping content to a template.
@@ -32,13 +35,12 @@ index.
 | Task | `templates/task.payload.json` | No guided script — ask for the fields in `templates/README.md` § Task |
 | Epic | `templates/epic.payload.json` | Same — `templates/README.md` § Epic |
 | Sub-task | `templates/subtask.payload.json` | Same — `templates/README.md` § Sub-task; needs a parent key |
-| Confluence Spec/PRD | `templates/confluence-spec.md` | Ask per section: business reason, scope, each requirement (R1/R2…) as its own user story with its own AC |
 | Templated comment | `templates/comments.md` | Ask which of the 4 (status/QA/blocker/decision), then its fields |
 
 Determine the type from the request; if ambiguous, ask once. Load the matching template:
 
 ```bash
-cat "${CLAUDE_SKILL_DIR}/templates/bug.md"          # or story.md / confluence-spec.md / comments.md
+cat "${CLAUDE_SKILL_DIR}/templates/bug.md"          # or story.md / comments.md
 cat "${CLAUDE_SKILL_DIR}/templates/task.payload.json"   # Task/Epic/Sub-task: payload directly
 ```
 
@@ -49,12 +51,12 @@ context, skip to Step 2.
 
 Write the body in **Thai** using the matching template from Step 1. **Acceptance Criteria
 format/register/coverage rules are canonical in one place —
-[`templates/acceptance-criteria.md`](templates/acceptance-criteria.md) — never restate them here,
-just apply them.**
+[`../../templates/acceptance-criteria.md`](../../templates/acceptance-criteria.md) — never restate
+them here, just apply them.**
 
 ## Step 3 — Resolve issue metadata
 
-*(Jira issue types only — skip for Confluence pages and comments.)*
+*(Skip for comments.)*
 
 Resolve at runtime; never hardcode IDs except the default project key `TP`.
 
@@ -75,7 +77,7 @@ Resolve at runtime; never hardcode IDs except the default project key `TP`.
 Before showing the preview, verify each gate in order:
 
 1. If the type has an Acceptance Criteria section, confirm it covers error + boundary + regression
-   paths, not just the happy path (see `templates/acceptance-criteria.md`).
+   paths, not just the happy path (see `../../templates/acceptance-criteria.md`).
    Failure mode to avoid: never file a ticket whose AC a QA can't verify against — if the AC
    drifts into implementation detail or omits the error case, the ticket fails review.
 2. Show resolved metadata + Thai title + rendered content + chosen backend path as a review surface.
@@ -85,8 +87,7 @@ Before showing the preview, verify each gate in order:
 ## Step 5 — Create
 
 Default to `acli`. Fall back to the Atlassian MCP only when `acli` is unavailable, unauthenticated,
-or cannot set a required field. Confluence pages always go through the MCP (acli's `confluence
-page` command is view-only — see `jira-acli:acli` § When acli can't).
+or cannot set a required field.
 
 ### 5a — Jira issue via acli (default)
 
@@ -146,26 +147,14 @@ additional_fields: {
 
 After creation reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`
 
-### 5c — Confluence Spec/PRD (MCP only)
-
-```
-mcp__plugin_atlassian_atlassian__createConfluencePage
-  cloudId:    <resolved via getAccessibleAtlassianResources>
-  spaceId:    <resolved via getConfluenceSpaces>
-  title:      <spec title>
-  body:       <filled-in templates/confluence-spec.md>
-  contentFormat: "markdown"
-  contentType:   "page"
-```
-
-### 5d — Templated comment (on an existing ticket)
+### 5c — Templated comment (on an existing ticket)
 
 ```bash
 bash "${CLAUDE_SKILL_DIR}/scripts/md2adf.sh" note.md > /tmp/note.json   # bare doc mode — no -s/-p/-t
 acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json
 ```
 
-## Editing existing content to match template
+## Editing an existing Jira issue's description
 
 Template-conforming edits — fixing a description that doesn't match team format, adding a missing
 AC, appending a status update — use acli's read-modify-write scripts. **Never** blind-replace with
@@ -189,7 +178,6 @@ show it, edit only on the user's explicit go-ahead.
 - **Required (Bug):** Thai bug summary, actual behavior, expected behavior, numbered reproduction steps, impact, environment.
 - **Required (Story):** Thai feature summary, business reason, desired behavior, in/out scope, acceptance criteria.
 - **Required (Task/Epic/Sub-task):** summary, context/goal, scope, acceptance/success criteria per `templates/README.md`; Sub-task also needs a parent.
-- **Required (Confluence Spec/PRD):** title, business reason, scope, at least one requirement with its own AC.
 - **Required (templated comment):** which of the 4 templates, and its fields.
 - **Optional:** evidence (Bug), affected version (Bug), PO decision points (Story), explicit project key (defaults to `TP`), explicit assignee.
 - **Tooling:** prefers `acli` when installed and authed; falls back to Atlassian MCP. If neither is available, ask the user to run `acli jira auth login` or enable the Atlassian MCP.
@@ -197,7 +185,7 @@ show it, edit only on the user's explicit go-ahead.
 ## Output Format
 
 - **Preview:** site, project, issue type, priority, labels, assignee (if any), Thai title, rendered content, chosen backend.
-- **Result:** issue key + URL, or Confluence page URL, or comment confirmation.
+- **Result:** issue key + URL, or comment confirmation.
 
 ## Failure Modes
 
@@ -212,5 +200,5 @@ show it, edit only on the user's explicit go-ahead.
 ## Related
 
 - `jira-acli:acli` — search, view, edit, transition, bulk ops, Confluence blog/space/admin, ADF↔markdown conversion. The backend tool this skill invokes — it owns no content standard.
+- `jira-acli:confluence-content` — Confluence Spec/PRD page content. The Confluence-side counterpart to this skill.
 - `atlassian:triage-issue` — de-duping/triaging before filing (needs the official Atlassian plugin installed).
-- `atlassian:spec-to-backlog` — converting a Confluence Spec/PRD page into a backlog of epics + tickets (needs the official Atlassian plugin installed).

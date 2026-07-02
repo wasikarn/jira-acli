@@ -1,6 +1,6 @@
 # Story — type-specific guide
 
-Loaded by `jira-acli:jira-content` Step 1–2. The shared metadata table, preview gate, and create commands live in `SKILL.md`; AC rules (including the Story-only coverage additions) live in [`acceptance-criteria.md`](acceptance-criteria.md) — this file holds only the Story-specific gather questions and Thai description template.
+Loaded by `jira-acli:jira-content` Step 1–2. The shared metadata table, preview gate, and create commands live in `SKILL.md`; AC rules (including the Story-only coverage additions) live in [`acceptance-criteria.md`](../../../templates/acceptance-criteria.md) — this file holds only the Story-specific gather questions and Thai description template.
 
 ## Step 1 — Gather (Story)
 
@@ -67,6 +67,6 @@ Write the description in **Thai** using this structure:
 📎 อ้างอิงการตัดสินใจเชิงเทคนิค: [spec or ADR if applicable]
 ```
 
-**AC format/register/coverage rules (including the Story-only additions — per-surface, fallback):** [`acceptance-criteria.md`](acceptance-criteria.md) — single source, don't restate.
+**AC format/register/coverage rules (including the Story-only additions — per-surface, fallback):** [`acceptance-criteria.md`](../../../templates/acceptance-criteria.md) — single source, don't restate.
 
 Then proceed to `SKILL.md` Step 3 (metadata — Story uses `Story` issue type, `Medium` priority default, no environment/versions rows) → Step 4 (preview) → Step 5 (create).

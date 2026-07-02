@@ -218,7 +218,7 @@ acli confluence space view --key SPACEKEY
 ```
 `blog create` body is **storage format (XHTML)**, not Jira's ADF. `blog create` flags: `--space-id`, `--title`, `--body`, `--status` (current|draft, default current), `--private`, `--created-at` (ISO 8601), `--from-file`, `--from-json`, `--generate-json`, `-j/--json`.
 
-⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluencePage`/`updateConfluencePage`, which take `contentFormat: "html"|"markdown"|"adf"` — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, `contentFormat: "markdown"` with a raw Markdown body is simplest — see `jira-acli:jira-content` § `templates/confluence-spec.md` for a Spec/PRD template built on this.
+⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluencePage`/`updateConfluencePage`, which take `contentFormat: "html"|"markdown"|"adf"` — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, `contentFormat: "markdown"` with a raw Markdown body is simplest — see `jira-acli:confluence-content` § `templates/confluence-spec.md` for a Spec/PRD template built on this.
 
 ## admin / rovodev / config
 

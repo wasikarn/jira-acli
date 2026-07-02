@@ -2,7 +2,7 @@
 
 ⚠️ Unlike the work-item templates (each derived from real TP tickets), these four are a
 **starting proposal**, not mined from real usage or confirmed as a Head-of-Engineering standard —
-the [Acceptance Criteria format](acceptance-criteria.md) was explicitly confirmed team-wide, this
+the [Acceptance Criteria format](../../../templates/acceptance-criteria.md) was explicitly confirmed team-wide, this
 wasn't. Revise once used in practice.
 
 Four templates for commenting on an *existing* ticket — not a new ticket's description, so no
@@ -34,7 +34,7 @@ acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json
 
 ### ผลตรวจ QA (QA verification)
 
-Reference the same `AC#` numbering as the ticket's own [Acceptance Criteria](acceptance-criteria.md)
+Reference the same `AC#` numbering as the ticket's own [Acceptance Criteria](../../../templates/acceptance-criteria.md)
 — a QA comment should trace back to the exact AC it verifies, not read as a free-form retest
 summary.
 
