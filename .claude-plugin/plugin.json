@@ -1,0 +1,20 @@
+{
+  "name": "jira-acli",
+  "version": "0.1.0",
+  "description": "acli-first Jira/Confluence toolkit: bulk work-item ops via JQL, ADF↔markdown conversion, and guided single-ticket creation with a Thai PO/QA template. Atlassian MCP is the fallback, not the default.",
+  "author": {
+    "name": "KoBig",
+    "url": "https://github.com/wasikarn"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/wasikarn/jira-acli-plugin",
+  "repository": "https://github.com/wasikarn/jira-acli-plugin",
+  "defaultEnabled": false,
+  "keywords": [
+    "jira",
+    "confluence",
+    "atlassian",
+    "acli",
+    "adf"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "wasikarn",
+  "owner": {
+    "name": "wasikarn"
+  },
+  "description": "acli-first Jira/Confluence toolkit, packaged as an installable plugin.",
+  "plugins": [
+    {
+      "name": "jira-acli",
+      "version": "0.1.0",
+      "source": ".",
+      "description": "acli-first Jira/Confluence toolkit: bulk work-item ops via JQL, ADF↔markdown conversion, and guided single-ticket creation with a Thai PO/QA template. Atlassian MCP is the fallback, not the default.",
+      "author": {
+        "name": "KoBig"
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/wasikarn/jira-acli-plugin",
+      "keywords": [
+        "jira",
+        "confluence",
+        "atlassian",
+        "acli",
+        "adf"
+      ]
+    }
+  ]
+}
