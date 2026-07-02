@@ -111,6 +111,28 @@ acli rovodev auth login && acli rovodev run                # AI coding agent (be
 
 Full command tree, every flag, and JSON schemas → `REFERENCE.md`.
 
+## Confluence & admin write safety
+
+`confluence blog create`, `confluence space create`, and every `admin user` lifecycle command
+(`activate`/`deactivate`/`delete`/`cancel-delete`) have **no native `--yes`/confirm flag** — unlike
+`jira workitem edit/transition/assign`, nothing in acli itself stops a bad target from firing.
+This skill supplies the safety net manually:
+
+1. **Confluence blog/space create** — same rule as [Create safety](#create-safety) above: no JQL
+   set to preview, so preview the **payload** instead. Render the body/title/space before sending;
+   for `--from-file`/`--from-json`, read the file back and eyeball it first.
+2. **`admin user` lifecycle ops are the highest blast-radius command in this plugin** —
+   deactivate/delete act on real accounts, `--from-file` accepts a bulk target list, and
+   `--ignore-errors` continues past per-account failures with none of it caught by acli itself.
+   Before running any `admin user deactivate|delete|cancel-delete`:
+   - Resolve and print the **exact target list** (emails/accountIds) and get explicit user
+     go-ahead — the missing native confirm flag is this skill's job to backfill, not a license to
+     skip confirmation.
+   - Leave `--ignore-errors` off by default, same as [Bulk-mutation safety](#bulk-mutation-safety)
+     — a partial failure across accounts must be loud, not swallowed.
+   - `activate`/`cancel-delete` are recoverable; `deactivate`/`delete` are not (or not cheaply) —
+     weight the confirmation ask accordingly.
+
 ## When acli can't (fall back to the Atlassian MCP)
 
 acli is the default. A small, closed set of operations genuinely need `mcp__plugin_atlassian_atlassian__*` (or the Jira UI) — this list is the full accounting, not a sample: if you're about to name an MCP tool anywhere in this plugin for something not on this list, check `REFERENCE.md`'s command surface first and add the row here if it's genuine, don't let it live undocumented in `jira-content`/`confluence-content` (that drift already happened once — see those skills' Step 3 checkpoints). Reach for the MCP **only** here:
@@ -122,6 +144,7 @@ acli is the default. A small, closed set of operations genuinely need `mcp__plug
 - **Priority / Environment / Affects-Version at *create* time** — none of these three appear in `create --generate-json`'s schema or `--help` output, for any project/type (verified empirically). → set via MCP `createJiraIssue`'s `additional_fields` — see `jira-acli:jira-content` § Step 5b.
 - **cloudId** — acli has no cloudId concept at all; it operates against the currently authed site transparently. Every MCP call above needs one. → MCP `getAccessibleAtlassianResources`. Not a capability gap of its own — a prerequisite lookup for every other row here.
 - **Create/update a Confluence *page*** — acli `confluence page view` covers reads (including via `--body-format atlas_doc_format` + `${CLAUDE_SKILL_DIR}/scripts/adf2md.py`), but **writes are genuinely MCP-only** (blog + space have full CRUD, page does not). → MCP `createConfluencePage` / `updateConfluencePage`. ⚠️ These take `contentFormat: "html"|"markdown"|"adf"` — a **different content model from `acli confluence blog create`'s storage-format XHTML.** For a plain doc (headings/lists/bold, no Confluence-specific panels/macros) pass `contentFormat: "markdown"` with a raw Markdown body — don't hand-write XHTML for a page, that's the blog-only mechanism. Spec/PRD template → `jira-acli:confluence-content` § `templates/confluence-spec.md`.
+- **Move an issue to a different project** — the one row here with **no MCP fallback either.** `edit --from-json` has no project-move field, and Jira Cloud doesn't expose a project move via the plain edit endpoint — it requires the separate [Bulk Move REST API](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-bulk-operations/) (beta), which none of the Atlassian MCP tools available in this plugin wrap. → Jira UI's bulk-move wizard only. Don't attempt this via `editJiraIssue`'s `fields:{project:{...}}` — it isn't a supported path.
 
 ## METHODOLOGY
 
