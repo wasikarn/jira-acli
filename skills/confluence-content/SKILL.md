@@ -90,9 +90,13 @@ There's no append/patch mechanism for Confluence (unlike `jira-content`'s `acli-
 read-modify-write, not a script:
 
 ```
-1. mcp__plugin_atlassian_atlassian__getConfluencePage
-     cloudId: <resolved>  pageId: <id or tiny-link>  contentFormat: "markdown"
-   → read the current body as Markdown.
+1. acli first — acli's `confluence page` is only view-*write*-blocked, reads work fine:
+   acli confluence page view --id <id> --body-format atlas_doc_format --json \
+     | python3 -c "import json,sys; print(json.load(sys.stdin)['body']['atlas_doc_format']['value'])" \
+     | python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf2md.py" -
+   → read the current body as Markdown. Falls back to
+   mcp__plugin_atlassian_atlassian__getConfluencePage (cloudId, pageId,
+   contentFormat: "markdown") only if acli is unavailable/unauthed.
 
 2. Apply the edit to that Markdown (fix a section, add a missing AC, etc.) — keep the rest
    of the page unchanged. If the page doesn't already follow templates/confluence-spec.md,
@@ -102,6 +106,7 @@ read-modify-write, not a script:
      cloudId: <resolved>  pageId: <same id>  title: <keep or update>
      body: <the full new Markdown — step 1's body with the edit applied>
      contentFormat: "markdown"
+   — genuine MCP-only step, acli's confluence page command cannot write.
 ```
 
 Same preview-and-confirm gate as create: show the diff between step 1's body and step 2's edited

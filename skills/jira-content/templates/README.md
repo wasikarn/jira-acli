@@ -68,7 +68,7 @@ Derived from TP-418, 447, 455, 457, 460, 461.
 | ผลที่เกิดจริง | always | what happens + error/wrong state |
 | ความรุนแรง | recommended | High/Medium/Low + one-line why |
 | หลักฐาน | if available | env, account/order/id, screenshot/log |
-| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) — Bug minimum is 2: fix verification + regression check |
+| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
 | Technical Notes (dev) | if known | Root Cause / Fix / Files |
 
 ### Story — `story.payload.json`

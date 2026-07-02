@@ -217,7 +217,7 @@ def main():
     md = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
     adf = parse(md)
 
-    if args.summary or args.project or args.type or args.parent:
+    if args.summary or args.project or args.type or args.parent or args.labels:
         if not (args.summary and args.project and args.type):
             sys.exit("FATAL: a create payload needs all of -s/--summary, -p/--project, -t/--type")
         payload = {"summary": args.summary, "projectKey": args.project,

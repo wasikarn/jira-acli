@@ -40,6 +40,8 @@ def render_text(node):
 def inline(nodes):
     out = []
     for n in nodes or []:
+        if not isinstance(n, dict):
+            continue
         ty = n.get("type")
         if ty == "text":
             out.append(render_text(n))
@@ -64,6 +66,8 @@ def inline(nodes):
 # ── blocks ───────────────────────────────────────────────────────────
 
 def render_block(node, indent=0):
+    if not isinstance(node, dict):
+        return ""
     ty = node.get("type")
     pad = "  " * indent
     if ty == "heading":
@@ -75,6 +79,8 @@ def render_block(node, indent=0):
         ordered = ty == "orderedList"
         lines = []
         for i, li in enumerate(node.get("content", []), 1):
+            if not isinstance(li, dict):
+                continue
             marker = f"{i}." if ordered else "-"
             sub = [render_block(c, indent + 1) for c in li.get("content", [])]
             # First child shares the bullet line; the rest keep their indent.
@@ -105,7 +111,7 @@ def render_block(node, indent=0):
         return render_table(node)
     if ty in ("mediaSingle", "mediaGroup", "media"):
         return "_[attachment]_"
-    if ty == "blockCard":
+    if ty in ("blockCard", "embedCard"):
         url = node.get("attrs", {}).get("url", "")
         return f"<{url}>" if url else ""
     # Unknown container — recurse so nothing is silently dropped.
@@ -116,17 +122,22 @@ def render_block(node, indent=0):
 
 def render_table(node):
     rows = []
+    ncols = 0
     for row in node.get("content", []):
-        cells = [inline_cell(c) for c in row.get("content", [])]
+        if not isinstance(row, dict):
+            continue
+        cells = [inline_cell(c) for c in row.get("content", []) if isinstance(c, dict)]
+        if not rows:
+            ncols = len(cells)
         rows.append("| " + " | ".join(cells) + " |")
     if not rows:
         return ""
-    header_sep = "| " + " | ".join("---" for _ in node["content"][0]["content"]) + " |"
+    header_sep = "| " + " | ".join("---" for _ in range(ncols)) + " |"
     return "\n".join([rows[0], header_sep] + rows[1:])
 
 
 def inline_cell(cell):
-    return " ".join(inline(c.get("content", [])) for c in cell.get("content", [])).strip()
+    return " ".join(inline(c.get("content", [])) for c in cell.get("content", []) if isinstance(c, dict)).strip()
 
 
 def render_doc(doc):

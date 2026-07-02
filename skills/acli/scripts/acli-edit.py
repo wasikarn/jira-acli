@@ -41,7 +41,11 @@ def _new_content(path):
 def merge(mode, key, cur_f, out_f, new_f, heading):
     with open(cur_f) as f:
         cur = json.load(f)
-    cur = cur[0] if isinstance(cur, list) else cur
+    if isinstance(cur, list):
+        matches = [c for c in cur if isinstance(c, dict) and c.get("key") == key]
+        if not matches:
+            sys.exit(f"FATAL: no item with key '{key}' found in a list of {len(cur)}")
+        cur = matches[0]
     desc = (cur.get("fields") or {}).get("description") or {"type": "doc", "version": 1, "content": []}
     nodes = desc.get("content", [])
 
@@ -68,6 +72,8 @@ def merge(mode, key, cur_f, out_f, new_f, heading):
         e = _section_end(nodes, s)
         desc["content"] = nodes[:s] + _new_content(new_f) + nodes[e:]
         sys.stderr.write(f"replaced section '{heading}' in place\n")
+    else:
+        sys.exit(f"FATAL: unrecognized mode '{mode}' — expected append, remove, or replace")
 
     with open(out_f, "w") as f:
         json.dump({"issues": [key], "description": desc}, f, ensure_ascii=False)
