@@ -75,6 +75,20 @@
         ]
       },
       {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "AC1 — <short title>",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "type": "bulletList",
         "content": [
           {
@@ -85,7 +99,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "<happy path — yes/no ได้ ใช้คำที่เข้าใจง่าย ไม่ใช้ชื่อ field/enum/API>"
+                    "text": "กำหนดให้: <precondition>"
                   }
                 ]
               }
@@ -99,7 +113,82 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "<error หรือ boundary ถ้าเกี่ยวข้อง — ลบได้ถ้าไม่มี>"
+                    "text": "เมื่อ: <action>"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ผลลัพธ์: <happy path — yes/no ได้ ใช้คำที่เข้าใจง่าย ไม่ใช้ชื่อ field/enum/API>"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "AC2 — <short title>",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "กำหนดให้: <precondition>"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "เมื่อ: <action>"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ผลลัพธ์: <error หรือ boundary ถ้าเกี่ยวข้อง — ลบ AC นี้ได้ถ้าไม่มี>"
                   }
                 ]
               }

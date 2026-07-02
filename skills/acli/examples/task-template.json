@@ -119,6 +119,20 @@
         ]
       },
       {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "AC1 — <short title>",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "type": "bulletList",
         "content": [
           {
@@ -129,7 +143,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "<happy path — yes/no ได้ ใช้คำที่ PO/QA เข้าใจ ไม่ใช้ชื่อ field/enum/API>"
+                    "text": "กำหนดให้: <precondition>"
                   }
                 ]
               }
@@ -143,7 +157,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "<error / edge หรือ permission case>"
+                    "text": "เมื่อ: <action>"
                   }
                 ]
               }
@@ -157,7 +171,129 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "<boundary หรือ regression ถ้าเกี่ยวข้อง — ลบได้ถ้าไม่มี>"
+                    "text": "ผลลัพธ์: <happy path — yes/no ได้ ใช้คำที่ PO/QA เข้าใจ ไม่ใช้ชื่อ field/enum/API>"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "AC2 — <short title>",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "กำหนดให้: <precondition>"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "เมื่อ: <action>"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ผลลัพธ์: <error / edge หรือ permission case>"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "AC3 — <short title>",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "กำหนดให้: <precondition>"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "เมื่อ: <action>"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "ผลลัพธ์: <boundary หรือ regression ถ้าเกี่ยวข้อง — ลบ AC นี้ได้ถ้าไม่มี>"
                   }
                 ]
               }
