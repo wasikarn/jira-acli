@@ -7,8 +7,8 @@
     "url": "https://github.com/wasikarn"
   },
   "license": "MIT",
-  "homepage": "https://github.com/wasikarn/jira-acli-plugin",
-  "repository": "https://github.com/wasikarn/jira-acli-plugin",
+  "homepage": "https://github.com/wasikarn/jira-acli",
+  "repository": "https://github.com/wasikarn/jira-acli",
   "defaultEnabled": false,
   "keywords": [
     "jira",

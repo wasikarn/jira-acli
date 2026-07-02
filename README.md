@@ -34,7 +34,7 @@ duplicating credentials and rewriting every MCP tool literal for no functional g
 ## Install
 
 ```
-/plugin marketplace add wasikarn/jira-acli-plugin
+/plugin marketplace add wasikarn/jira-acli
 /plugin install jira-acli@wasikarn
 ```
 
