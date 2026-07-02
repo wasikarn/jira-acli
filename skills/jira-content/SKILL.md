@@ -60,17 +60,26 @@ them here, just apply them.**
 
 Resolve at runtime; never hardcode IDs except the default project key `TP`.
 
+> **Before naming any `mcp__...` tool in the table below**, check `acli/REFERENCE.md`'s command
+> surface for an acli equivalent first. Only name MCP directly for the gaps enumerated in
+> `acli/SKILL.md` § "When acli can't" (parent-reassignment, assign-by-accountId, fixVersions,
+> Confluence page create/update) or a field acli's docs confirm it has no command for. Stating
+> "acli is the default" elsewhere in this repo does not enforce it here — this table is where it
+> was violated before (project-key and space lookups both had acli equivalents), so re-derive
+> against REFERENCE.md every time you add or edit a row, don't reuse the first MCP tool name that
+> comes to mind.
+
 | Field | Resolution |
 |---|---|
 | **Site** | Check `acli jira auth status` to find the authed site. For MCP fallback, use `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several. |
-| **Project key** | User request; default `TP`. Validate via `mcp__plugin_atlassian_atlassian__getVisibleJiraProjects` before create. |
-| **Issue type** | Matches the type picked in Step 1 (`Bug`/`Story`/`Task`/`Epic`/`Sub-task`). Confirm via `mcp__plugin_atlassian_atlassian__getJiraProjectIssueTypesMetadata` if create rejects. |
+| **Project key** | User request; default `TP`. Validate via `acli jira project view <KEY>` before create — acli has full project read, no MCP needed here. Fall back to `mcp__plugin_atlassian_atlassian__getVisibleJiraProjects` only if acli is unavailable/unauthed. |
+| **Issue type** | Matches the type picked in Step 1 (`Bug`/`Story`/`Task`/`Epic`/`Sub-task`). acli has no issue-type-metadata command, so confirm via `mcp__plugin_atlassian_atlassian__getJiraProjectIssueTypesMetadata` if create rejects — this is a genuine acli gap, not a shortcut. |
 | **Priority** | **Bug:** money/data loss/blocked workflow → `High`; functional with workaround → `Medium`; cosmetic → `Low`. **Others:** `Medium` unless user specifies otherwise. Confirm if unsure. |
 | **Labels** | `bug` + 1-2 domain tags (Bug); 1-2 domain tags (others, e.g. billing, refund, credit, player). Do NOT auto-add PO/QA labels. |
 | **Environment** *(Bug only)* | Native Jira field. Set to prod/staging/local. Wrap in ADF for MCP fallback (see Step 5). |
 | **Affects versions** *(Bug only)* | Only if user gives a valid version; validate or omit. |
 | **Parent** *(Sub-task only)* | Required — resolve the parent issue key; sub-tasks cannot be created without one. |
-| **Assignee** | Leave unassigned by default. Only set if user explicitly names one; resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (pass `cloudId` + `searchString`), then set `assignee_account_id`. |
+| **Assignee** | Leave unassigned by default. Only set if user explicitly names one. acli's `--assignee` only resolves `@me`/`default`/email, and a raw accountId silently unassigns (see `acli/REFERENCE.md`), so when the email is privacy-hidden this is a genuine acli gap — resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (pass `cloudId` + `searchString`), then set `assignee_account_id`. |
 
 ## Step 4 — Preview and confirm
 
