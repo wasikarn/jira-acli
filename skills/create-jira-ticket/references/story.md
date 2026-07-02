@@ -53,14 +53,21 @@ Write the description in **Thai** using this structure:
 
 ## 🧪 เกณฑ์การยอมรับ (Acceptance Criteria) — สำหรับ QA
 
-* **[หัวข้อสั้น]:** [precondition] → [action] → [expected outcome]
-* **[หัวข้อสั้น]:** [error / boundary / regression case] → [outcome] *(error / boundary / Regression check)*
+**AC1 — [Short title]**
+
+* กำหนดให้: [precondition]
+* เมื่อ: [action]
+* ผลลัพธ์: [expected outcome — be specific, include field names / error codes where known]
+
+**AC2 — [Short title]**
 ...
 
 ---
 
 📎 อ้างอิงการตัดสินใจเชิงเทคนิค: [spec or ADR if applicable]
 ```
+
+**AC formatting:** one titled block per AC (`**AC# — <short title>**`), each with `กำหนดให้` / `เมื่อ` / `ผลลัพธ์` on separate bullet lines — team-wide standard, not an escape hatch for complex cases only.
 
 ## AC coverage rules (Story only — in addition to the shared AC rules in SKILL.md)
 

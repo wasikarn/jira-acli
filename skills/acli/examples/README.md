@@ -23,9 +23,9 @@ Five templates, each derived from real TP work items and standardized on ADF hea
 **Wording rules — apply to all five (the whole point):** concise, plain, on-point.
 - One idea per line. State the behavior, not a story. Numbers/IDs/paths over prose.
 - No vague language: not "ใช้ไม่ได้" but *what* fails *when* (Atlassian bug-report guidance).
-- **Acceptance Criteria** — each line **yes/no testable** (Specific, Testable, Clear; Atlassian acceptance-criteria guidance). Default to a rule checklist; use Given/When/Then only for genuinely complex behavior. Two rules separate an AC a PO/QA can sign off from one they can't:
+- **Acceptance Criteria** — each **yes/no testable** (Specific, Testable, Clear; Atlassian acceptance-criteria guidance). Format: **Given/When/Then** — one titled block per AC (`**AC# — <short title>**` then `กำหนดให้` / `เมื่อ` / `ผลลัพธ์` on separate bullet lines). Team-wide standard (Head of Engineering) — always use it, not a fallback reserved for complex behavior. Two rules separate an AC a PO/QA can sign off from one they can't:
   - **No technical terms.** An AC must read for a PO/QA with no eng background. ❌ field/column names (`order_status`, `entity_type`), enum values (`TYPE_A`), API paths (`GET /admin/x/:id`), DB refs (`INSERT INTO`, foreign key). ✅ plain business nouns (ยอดคงเหลือ, วันหมดอายุ, ช่องทางการขาย), baht/day counts (500 บาท, หมดอายุ 30 วัน), and outcomes the user **sees** — not what the DB stores.
-  - **Cover past the happy path** (each still one checklist line — no GWT needed): error/empty case · permission/auth · a boundary value that looks empty but is real (ราคา 0 บาท = "ฟรี", ไม่ใช่ "ยังไม่ตั้งราคา") · for any "ไม่อยู่ในขอบเขตรอบนี้" item on the same flow, a line asserting old behavior is unchanged `(Regression check)`.
+  - **Cover past the happy path** (each still its own AC block): error/empty case · permission/auth · a boundary value that looks empty but is real (ราคา 0 บาท = "ฟรี", ไม่ใช่ "ยังไม่ตั้งราคา") · for any "ไม่อยู่ในขอบเขตรอบนี้" item on the same flow, an AC asserting old behavior is unchanged `(Regression check)`.
 - Sub-task = **one clear action**; don't over-layer the hierarchy (agile breakdown guidance).
 - If a section has nothing real to say, delete it — don't pad.
 
@@ -126,24 +126,39 @@ acli jira workitem create --from-json ${CLAUDE_SKILL_DIR}/examples/subtask-templ
 
 Sub-task parent: set `parentIssueId` in the JSON (or `--parent <KEY>` on the CLI). `parentIssueId` takes the issue **key** (e.g. `TP-479`) — verified by create+delete (sub-task created with `parent = TP-479`, no numeric id needed).
 
-_Grounded in: real TP work items + Atlassian [bug-report template](https://www.atlassian.com/software/jira/templates/bug-report) / [user stories](https://www.atlassian.com/agile/project-management/user-stories) / [acceptance criteria](https://www.atlassian.com/work-management/project-management/acceptance-criteria) / [epics guidance](https://www.atlassian.com/agile/project-management/epics) + agile story/task/sub-task/epic breakdown best practices. Reconciled to one rule when sources disagreed: concise checklist over verbose scenarios._
+_Grounded in: real TP work items + Atlassian [bug-report template](https://www.atlassian.com/software/jira/templates/bug-report) / [user stories](https://www.atlassian.com/agile/project-management/user-stories) / [acceptance criteria](https://www.atlassian.com/work-management/project-management/acceptance-criteria) / [epics guidance](https://www.atlassian.com/agile/project-management/epics) + agile story/task/sub-task/epic breakdown best practices. Reconciled to one rule when sources disagreed: Given/When/Then, team-wide, per Head of Engineering._
 
-### Acceptance Criteria — GOOD / BAD (checklist form)
+### Acceptance Criteria — GOOD / BAD (Given/When/Then)
 
-The one section worth a worked example. Same checklist default as the wording rules above — GOOD covers more than the happy path in plain nouns; BAD leaks tech terms and stops at the happy path.
+The one section worth a worked example. GOOD covers more than the happy path in plain nouns, one titled `กำหนดให้`/`เมื่อ`/`ผลลัพธ์` block per AC; BAD leaks tech terms, stops at the happy path, or skips the block structure.
 
 **GOOD:**
-- ลูกค้ามียอดคงเหลือพอ → กดยืนยัน 200 บาท → ยอดถูกหัก เหลือถูกต้อง และเห็นข้อความสำเร็จ
-- ยอดคงเหลือไม่พอ → กดยืนยัน → ระบบไม่หักยอด และแจ้งว่ายอดไม่พอ *(error)*
-- รายการราคา 0 บาท → ยืนยันได้ ถือว่า "ฟรี" ไม่ใช่ "ยังไม่ตั้งราคา" *(boundary)*
-- สั่งผ่านช่องทางนอกขอบเขตรอบนี้ → ทำงานแบบเดิม ไม่กระทบ *(Regression check)*
+
+**AC1 — หักยอดสำเร็จ (Happy path)**
+* กำหนดให้: ลูกค้ามียอดคงเหลือ 500 บาท
+* เมื่อ: ลูกค้ากดยืนยันการสั่งซื้อ 200 บาท
+* ผลลัพธ์: ยอดถูกหัก เหลือ 300 บาท และเห็นข้อความสำเร็จ
+
+**AC2 — ยอดไม่พอ (Error)**
+* กำหนดให้: ลูกค้ามียอดคงเหลือไม่พอสำหรับรายการที่เลือก
+* เมื่อ: ลูกค้ากดยืนยัน
+* ผลลัพธ์: ระบบไม่หักยอด และแจ้งว่ายอดไม่พอ
+
+**AC3 — ราคา 0 บาท (Boundary)**
+* กำหนดให้: รายการราคา 0 บาท
+* เมื่อ: ลูกค้ายืนยันการสั่งซื้อ
+* ผลลัพธ์: ทำรายการสำเร็จ ถือว่า "ฟรี" ไม่ใช่ "ยังไม่ตั้งราคา"
+
+**AC4 — ตรวจ Regression**
+* กำหนดให้: ลูกค้าสั่งผ่านช่องทางนอกขอบเขตรอบนี้
+* เมื่อ: ลูกค้าทำรายการตามปกติ
+* ผลลัพธ์: ทำงานแบบเดิม ไม่ได้รับผลกระทบจากการเปลี่ยนแปลงรอบนี้
 
 **BAD:**
 - `order_status = PAID` ถูก set ใน `orders` table  ← field/enum/table names — PO/QA verify ไม่ได้
 - เรียก `POST /api/v1/checkout` แล้วได้ `201`  ← API path + status code, ไม่ใช่สิ่งที่ผู้ใช้เห็น
+- ลูกค้ามียอดคงเหลือพอ → กดยืนยัน → หักยอดสำเร็จ  ← บรรทัดเดียว ไม่แยก กำหนดให้/เมื่อ/ผลลัพธ์ เป็นบรรทัด — ไม่ตรง format มาตรฐานทีม
 - (และมีแต่ happy path — ไม่มี error / boundary / regression)
-
-For genuinely complex behavior the same lines may expand to กำหนดให้/เมื่อ/ผลลัพธ์ (Given/When/Then) — the escape hatch, not the default.
 
 ---
 

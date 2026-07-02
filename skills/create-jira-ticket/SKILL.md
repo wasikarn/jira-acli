@@ -1,6 +1,6 @@
 ---
 name: create-jira-ticket
-description: "Build a single Jira Bug/Story from the Thai PO/QA template. Use when the user says 'สร้างบั๊ก'/'สร้าง story'. Don't use for triage, bulk, edits, or non-Jira."
+description: "Create a single Jira Bug or Story — the team's REQUIRED Thai PO/QA format (Head of Engineering standard), no matter whether acli or the Atlassian MCP ends up doing the write. Trigger on ANY intent to create/file/open/log/report/raise a bug, defect, issue, story, or feature ticket in Jira, in Thai or English — not just the literal phrases 'สร้างบั๊ก'/'สร้าง story' (also matches e.g. 'file a bug for X', 'open a ticket about Y', 'log this as a story', 'แจ้งบั๊ก', 'เปิด issue ให้หน่อย', 'ขอสร้าง ticket'). Use this BEFORE calling `acli jira workitem create` or any Jira-create MCP tool directly for a Bug/Story — never build one by hand. Don't use for Task/Epic/Sub-task (see jira-acli:acli), triage, bulk ops, edits, or non-Jira."
 ---
 
 # Create Jira Ticket
@@ -15,7 +15,7 @@ The type-specific gather questions and Thai description template live in on-dema
 ## When to use this skill vs acli
 
 - **Use this skill** for one structured Bug or Story creation with Thai business-readable sections and AC coaching.
-- **Use `jira-acli:acli`** for search, view, edit, transition, comment, clone, bulk create, JQL export, Confluence, or admin ops.
+- **Use `jira-acli:acli`** for search, view, edit, transition, comment, clone, single create for Task/Epic/Sub-task, bulk create, JQL export, Confluence, or admin ops.
 
 ## Step 1 — Pick the type and gather
 
@@ -32,7 +32,7 @@ Write the description in **Thai** using the template from the type guide (`refer
 - Use plain business nouns ("เครดิตจากคูปอง", "ยอดคงเหลือ", "วันหมดอายุ")
 - Use baht amounts/day counts ("500 บาท", "หมดอายุ 30 วัน")
 - ❌ column names, enum values, API paths, DB references
-- Default form: **checklist** — แต่ละ AC บรรทัดเดียว ตรวจ "ผ่าน/ไม่ผ่าน" ได้. ใช้ Given/When/Then (กำหนดให้/เมื่อ/ผลลัพธ์) เฉพาะพฤติกรรมซับซ้อนจริง ๆ — escape hatch ไม่ใช่ default
+- **Format: Given/When/Then.** One titled block per AC — `**AC# — <short title>**` followed by `กำหนดให้` / `เมื่อ` / `ผลลัพธ์` on separate bullet lines. Team-wide standard (Head of Engineering) — always use it, not just for complex behavior.
 - **Minimum ACs:** Bug = 2 (fix verification + regression check); Story = 3 (happy path + error/edge case + regression/permission). Story also follows the coverage rules in `references/story.md`.
 - Full GOOD/BAD examples and register guidance: `skills/acli/examples/README.md` § Acceptance Criteria.
 

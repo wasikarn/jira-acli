@@ -67,8 +67,19 @@ Write the description in **Thai** using this structure:
 
 ## 🧪 เกณฑ์การยอมรับการแก้ไข (Acceptance Criteria) — สำหรับ QA
 
-* **ยืนยันว่าแก้แล้ว:** [precondition] → [action] → [now-correct outcome]
-* **ตรวจ Regression:** [unaffected flow] → ทำงานแบบเดิม ไม่กระทบ *(Regression check)*
+**AC1 — ยืนยันว่าแก้แล้ว (Fix verified)**
+
+* กำหนดให้: [precondition that previously triggered the bug]
+* เมื่อ: [the reproduction action]
+* ผลลัพธ์: [the now-correct expected outcome — be specific]
+
+**AC2 — ตรวจ Regression**
+
+* กำหนดให้: [an unaffected precondition/flow]
+* เมื่อ: [the normal action]
+* ผลลัพธ์: ทำงานแบบเดิม ไม่ได้รับผลกระทบจากการแก้ไขรอบนี้
 ```
+
+**AC formatting:** one titled block per AC (`**AC# — <short title>**`), each with `กำหนดให้` / `เมื่อ` / `ผลลัพธ์` on separate bullet lines — team-wide standard, not an escape hatch for complex cases only.
 
 Then proceed to `SKILL.md` Step 3 (metadata — Bug uses `Bug` issue type, severity-derived priority, and the Bug-only Environment + Affects versions rows) → Step 4 (preview) → Step 5 (create). Minimum 2 ACs: fix verification + regression check.

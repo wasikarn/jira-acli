@@ -1,18 +1,18 @@
 ---
 name: acli
-description: "Compact Jira/Confluence bulk ops + ADF→markdown (~80% token cut). Use when bulk-editing work-items/pages. Thai: 'ย้ายสถานะหลายตัว', 'export JQL'. Don't use for single-ticket reads/creates, config, non-Atlassian trackers."
+description: "Default driver for ALL Jira/Confluence work: search, view, edit, transition, comment, link, clone, bulk ops via JQL, Confluence/admin ops, and single-item create for Task/Epic/Sub-task (ADF<->markdown conversion built in). Thai: 'ย้ายสถานะหลายตัว', 'export JQL', 'สร้าง task'. For a single Bug or Story use jira-acli:create-jira-ticket instead (Thai PO/QA template) — every other Jira/Confluence action, including single-item create, routes here rather than a raw acli/MCP call. Don't use for non-Atlassian trackers or global CLI config."
 ---
 
 # acli — Atlassian Cloud CLI
 
 Drive Jira, Confluence, org admin, and Rovo Dev from the terminal. Auth-first, JQL-driven, confirmation-gated.
 
-**When to use:** the **default** path for all Jira/Confluence work — search, view, edit, transition, comment, link, clone, bulk ops, page/space ops, admin.
+**When to use:** the **default** path for all Jira/Confluence work — search, view, edit, transition, comment, link, clone, single & bulk create, page/space ops, admin. This includes single-item **create** for every issue type except Bug/Story — do not fall back to a bare `acli`/MCP create call just because this looks like "one ticket, skip the skill."
 
 > **Why this skill is model-invokable (no `disable-model-invocation`) despite doing bulk external Jira writes:** it is a *capability* the model uses to carry out tracker work the operator explicitly asked for — not an autonomous decision to mutate Jira. Every write is confirmation-gated in-flow (auth-first, JQL-driven, confirmation-gated) and runs through Bash with its own guards; gating the whole skill user-only would block the model from doing the bulk ops the operator requested. Single guided ticket *creation* routes to `create-jira-ticket`, which is likewise model-invokable and carries its own preview-and-confirm gate before any write.
 
-**Prefer the dedicated skill for structured single-ticket creation:**
-- `jira-acli:create-jira-ticket` — single Bug or Story with the Thai PO/QA-readable template (type-specific gather + template in on-demand references).
+**Bug/Story single-ticket creation routes elsewhere — do not build it here:**
+- `jira-acli:create-jira-ticket` — single Bug or Story with the Thai PO/QA-readable template (type-specific gather + template in on-demand references). This is a hard format requirement (team-wide standard, Head of Engineering) — never hand-build a Bug/Story description with a bare `--description` flag or an ad hoc MCP call instead of going through that skill.
 
 **Atlassian MCP is the fallback, not the default** — use it only for the few things acli genuinely can't do (see [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp)). Not for git/gh or non-Atlassian trackers.
 
@@ -46,8 +46,10 @@ acli jira workitem search --jql "..." --json     # parse | --csv export | --web 
 acli jira workitem view KEY-123 --fields summary,comment   # *all / *navigable / -field
 acli jira workitem view KEY-123 --json | python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py   # readable card, ~80% fewer tokens than raw JSON
 
-# 3. CREATE
-acli jira workitem create --summary "X" --project TEAM --type Task --assignee @me
+# 3. CREATE — any description beyond one plain sentence MUST go through md2adf.py first (see below);
+#    a multi-line/markdown body passed to --description lands as ONE literal paragraph, unformatted.
+python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md -s "Summary" -p TEAM -t Task > /tmp/wi.json && acli jira workitem create --from-json /tmp/wi.json
+acli jira workitem create --summary "X" --project TEAM --type Task --assignee @me   # OK ONLY when there's no multi-section description
 acli jira workitem create-bulk --from-csv issues.csv       # or --from-json; --generate-json scaffolds input
 
 # 4. MUTATE — target by --key | --jql | --filter (same selectors)
@@ -62,7 +64,7 @@ acli jira workitem assign --key KEY-1 --assignee @me       # @me | default | ema
 
 `@me` self-assign, `default` project default. `--generate-json` scaffolds any complex create/edit/link input. ⚠️ `assign --assignee` resolves `@me`/`default`/**email** only — a raw **accountId silently UNassigns** (acli prints "unassigned" and clears it). For accountId / privacy-hidden emails, see [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp).
 
-**Description format:** Jira `description`/comment `body` is ADF. Flags (`--description`/`--body`) accept plain text (auto-wrapped); `--from-json` needs a full ADF object. Confluence body is storage-format XHTML instead. Don't hand-write ADF — write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md`; read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (inverse). Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Acceptance Criteria are the crown jewel** — keep them plain (no field/enum/API names) and cover error + boundary + regression, not just the happy path: rubric + worked GOOD/BAD → `examples/README.md`.
+**Description format:** Jira `description`/comment `body` is ADF. ⚠️ Flags (`--description`/`--body`) wrap plain text into **one literal ADF paragraph — no markdown parsing.** `## heading`, `**bold**`, numbered/bulleted lists typed straight into the flag show up in Jira as those literal characters, not formatting — this is the #1 cause of a ticket rendering as garbled plaintext. Use the flag only for a single unformatted sentence. Anything with headings/lists/bold/multiple sections needs a real ADF object via `--from-json`: write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md`; read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (inverse). Confluence body is storage-format XHTML instead. Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Acceptance Criteria are the crown jewel** — keep them plain (no field/enum/API names) and cover error + boundary + regression, not just the happy path: rubric + worked GOOD/BAD → `examples/README.md`.
 
 ## Bulk-mutation safety
 

@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "jira-acli",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": ".",
       "description": "acli-first Jira/Confluence toolkit: bulk work-item ops via JQL, ADF↔markdown conversion, and guided single-ticket creation with a Thai PO/QA template. Atlassian MCP is the fallback, not the default.",
       "author": {
