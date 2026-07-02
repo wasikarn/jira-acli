@@ -48,7 +48,7 @@ def main():
         f = it.get("fields", {}) if isinstance(it, dict) else {}
         parent = f.get("parent")
         table.append([
-            it.get("key", "?"),
+            it.get("key", "?") if isinstance(it, dict) else "?",
             _name(f.get("issuetype")),
             _name(f.get("status")),
             ("p:" + parent["key"]) if isinstance(parent, dict) and parent.get("key") else "-",

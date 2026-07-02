@@ -74,6 +74,7 @@ acli jira workitem edit --key "KEY-1,KEY-2" --summary "..." --labels a,b
 python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py note.md > /tmp/note.json && acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json
 acli jira workitem comment create --key KEY-1 --body "..."   # OK ONLY for a single plain sentence
 # comment UPDATE — --body/--body-file are plain-text-only here (no ADF auto-detect, unlike create); use --body-adf for formatted content
+#   (editing an existing *templated* comment — status update / QA verification / blocker / decision-record — routes to jira-acli:jira-content)
 acli jira workitem comment update --key KEY-1 --id 10001 --body-adf /tmp/note.json
 acli jira workitem assign --key KEY-1 --assignee @me       # @me | default | email
 ```

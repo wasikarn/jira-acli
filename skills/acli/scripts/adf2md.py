@@ -48,6 +48,14 @@ def inline(nodes):
         elif ty in ("emoji", "mention"):
             attrs = n.get("attrs", {})
             out.append(attrs.get("text") or attrs.get("shortName") or "")
+        elif ty == "status":
+            out.append(n.get("attrs", {}).get("text", ""))
+        elif ty == "inlineCard":
+            url = n.get("attrs", {}).get("url", "")
+            out.append(f"<{url}>" if url else "")
+        elif ty == "date":
+            ts = n.get("attrs", {}).get("timestamp")
+            out.append(f"[date:{ts}]" if ts else "")
         else:
             out.append(inline(n.get("content", [])))
     return "".join(out)
@@ -97,6 +105,9 @@ def render_block(node, indent=0):
         return render_table(node)
     if ty in ("mediaSingle", "mediaGroup", "media"):
         return "_[attachment]_"
+    if ty == "blockCard":
+        url = node.get("attrs", {}).get("url", "")
+        return f"<{url}>" if url else ""
     # Unknown container — recurse so nothing is silently dropped.
     if node.get("content"):
         return "\n\n".join(render_block(c, indent) for c in node["content"])
@@ -138,10 +149,10 @@ def render_card(payload):
         meta.append(f"**Assignee:** {a.get('displayName') or a.get('emailAddress')}")
     pr = f.get("priority")
     if pr:
-        meta.append(f"**Priority:** {pr.get('name')}")
+        meta.append(f"**Priority:** {pr.get('name') or ''}")
     parent = f.get("parent")
     if parent:
-        meta.append(f"**Parent:** {parent.get('key')}")
+        meta.append(f"**Parent:** {parent.get('key') or ''}")
     labels = f.get("labels")
     if labels:
         meta.append(f"**Labels:** {', '.join(labels)}")

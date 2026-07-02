@@ -1,5 +1,8 @@
 # [ชื่อ Spec/PRD]
 
+Loaded by `jira-acli:confluence-content` Step 1–2. AC format/register/coverage rules live in
+[`acceptance-criteria.md`](../../../templates/acceptance-criteria.md) — single source, don't restate.
+
 ## 🎯 เหตุผลทางธุรกิจ (Business reason)
 
 [ปัญหาปัจจุบัน หรือโอกาสทางธุรกิจ — 2-3 ประโยค เข้าใจได้โดยไม่ต้อง technical]

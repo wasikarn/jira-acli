@@ -173,6 +173,27 @@ bash "${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh" KEY desc.md
 Same preview-and-confirm gate as create: render the new body (both scripts support `--dry-run`),
 show it, edit only on the user's explicit go-ahead.
 
+## Editing an existing templated comment
+
+Fixing or updating a comment that already follows one of the 4 `templates/comments.md` shapes
+(status update / QA verification / blocker / decision record) — e.g. "แก้ comment สถานะล่าสุดให้
+หน่อย". **Never** hand this to acli's raw `comment update --body-adf` without going through the
+template first — that bypasses the same content standard this skill exists to enforce.
+
+```bash
+# 1. Read the existing comment (find its id first if not given):
+acli jira workitem view KEY --fields comment --json
+
+# 2. Edit the Markdown per templates/comments.md, keeping the same AC# numbering
+#    if it references the ticket's own AC. Preview before sending.
+
+# 3. Re-convert and update (comment update needs --body-adf, not --body-file):
+bash "${CLAUDE_SKILL_DIR}/scripts/md2adf.sh" note.md > /tmp/note.json
+acli jira workitem comment update --key KEY --id <commentId> --body-adf /tmp/note.json
+```
+
+Same preview-and-confirm gate as every other write here.
+
 ## Input Contract
 
 - **Required (Bug):** Thai bug summary, actual behavior, expected behavior, numbered reproduction steps, impact, environment.

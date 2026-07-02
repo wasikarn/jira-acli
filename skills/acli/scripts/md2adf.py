@@ -28,15 +28,20 @@ import sys
 import uuid
 
 # Order matters: code first (its `[^*]+` is permissive enough to swallow any `*`),
-# then bold (with a backtick-aware lookahead so `**`code`**` does not collapse into a
-# single bold span — it must split into `**` + `` `code` `` + `**` so the backticks
-# win). Underscore-italic uses lookarounds to refuse identifiers like `price_per_car`
-# — CommonMark rule: `_` only delimits italic when both sides are non-word chars.
+# then bold+link combined (else `**[text](url)**` matches plain bold first and the
+# link syntax inside it never gets tried), then bold (with a backtick-aware lookahead
+# so `**`code`**` does not collapse into a single bold span — it must split into `**`
+# + `` `code` `` + `**` so the backticks win). Underscore-italic uses lookarounds to
+# refuse identifiers like `price_per_car` — CommonMark rule: `_` only delimits italic
+# when both sides are non-word chars.
 # Revert any of these and the `run-tests.sh` G3/G4 cases fail.
+_LINK_URL = r'(?:[^()]|\([^()]*\))*'  # tolerates one level of balanced parens (Foo_(bar))
+
 INLINE_RE = re.compile(
     r'`(?P<code_text>[^`]+)`'
+    r'|\*\*\[(?P<boldlink_text>[^\]]+)\]\((?P<boldlink_url>' + _LINK_URL + r')\)\*\*'
     r'|\*\*(?P<bold_text>[^*`]+)\*\*'
-    r'|\[(?P<link_text>[^\]]+)\]\((?P<link_url>[^)]+)\)'
+    r'|\[(?P<link_text>[^\]]+)\]\((?P<link_url>' + _LINK_URL + r')\)'
     r'|\*(?P<italic_text>[^*`]+)\*'
     r'|(?<![\w])_(?P<italic2_text>[^_`]+)_(?![\w])'
     r'|~~(?P<strike_text>[^~`]+)~~'
@@ -50,13 +55,19 @@ def _emit_text(nodes, s):
 
 def inline(text):
     """Parse a line into ADF inline text nodes (single-pass finditer)."""
+    if not text:
+        return []
     nodes = []
     pos = 0
     for m in INLINE_RE.finditer(text):
         if m.start() > pos:
             _emit_text(nodes, text[pos:m.start()])
         gd = m.groupdict()
-        if gd.get("bold_text") is not None:
+        if gd.get("boldlink_text") is not None:
+            nodes.append({"type": "text", "text": gd["boldlink_text"],
+                          "marks": [{"type": "strong"},
+                                    {"type": "link", "attrs": {"href": gd["boldlink_url"]}}]})
+        elif gd.get("bold_text") is not None:
             nodes.append({"type": "text", "text": gd["bold_text"],
                           "marks": [{"type": "strong"}]})
         elif gd.get("link_text") is not None:
@@ -121,11 +132,14 @@ def parse(md):
             content.append({"type": "codeBlock", "attrs": {"language": lang},
                           "content": [{"type": "text", "text": body}]})
             continue
-        # Blockquote
-        if stripped.startswith("> "):
+        # Blockquote — accept "> " or a bare ">" (space optional); must match the
+        # paragraph loop's break condition below (`^>\s*`) exactly, or a line like
+        # ">text" falls through to the paragraph loop, matches that break regex
+        # immediately with zero lines consumed, and loops forever.
+        if re.match(r"^>", stripped):
             quote_lines = []
-            while i < n and lines[i].strip().startswith("> "):
-                quote_lines.append(lines[i].strip()[2:])
+            while i < n and re.match(r"^>", lines[i].strip()):
+                quote_lines.append(re.sub(r"^>\s?", "", lines[i].strip()))
                 i += 1
             quote_md = "\n".join(quote_lines)
             quote_content = []
