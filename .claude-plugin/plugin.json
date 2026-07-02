@@ -1,7 +1,7 @@
 {
   "name": "jira-acli",
-  "version": "0.1.1",
-  "description": "acli-first Jira/Confluence toolkit: bulk work-item ops via JQL, ADF↔markdown conversion, and guided single-ticket creation with a Thai PO/QA template. Atlassian MCP is the fallback, not the default.",
+  "version": "0.1.2",
+  "description": "acli-first Jira/Confluence toolkit: a pure-mechanics acli skill (bulk work-item ops via JQL, ADF↔markdown conversion) paired with jira-content, which owns the team's canonical templates for Bug/Story/Task/Epic/Sub-task, Confluence Spec/PRD, and comments. Atlassian MCP is the fallback, not the default.",
   "author": {
     "name": "KoBig",
     "url": "https://github.com/wasikarn"

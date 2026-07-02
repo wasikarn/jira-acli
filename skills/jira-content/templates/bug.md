@@ -1,6 +1,6 @@
 # Bug — type-specific guide
 
-Loaded by `jira-acli:create-jira-ticket` Step 1–2. The shared metadata table, preview gate, create commands, AC rules, and failure modes live in `SKILL.md` — this file holds only the Bug-specific gather questions and Thai description template.
+Loaded by `jira-acli:jira-content` Step 1–2. The shared metadata table, preview gate, and create commands live in `SKILL.md`; AC rules live in [`acceptance-criteria.md`](acceptance-criteria.md) — this file holds only the Bug-specific gather questions and Thai description template.
 
 ## Step 1 — Gather (Bug)
 
@@ -80,6 +80,6 @@ Write the description in **Thai** using this structure:
 * ผลลัพธ์: ทำงานแบบเดิม ไม่ได้รับผลกระทบจากการแก้ไขรอบนี้
 ```
 
-**AC formatting:** one titled block per AC (`**AC# — <short title>**`), each with `กำหนดให้` / `เมื่อ` / `ผลลัพธ์` on separate bullet lines — team-wide standard, not an escape hatch for complex cases only.
+**AC format/register/coverage rules:** [`acceptance-criteria.md`](acceptance-criteria.md) — single source, don't restate.
 
-Then proceed to `SKILL.md` Step 3 (metadata — Bug uses `Bug` issue type, severity-derived priority, and the Bug-only Environment + Affects versions rows) → Step 4 (preview) → Step 5 (create). Minimum 2 ACs: fix verification + regression check.
+Then proceed to `SKILL.md` Step 3 (metadata — Bug uses `Bug` issue type, severity-derived priority, and the Bug-only Environment + Affects versions rows) → Step 4 (preview) → Step 5 (create).

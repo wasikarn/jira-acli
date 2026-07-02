@@ -1,18 +1,26 @@
 ---
 name: acli
-description: "Default driver for ALL Jira/Confluence work: search, view, edit, transition, comment, link, clone, bulk ops via JQL, Confluence/admin ops, and single-item create for Task/Epic/Sub-task (ADF<->markdown conversion built in). Thai: 'ย้ายสถานะหลายตัว', 'export JQL', 'สร้าง task'. For a single Bug or Story use jira-acli:create-jira-ticket instead (Thai PO/QA template) — every other Jira/Confluence action, including single-item create, routes here rather than a raw acli/MCP call. Don't use for non-Atlassian trackers or global CLI config."
+description: "Mechanical driver for the acli CLI — a backend tool, not a content-authoring skill (same role as the Atlassian MCP): search, view, edit, transition, comment, link, clone, bulk ops via JQL, Confluence/admin ops, auth, and ADF<->markdown conversion. Thai: 'ย้ายสถานะหลายตัว', 'export JQL', 'ย้าย ticket ไป Done'. For creating or editing the *content* of any Bug/Story/Task/Epic/Sub-task/Confluence page, or a templated comment, use jira-acli:jira-content instead — it owns the team's template standard and calls into this skill's commands to execute. Use this skill directly only for mechanical/query/bulk/transition work with no template shape to get right. Don't use for non-Atlassian trackers or global CLI config."
 ---
 
 # acli — Atlassian Cloud CLI
 
 Drive Jira, Confluence, org admin, and Rovo Dev from the terminal. Auth-first, JQL-driven, confirmation-gated.
 
-**When to use:** the **default** path for all Jira/Confluence work — search, view, edit, transition, comment, link, clone, single & bulk create, page/space ops, admin. This includes single-item **create** for every issue type except Bug/Story — do not fall back to a bare `acli`/MCP create call just because this looks like "one ticket, skip the skill."
+**When to use:** the mechanical path for Jira/Confluence work that has no template shape to get
+right — search, view, edit metadata, transition, link, clone, bulk ops via JQL, page/space/admin
+ops, auth, ADF↔markdown conversion. This skill executes commands; it does not decide what a
+ticket's *content* should say.
 
-> **Why this skill is model-invokable (no `disable-model-invocation`) despite doing bulk external Jira writes:** it is a *capability* the model uses to carry out tracker work the operator explicitly asked for — not an autonomous decision to mutate Jira. Every write is confirmation-gated in-flow (auth-first, JQL-driven, confirmation-gated) and runs through Bash with its own guards; gating the whole skill user-only would block the model from doing the bulk ops the operator requested. Single guided ticket *creation* routes to `create-jira-ticket`, which is likewise model-invokable and carries its own preview-and-confirm gate before any write.
+> **Why this skill is model-invokable (no `disable-model-invocation`) despite doing bulk external Jira writes:** it is a *capability* the model uses to carry out tracker work the operator explicitly asked for — not an autonomous decision to mutate Jira. Every write is confirmation-gated in-flow (auth-first, JQL-driven, confirmation-gated) and runs through Bash with its own guards; gating the whole skill user-only would block the model from doing the bulk ops the operator requested. Content authoring routes to `jira-content`, which is likewise model-invokable and carries its own preview-and-confirm gate before any write.
 
-**Bug/Story single-ticket creation routes elsewhere — do not build it here:**
-- `jira-acli:create-jira-ticket` — single Bug or Story with the Thai PO/QA-readable template (type-specific gather + template in on-demand references). This is a hard format requirement (team-wide standard, Head of Engineering) — never hand-build a Bug/Story description with a bare `--description` flag or an ad hoc MCP call instead of going through that skill.
+**Content creation/editing routes elsewhere — do not build it here:**
+- `jira-acli:jira-content` — creating or editing the *content* of any Bug/Story/Task/Epic/Sub-task,
+  a Confluence Spec/PRD page, or a templated comment. This is a hard format requirement (team-wide
+  standard, Head of Engineering) — never hand-build template-shaped content with a bare
+  `--description` flag or an ad hoc MCP call instead of going through that skill. This skill (acli)
+  is the tool `jira-content` calls to actually run the create/edit once the content is built —
+  exactly like the Atlassian MCP.
 
 **Atlassian MCP is the fallback, not the default** — use it only for the few things acli genuinely can't do (see [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp)). Not for git/gh or non-Atlassian trackers.
 
@@ -59,7 +67,7 @@ acli jira workitem edit --key "KEY-1,KEY-2" --summary "..." --labels a,b
 # ⚠️ edit --description REPLACES the whole description. To add/change without
 #    losing the original, append safely: bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md
 # comment CREATE — same plaintext trap as description: build ADF first for anything beyond one sentence
-#   (status update / QA verification / blocker / decision-record templates → examples/README.md § Comment templates)
+#   (a templated comment — status update / QA verification / blocker / decision-record — routes to jira-acli:jira-content)
 python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py note.md > /tmp/note.json && acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json
 acli jira workitem comment create --key KEY-1 --body "..."   # OK ONLY for a single plain sentence
 # comment UPDATE — --body/--body-file are plain-text-only here (no ADF auto-detect, unlike create); use --body-adf for formatted content
@@ -69,7 +77,7 @@ acli jira workitem assign --key KEY-1 --assignee @me       # @me | default | ema
 
 `@me` self-assign, `default` project default. `--generate-json` scaffolds any complex create/edit/link input. ⚠️ `assign --assignee` resolves `@me`/`default`/**email** only — a raw **accountId silently UNassigns** (acli prints "unassigned" and clears it). For accountId / privacy-hidden emails, see [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp).
 
-**Description format:** Jira `description`/comment `body` is ADF. ⚠️ Flags (`--description`/`--body`) wrap plain text into **one literal ADF paragraph — no markdown parsing.** `## heading`, `**bold**`, numbered/bulleted lists typed straight into the flag show up in Jira as those literal characters, not formatting — this is the #1 cause of a ticket or comment rendering as garbled plaintext. Use the flag only for a single unformatted sentence. Anything with headings/lists/bold/multiple sections needs a real ADF object: write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` (bare doc mode — omit `-s/-p/-t` for a comment/append body, an ADF doc with no create-payload wrapper); read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (inverse). How the ADF then gets attached differs by command: `workitem create/edit` → `--from-json`; `comment create` → `--body`/`--body-file` (both auto-detect plain vs. ADF-shaped input — pass the md2adf.py output directly); `comment update` → the dedicated `--body-adf FILE` flag (its own `--body`/`--body-file` are plain-text-only, no auto-detect). Confluence body is storage-format XHTML instead. Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Acceptance Criteria are the crown jewel** — keep them plain (no field/enum/API names) and cover error + boundary + regression, not just the happy path: rubric + worked GOOD/BAD → `examples/README.md`.
+**Description format:** Jira `description`/comment `body` is ADF. ⚠️ Flags (`--description`/`--body`) wrap plain text into **one literal ADF paragraph — no markdown parsing.** `## heading`, `**bold**`, numbered/bulleted lists typed straight into the flag show up in Jira as those literal characters, not formatting — this is the #1 cause of a ticket or comment rendering as garbled plaintext. Use the flag only for a single unformatted sentence. Anything with headings/lists/bold/multiple sections needs a real ADF object: write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` (bare doc mode — omit `-s/-p/-t` for a comment/append body, an ADF doc with no create-payload wrapper); read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (inverse). How the ADF then gets attached differs by command: `workitem create/edit` → `--from-json`; `comment create` → `--body`/`--body-file` (both auto-detect plain vs. ADF-shaped input — pass the md2adf.py output directly); `comment update` → the dedicated `--body-adf FILE` flag (its own `--body`/`--body-file` are plain-text-only, no auto-detect). Confluence body is storage-format XHTML instead. Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Content standard (what a description/comment should say, Acceptance Criteria format, etc.) is not this skill's concern** — that's `jira-acli:jira-content` § `templates/`.
 
 ## Bulk-mutation safety
 
@@ -106,7 +114,7 @@ acli is the default, but four operations genuinely need `mcp__plugin_atlassian_a
 - **Set/​change parent on an *existing* issue** — `edit --from-json` has no parent field and rejects a `parent` key; `--parent`/`parentIssueId` work only at *create* time (sub-tasks). → MCP `editJiraIssue cloudId:<id> issueIdOrKey:"TP-NNN" fields:{parent:{key:"TP-505"}}`.
 - **Assign by accountId** when the email is privacy-hidden (`--assignee email` can't resolve, and a raw accountId silently UNassigns). → MCP `editJiraIssue cloudId:<id> issueIdOrKey:"TP-NNN" fields:{assignee:{accountId:"…"}}`; resolve the id with `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`.
 - **fixVersion / release versions** — acli has no `version create`, `edit --from-json` rejects `fixVersions`, and `search --fields fixVersions` errors (read it via `view --json` + parse). → MCP or the Jira UI.
-- **Create/update a Confluence *page*** — acli `confluence page` is view-only (blog + space have full CRUD). → MCP `createConfluencePage` / `updateConfluencePage`. ⚠️ These take `contentFormat: "html"|"markdown"|"adf"` — a **different content model from `acli confluence blog create`'s storage-format XHTML.** For a plain doc (headings/lists/bold, no Confluence-specific panels/macros) pass `contentFormat: "markdown"` with a raw Markdown body — don't hand-write XHTML for a page, that's the blog-only mechanism. Spec/PRD template → `examples/README.md` § Confluence.
+- **Create/update a Confluence *page*** — acli `confluence page` is view-only (blog + space have full CRUD). → MCP `createConfluencePage` / `updateConfluencePage`. ⚠️ These take `contentFormat: "html"|"markdown"|"adf"` — a **different content model from `acli confluence blog create`'s storage-format XHTML.** For a plain doc (headings/lists/bold, no Confluence-specific panels/macros) pass `contentFormat: "markdown"` with a raw Markdown body — don't hand-write XHTML for a page, that's the blog-only mechanism. Spec/PRD template → `jira-acli:jira-content` § `templates/confluence-spec.md`.
 
 ## METHODOLOGY
 

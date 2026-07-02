@@ -1,6 +1,6 @@
 # Story — type-specific guide
 
-Loaded by `jira-acli:create-jira-ticket` Step 1–2. The shared metadata table, preview gate, create commands, AC rules, and failure modes live in `SKILL.md` — this file holds only the Story-specific gather questions, Thai description template, and Story-only AC coverage rules.
+Loaded by `jira-acli:jira-content` Step 1–2. The shared metadata table, preview gate, and create commands live in `SKILL.md`; AC rules (including the Story-only coverage additions) live in [`acceptance-criteria.md`](acceptance-criteria.md) — this file holds only the Story-specific gather questions and Thai description template.
 
 ## Step 1 — Gather (Story)
 
@@ -57,7 +57,7 @@ Write the description in **Thai** using this structure:
 
 * กำหนดให้: [precondition]
 * เมื่อ: [action]
-* ผลลัพธ์: [expected outcome — be specific, include field names / error codes where known]
+* ผลลัพธ์: [expected outcome — be specific, plain business language only]
 
 **AC2 — [Short title]**
 ...
@@ -67,13 +67,6 @@ Write the description in **Thai** using this structure:
 📎 อ้างอิงการตัดสินใจเชิงเทคนิค: [spec or ADR if applicable]
 ```
 
-**AC formatting:** one titled block per AC (`**AC# — <short title>**`), each with `กำหนดให้` / `เมื่อ` / `ผลลัพธ์` on separate bullet lines — team-wide standard, not an escape hatch for complex cases only.
+**AC format/register/coverage rules (including the Story-only additions — per-surface, fallback):** [`acceptance-criteria.md`](acceptance-criteria.md) — single source, don't restate.
 
-## AC coverage rules (Story only — in addition to the shared AC rules in SKILL.md)
-
-- **Regression AC** for every out-of-scope item that touches the same flow.
-- **Per-surface AC** for each screen/channel the change is visible on.
-- **Boundary AC** for values that look missing but are real (e.g. 0 baht = free).
-- **Fallback AC** for existing data without the new information.
-
-Minimum 3 ACs: happy path + error/edge case + regression/permission. Then proceed to `SKILL.md` Step 3 (metadata — Story uses `Story` issue type, `Medium` priority default, no environment/versions rows) → Step 4 (preview) → Step 5 (create).
+Then proceed to `SKILL.md` Step 3 (metadata — Story uses `Story` issue type, `Medium` priority default, no environment/versions rows) → Step 4 (preview) → Step 5 (create).
