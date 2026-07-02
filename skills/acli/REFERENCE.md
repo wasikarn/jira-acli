@@ -138,7 +138,7 @@ acli jira workitem assign --from-file issues.txt --remove-assignee --json
 ```
 Flags: `-k/--key`, `--jql`, `--filter`, `-f/--from-file`, `-a/--assignee`, `--remove-assignee`, `--ignore-errors`, `-y/--yes`, `--json`.
 
-> ⚠️ **`--assignee` resolves `@me` | `default` | EMAIL only.** A raw **accountId silently UNassigns** — acli reports "successfully unassigned" and clears the field (verified). Many users hide their email (privacy), so `reporter/assignee.emailAddress` is null and there's no email to pass. Then assign via the Atlassian MCP: `editJiraIssue cloudId:<id> issueIdOrKey:"<KEY>" fields:{assignee:{accountId:"…"}}` (resolve the id with `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`).
+> ⚠️ **`--assignee` resolves `@me` | `default` | EMAIL only.** A raw **accountId silently UNassigns** — acli reports "successfully unassigned" and clears the field (verified) — with one exception: passing **your own** accountId works normally (only *other users'* accountIds trigger the silent unassign). Many users hide their email (privacy), so `reporter/assignee.emailAddress` is null and there's no email to pass. Then assign via the Atlassian MCP: `editJiraIssue cloudId:<id> issueIdOrKey:"<KEY>" fields:{assignee:{accountId:"…"}}` (resolve the id with `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`).
 
 ### comment
 ```bash

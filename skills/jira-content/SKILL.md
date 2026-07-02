@@ -140,6 +140,7 @@ issueTypeName: "Bug" | "Story" | "Task" | "Epic" | "Sub-task"
 summary:       <Thai title>
 description:   <formatted Thai content>
 contentFormat: "markdown"
+parent:        <parentKey>   # Sub-task only — top-level param, plain issue key string, NOT nested in additional_fields
 additional_fields: {
   "priority": { "name": <derived> },
   "labels": [<domain tags>],
@@ -147,9 +148,7 @@ additional_fields: {
   "environment": { "version": 1, "type": "doc", "content": [
     { "type": "paragraph", "content": [{ "type": "text", "text": "prod" }] }
   ]},
-  "versions": [{ "name": <version> }],   // Affects Version/s, NOT fixVersions (Fix Version/s) — different Jira fields; omit if unvalidated
-  // Sub-task only:
-  "parent": { "key": <parentKey> }
+  "versions": [{ "name": <version> }]   // Affects Version/s, NOT fixVersions (Fix Version/s) — different Jira fields; omit if unvalidated
 }
 # assignee_account_id: OMIT by default. Include ONLY if user named an assignee.
 ```

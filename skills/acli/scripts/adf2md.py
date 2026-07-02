@@ -32,6 +32,8 @@ def render_text(node):
         t = f"*{t}*"
     if "strike" in marks:
         t = f"~~{t}~~"
+    if "underline" in marks:
+        t = f"<u>{t}</u>"
     if "link" in marks:
         t = f"[{t}]({marks['link'].get('attrs', {}).get('href', '')})"
     return t
@@ -58,6 +60,8 @@ def inline(nodes):
         elif ty == "date":
             ts = n.get("attrs", {}).get("timestamp")
             out.append(f"[date:{ts}]" if ts else "")
+        elif ty == "mediaInline":
+            out.append("_[attachment]_")
         else:
             out.append(inline(n.get("content", [])))
     return "".join(out)
@@ -94,6 +98,11 @@ def render_block(node, indent=0):
             box = "x" if ti.get("attrs", {}).get("state") == "DONE" else " "
             lines.append(f"{pad}- [{box}] {inline(ti.get('content', []))}")
         return "\n".join(lines)
+    if ty == "decisionList":
+        lines = []
+        for di in node.get("content", []):
+            lines.append(f"{pad}- **Decision:** {inline(di.get('content', []))}")
+        return "\n".join(lines)
     if ty == "codeBlock":
         lang = node.get("attrs", {}).get("language", "")
         body = inline(node.get("content", []))
@@ -105,6 +114,10 @@ def render_block(node, indent=0):
         ptype = node.get("attrs", {}).get("panelType", "info").upper()
         inner = "\n".join(render_block(c) for c in node.get("content", []))
         return "\n".join(f"> {ln}" for ln in (f"[{ptype}]\n" + inner).split("\n"))
+    if ty in ("expand", "nestedExpand"):
+        title = node.get("attrs", {}).get("title", "")
+        inner = "\n\n".join(render_block(c, indent) for c in node.get("content", []))
+        return (f"**{title}**\n{inner}" if title else inner)
     if ty == "rule":
         return "---"
     if ty == "table":
