@@ -146,7 +146,13 @@ acli jira workitem comment create --key K-1 --body "This is a comment"
 acli jira workitem comment create --jql "project = TEAM" --body-file comment.txt --edit-last
 acli jira workitem comment create --jql "..." --editor
 ```
-`create` flags: `-b/--body` (plain/ADF), `-F/--body-file`, `-e/--edit-last`, `--editor`, selectors, `--ignore-errors`, `--json`. Also `comment list|update|delete|visibility`.
+`create` flags: `-b/--body` (plain text OR a raw ADF string — auto-detected), `-F/--body-file` (same, but a file), `-e/--edit-last`, `--editor`, selectors, `--ignore-errors`, `--json`.
+
+⚠️ **`create` vs `update` handle ADF differently — verified against the installed binary's `--help`, not just this doc:**
+- `comment create`: `-b/--body`/`-F/--body-file` auto-detect — pass `python3 md2adf.py note.md` output (bare doc mode, no `-s/-p/-t`) directly and it's used as ADF; anything else is wrapped as one literal plain-text paragraph.
+- `comment update --key K-1 --id COMMENT_ID`: `-b/--body`/`-F/--body-file` are **plain-text-only here, no auto-detect** — use the dedicated `--body-adf FILE` flag for ADF (same md2adf.py output). Passing markdown/ADF-shaped JSON to `--body` on `update` renders literally, not the same behavior as `create`.
+
+`comment list|delete|visibility` for the rest of the lifecycle.
 
 ### link
 ```bash

@@ -58,13 +58,18 @@ acli jira workitem transition --jql "project = TEAM AND status = 'To Do'" --stat
 acli jira workitem edit --key "KEY-1,KEY-2" --summary "..." --labels a,b
 # ⚠️ edit --description REPLACES the whole description. To add/change without
 #    losing the original, append safely: bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md
-acli jira workitem comment create --key KEY-1 --body "..."
+# comment CREATE — same plaintext trap as description: build ADF first for anything beyond one sentence
+#   (status update / QA verification / blocker / decision-record templates → examples/README.md § Comment templates)
+python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py note.md > /tmp/note.json && acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json
+acli jira workitem comment create --key KEY-1 --body "..."   # OK ONLY for a single plain sentence
+# comment UPDATE — --body/--body-file are plain-text-only here (no ADF auto-detect, unlike create); use --body-adf for formatted content
+acli jira workitem comment update --key KEY-1 --id 10001 --body-adf /tmp/note.json
 acli jira workitem assign --key KEY-1 --assignee @me       # @me | default | email
 ```
 
 `@me` self-assign, `default` project default. `--generate-json` scaffolds any complex create/edit/link input. ⚠️ `assign --assignee` resolves `@me`/`default`/**email** only — a raw **accountId silently UNassigns** (acli prints "unassigned" and clears it). For accountId / privacy-hidden emails, see [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp).
 
-**Description format:** Jira `description`/comment `body` is ADF. ⚠️ Flags (`--description`/`--body`) wrap plain text into **one literal ADF paragraph — no markdown parsing.** `## heading`, `**bold**`, numbered/bulleted lists typed straight into the flag show up in Jira as those literal characters, not formatting — this is the #1 cause of a ticket rendering as garbled plaintext. Use the flag only for a single unformatted sentence. Anything with headings/lists/bold/multiple sections needs a real ADF object via `--from-json`: write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md`; read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (inverse). Confluence body is storage-format XHTML instead. Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Acceptance Criteria are the crown jewel** — keep them plain (no field/enum/API names) and cover error + boundary + regression, not just the happy path: rubric + worked GOOD/BAD → `examples/README.md`.
+**Description format:** Jira `description`/comment `body` is ADF. ⚠️ Flags (`--description`/`--body`) wrap plain text into **one literal ADF paragraph — no markdown parsing.** `## heading`, `**bold**`, numbered/bulleted lists typed straight into the flag show up in Jira as those literal characters, not formatting — this is the #1 cause of a ticket or comment rendering as garbled plaintext. Use the flag only for a single unformatted sentence. Anything with headings/lists/bold/multiple sections needs a real ADF object: write Markdown and run `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` (bare doc mode — omit `-s/-p/-t` for a comment/append body, an ADF doc with no create-payload wrapper); read it back with `${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (inverse). How the ADF then gets attached differs by command: `workitem create/edit` → `--from-json`; `comment create` → `--body`/`--body-file` (both auto-detect plain vs. ADF-shaped input — pass the md2adf.py output directly); `comment update` → the dedicated `--body-adf FILE` flag (its own `--body`/`--body-file` are plain-text-only, no auto-detect). Confluence body is storage-format XHTML instead. Rules + GOOD/BAD → `REFERENCE.md` "Description & body formats" + `examples/`. **Acceptance Criteria are the crown jewel** — keep them plain (no field/enum/API names) and cover error + boundary + regression, not just the happy path: rubric + worked GOOD/BAD → `examples/README.md`.
 
 ## Bulk-mutation safety
 
