@@ -10,9 +10,9 @@ skills inside a general engineering harness and moved out here to stand on its o
 ## Skills
 
 - **`acli`** — the mechanical backend for all Jira/Confluence work: search, view, edit,
-  transition, comment, link, clone, bulk ops, Confluence page/space ops, org admin,
-  ADF↔markdown conversion. Owns no content standard — a tool, same role as the
-  Atlassian MCP.
+  transition, comment, link, clone, bulk ops, Confluence space ops (full CRUD) and page
+  reads (page *writes* are MCP-only — see `confluence-content`), org admin, ADF↔markdown
+  conversion. Owns no content standard — a tool, same role as the Atlassian MCP.
 - **`jira-content`** — creates or edits the *content* of a Jira Bug/Story/Task/Epic/
   Sub-task or a templated comment, against the team's canonical templates (Thai
   PO/QA-readable, GWT Acceptance Criteria), with a preview-and-confirm gate before any
