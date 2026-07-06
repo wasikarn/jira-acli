@@ -13,6 +13,19 @@ A **trivial one-line comment** doesn't need a template — just call `acli jira 
 create --key KEY-1 --body "..."` directly (see `jira-acli:acli`). These four are for a comment
 that has real structure to it.
 
+**Ground rules (why these four shapes, not free-form comments):**
+
+- **A comment is a log entry, not the source of truth.** If a decision record changes scope, AC,
+  or the description's own facts, that change belongs in the description too — edit it via
+  `acli-edit.sh`/`acli-set-desc.sh` (see `SKILL.md` § Editing an existing Jira issue's
+  description). A comment that quietly redefines what the ticket means, with the description left
+  stale, is the exact drift these templates exist to prevent.
+- **Every comment should leave the reader knowing what happens next**, not just what happened —
+  a status update without "ขั้นตอนถัดไป" is a log entry no one can act on.
+- **No unresolved dates.** "คาดว่าจะเสร็จ" and any other date field: state it if known, leave it
+  blank if not — never guess a date to fill the field (see `acli/SKILL.md` METHODOLOGY: fail loud,
+  never silently drop or invent a value).
+
 Send any of these through the comment ADF pipeline — `comment create` and `comment update` take
 ADF differently, don't assume they match (see `jira-acli:acli` § Description format):
 

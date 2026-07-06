@@ -13,10 +13,14 @@ Files here:
   `subtask.payload.json` — ADF payloads, ready for `acli jira workitem create --from-json`.
 - `comments.md` — templated comments for an *existing* ticket (status update / QA verification /
   blocker / decision record).
+- `title-conventions.md` — the summary/title rule shared by all five types (pattern, anti-patterns,
+  when a `[Area]`/`[PARENT-KEY]` bracket prefix is and isn't redundant with `labels`).
 
 The Acceptance Criteria rule (`../../../templates/acceptance-criteria.md`) lives at the plugin
 root, not in this directory — it's shared with `confluence-content`'s Spec/PRD template, so it
-isn't owned by either product skill.
+isn't owned by either product skill. Title conventions stay in this directory instead — Confluence
+page titles are a different concept (page hierarchy, not a work-item summary field), so there's no
+cross-product sharing need.
 
 **Wording rules — apply everywhere in this directory:** concise, plain, on-point.
 - One idea per line. State the behavior, not a story. Numbers/IDs/paths over prose.
@@ -62,6 +66,7 @@ Derived from TP-418, 447, 455, 457, 460, 461.
 
 | Section | When | Content (keep it concise) |
 |---|---|---|
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — symptom-first, no `[Area]` bracket (that's what `labels` is for) |
 | สรุปปัญหา | always | 1–2 sentences: what broke / where / user impact |
 | ขั้นตอน Reproduce | always | numbered actions, one step per line |
 | ผลที่คาดหวัง | always | what should happen |
@@ -77,6 +82,7 @@ User-centric work item. Derived from Atlassian [user stories guidance](https://w
 
 | Section | When | Content |
 |---|---|---|
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — the outcome, not the full "As a..." sentence (that belongs in the User Story section below, not the title) |
 | User Story | always | "As a <role>, I want <goal> so that <benefit>" |
 | Context | always | background / why — 1–2 sentences, non-technical |
 | Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
@@ -90,6 +96,7 @@ Implementation work. Derived from TP-466, 467, 473, 479.
 
 | Section | When | Content |
 |---|---|---|
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — imperative verb + object, no `[Area]` bracket |
 | Context | always | why / goal, 1–2 sentences + plan link |
 | Scope | always | files + what changes (line refs help) |
 | Out of scope | recommended | what this task won't touch |
@@ -103,6 +110,7 @@ High-level initiative that spans multiple sprints. Derived from Atlassian agile 
 
 | Section | When | Content |
 |---|---|---|
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — noun-phrase naming the initiative, no `[Area]` bracket |
 | Goal | always | business outcome / why this epic exists — 1–2 sentences |
 | Scope | always | high-level what the epic covers (not file-level) |
 | Out of scope | recommended | what the epic will not touch — prevents scope creep |
@@ -122,6 +130,7 @@ A slice of a parent. **Must have a parent** — sub-tasks cannot be top-level. D
 
 | Section | When | Content |
 |---|---|---|
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — `[PARENT-KEY]` + imperative + slice, distinct from sibling sub-tasks |
 | Scope | always | one clear action + files |
 | Out of scope | recommended | what siblings handle (avoid overlap) |
 | Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |

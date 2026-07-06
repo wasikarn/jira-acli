@@ -1,5 +1,5 @@
 {
-  "summary": "<scope สั้นๆ ของงาน>",
+  "summary": "<คำกริยาสั่งการ> <object สั้นๆ ของงาน>",
   "projectKey": "TP",
   "type": "Task",
   "labels": [

@@ -1,5 +1,5 @@
 {
-  "summary": "[<area>] As a <user> I want <goal> so that <benefit>",
+  "summary": "<outcome the user gets once shipped>",
   "projectKey": "TP",
   "type": "Story",
   "labels": [

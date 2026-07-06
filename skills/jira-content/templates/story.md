@@ -6,7 +6,7 @@ Loaded by `jira-acli:jira-content` Step 1–2. The shared metadata table, previe
 
 Ask the user (all at once, not one by one):
 
-1. **Feature name** — short Thai title, action-oriented (e.g. "หักยอดคงเหลือตอนลูกค้ายืนยันการสั่งซื้อ")
+1. **Feature name** — short Thai title, action-oriented (e.g. "หักยอดคงเหลือตอนลูกค้ายืนยันการสั่งซื้อ") — full rule + anti-patterns: [`title-conventions.md`](title-conventions.md)
 2. **Why are we doing this?** — business reason / problem being solved
 3. **What should the system do?** — desired behavior in plain language
 4. **What is OUT of scope this round?** — important for QA

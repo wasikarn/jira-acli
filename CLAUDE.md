@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A **Claude Code plugin**, not an application. It ships three skills (`skills/acli`, `skills/jira-content`, `skills/confluence-content`) — markdown instruction files plus small Python/Bash helper scripts — that teach Claude to drive Jira/Confluence through the `acli` CLI, falling back to the official Atlassian MCP plugin only where `acli` genuinely can't do something. There is no server, no package manifest, and no runtime beyond `python3`/`bash` + the user's own `acli` install.
+@README.md
 
 ## Commands
 
@@ -22,7 +22,7 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
 
 No `run-tests.sh` exists in this repo despite one comment in `md2adf.py` referencing it (a holdover from the parent `kbg-harness` project this was extracted from) — don't assume a test suite exists.
 
-**Releasing:** bump `version` in **both** `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` on every change — Claude Code treats a same-version edit to an already-cached plugin as a silent no-op, so a bump is required even for doc-only fixes.
+**Releasing:** see `@README.md`'s "Versioning" section above — same rule, don't restate it here.
 
 ## Architecture
 
@@ -32,7 +32,9 @@ No `run-tests.sh` exists in this repo despite one comment in `md2adf.py` referen
 
 ### The three skills, and the routing doctrine that ties them
 
-`acli` is the mechanical tool (search, view, edit, transition, bulk ops, Confluence blog/space/admin, auth, ADF↔Markdown). `jira-content` owns the Jira template standard — Bug/Story/Task/Epic/Sub-task + templated comments. `confluence-content` owns the Confluence Spec/PRD template. Each skill's `SKILL.md` frontmatter `description` + `when_to_use` is the routing contract — that combined text is what the model reads to decide which skill fires, so keep both fields crisp and product-specific (don't let `jira-content`/`confluence-content` drift toward generic "content" language that could route to either). `acli`'s own intro also carries a defensive guard against being bypassed mid-flow — a foreign skill's "publish this to the tracker/backlog" instruction must still route through `jira-content`/`confluence-content` for the template shape, not call `acli`/MCP directly (real incident: TP-809, TP-806 — see the guard blockquote in `skills/acli/SKILL.md`'s intro). Cross-skill coupling: `jira-content` calls into `acli`'s scripts (changes to ADF schema or script interface in `acli` must be checked against `jira-content`); `confluence-content` has no scripts of its own and calls the Atlassian MCP directly. The shared Acceptance Criteria rule lives outside both content skills at `templates/acceptance-criteria.md` and is referenced, never duplicated.
+`acli` is the mechanical tool (search, view, edit, transition, bulk ops, Confluence blog/space/admin, auth, ADF↔Markdown) — full reference imported below. `jira-content` owns the Jira template standard — Bug/Story/Task/Epic/Sub-task + templated comments. `confluence-content` owns the Confluence Spec/PRD template. Each skill's `SKILL.md` frontmatter `description` + `when_to_use` is the routing contract — that combined text is what the model reads to decide which skill fires, so keep both fields crisp and product-specific (don't let `jira-content`/`confluence-content` drift toward generic "content" language that could route to either). `acli`'s own intro also carries a defensive guard against being bypassed mid-flow — a foreign skill's "publish this to the tracker/backlog" instruction must still route through `jira-content`/`confluence-content` for the template shape, not call `acli`/MCP directly (real incident: TP-809, TP-806 — see the guard blockquote below). Cross-skill coupling: `jira-content` calls into `acli`'s scripts (changes to ADF schema or script interface in `acli` must be checked against `jira-content`); `confluence-content` has no scripts of its own and calls the Atlassian MCP directly. The shared Acceptance Criteria rule lives outside both content skills at `templates/acceptance-criteria.md` and is referenced, never duplicated.
+
+@skills/acli/SKILL.md
 
 ### ADF ⟷ Markdown conversion (the core data-flow)
 
@@ -47,7 +49,7 @@ Every `.sh` wrapper in `skills/acli/scripts/` resolves its own path via `BASH_SO
 
 ### Conventions specific to this codebase
 
-- **Fail loud, never silently drop a field.** Every script here exits non-zero with a `FATAL:` message on bad input rather than guessing or dropping data — an unknown Jira field/label/type must surface as an error, not get silently stripped and retried (see `acli/SKILL.md` METHODOLOGY).
+- **Fail loud, never silently drop a field.** Every script here exits non-zero with a `FATAL:` message on bad input rather than guessing or dropping data — an unknown Jira field/label/type must surface as an error, not get silently stripped and retried (see the imported `skills/acli/SKILL.md` METHODOLOGY above).
 - **Preview before mutate.** Bulk mutations preview via the same `--jql`; creates preview via rendering the payload with `adf2md.py` before firing. This is load-bearing UX, not incidental — replicate it in any new script that writes to Jira/Confluence.
-- **acli is the default, Atlassian MCP is the fallback**, used only for the documented gaps in `acli/SKILL.md` § "When acli can't": parent-reassignment on an existing issue, assign-by-accountId, fixVersions, issue-type metadata, priority/environment/affects-version at *create* time, Confluence *page* create/update, and cross-project move (the one row with no MCP fallback either — Jira UI only). Don't reach for MCP tools outside that list without updating the doc.
+- **acli is the default, Atlassian MCP is the fallback** — the closed gap list is in the imported `skills/acli/SKILL.md` § "When acli can't" above (this exact list drifted stale in this file once already, when it was copied instead of imported). Don't reach for MCP tools outside that list without updating the doc.
 - **Content templates are canonical, one per product/type, referenced not duplicated.** Jira templates live in `skills/jira-content/templates/` (Bug/Story/Task/Epic/Sub-task, comments); the Confluence template lives in `skills/confluence-content/templates/`. Acceptance Criteria format/register/coverage rules are the one thing both products share, so they live outside both — `templates/acceptance-criteria.md` at the plugin root; every template file points there instead of restating the rule. If you change the AC rubric, edit it there — this consolidation exists because the old scattered-copies setup let the AC format drift out of sync across 5+ files in practice.

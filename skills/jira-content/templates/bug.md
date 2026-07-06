@@ -6,7 +6,7 @@ Loaded by `jira-acli:jira-content` Step 1–2. The shared metadata table, previe
 
 Ask the user (all at once, not one by one):
 
-1. **Bug summary** — short Thai title, symptom-oriented (e.g. "ยอดคงเหลือไม่ถูกหักหลังลูกค้ายืนยันการสั่งซื้อ")
+1. **Bug summary** — short Thai title, symptom-oriented (e.g. "ยอดคงเหลือไม่ถูกหักหลังลูกค้ายืนยันการสั่งซื้อ") — full rule + anti-patterns: [`title-conventions.md`](title-conventions.md)
 2. **What happened?** — observed wrong behavior (actual result)
 3. **What should have happened?** — correct expected behavior
 4. **How to reproduce?** — exact numbered steps

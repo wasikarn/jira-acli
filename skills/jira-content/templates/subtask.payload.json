@@ -1,5 +1,5 @@
 {
-  "summary": "[<PARENT-KEY>] <slice สั้นๆ>",
+  "summary": "[<PARENT-KEY>] <คำกริยาสั่งการ> <slice สั้นๆ, แยกจาก sub-task พี่น้องได้ชัดเจน>",
   "projectKey": "TP",
   "type": "Sub-task",
   "parentIssueId": "<PARENT-KEY e.g. TP-479>",
