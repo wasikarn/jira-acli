@@ -1,6 +1,7 @@
 ---
 name: acli
-description: "Mechanical driver for the acli CLI — a backend tool, not a content-authoring skill (same role as the Atlassian MCP): search, view, edit, transition, comment, link, clone, bulk ops via JQL, Confluence/admin ops, auth, and ADF<->markdown conversion. Thai: 'ย้ายสถานะหลายตัว', 'export JQL', 'ย้าย ticket ไป Done'. For creating or editing the *content* of a Bug/Story/Task/Epic/Sub-task or a templated comment, use jira-acli:jira-content instead; for a Confluence page/spec/PRD, use jira-acli:confluence-content instead — each owns its product's template standard and calls into this skill's commands to execute. Use this skill directly only for mechanical/query/bulk/transition work with no template shape to get right. Don't use for non-Atlassian trackers or global CLI config."
+description: "Mechanical driver for the acli CLI — a backend tool, not a content-authoring skill (same role as the Atlassian MCP): search, view, edit, transition, comment, link, clone, bulk ops via JQL, Confluence/admin ops, auth, and ADF↔markdown conversion. Use this skill directly only for mechanical/query/bulk/transition work with no template shape to get right."
+when_to_use: "Thai: 'ย้ายสถานะหลายตัว', 'export JQL', 'ย้าย ticket ไป Done'. For creating or editing the *content* of a Bug/Story/Task/Epic/Sub-task or a templated comment, use jira-acli:jira-content instead; for a Confluence page/spec/PRD, use jira-acli:confluence-content instead — each owns its product's template standard and calls into this skill's commands to execute. Don't use for non-Atlassian trackers or global CLI config."
 ---
 
 # acli — Atlassian Cloud CLI
@@ -8,6 +9,8 @@ description: "Mechanical driver for the acli CLI — a backend tool, not a conte
 Drive Jira, Confluence, org admin, and Rovo Dev from the terminal. Auth-first, JQL-driven, confirmation-gated.
 
 **Content creation/editing routes elsewhere** — `jira-acli:jira-content` (Jira Bug/Story/Task/Epic/Sub-task content) and `jira-acli:confluence-content` (Confluence Spec/PRD page content). They own the template standard and call into this skill's commands to execute. **Atlassian MCP is the fallback, not the default** — only for the closed list in [When acli can't](#when-acli-cant-fall-back-to-the-atlassian-mcp).
+
+> ⚠️ **This applies even mid-flow inside another skill.** A different skill's instruction to "publish this to the tracker/backlog" (a PRD-writer, a code-review follow-up, a to-do capture) does NOT mean hand-build a description and fire `acli jira workitem create --description-file`/`--description` directly — that's exactly the flattened-plain-text failure this file warns about (real incident: TP-809, TP-806). Stop and load `jira-acli:jira-content` for the template shape first, whatever content standard the calling skill uses.
 
 ---
 

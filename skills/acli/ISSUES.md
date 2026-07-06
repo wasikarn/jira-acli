@@ -52,6 +52,30 @@ acli jira workitem edit --from-json file.json --yes
 
 ---
 
+## Issue 3: `acli jira workitem view --json` แสดง `labels` เป็น `null` เสมอ แม้ set ไว้จริง
+
+**Severity:** Low (misleading output, ไม่ใช่ data loss)
+**Impact:** ตรวจ labels ผ่าน `acli jira workitem view KEY --json | jq .fields.labels` ได้ `null` เสมอ แม้ issue จะมี labels จริงตาม Jira (ยืนยันด้วย MCP `getJiraIssue` และหน้าเว็บ) — ทำให้เข้าใจผิดว่าการ set label ล้มเหลว ทั้งที่จริง ๆ สำเร็จแล้ว
+**Affected commands:**
+- `acli jira workitem view --json` — field `labels` ผิด
+- ไม่กระทบ `acli jira workitem edit --labels` เอง (edit สำเร็จจริง แค่ view หลังจากนั้นแสดงผลผิด)
+
+**Symptom:** (พบระหว่างแก้ TP-806/TP-809, 2026-07-06)
+```bash
+acli jira workitem edit --key TP-809 --labels "ready-for-agent" --yes   # ✓ success
+acli jira workitem view TP-809 --json | jq .fields.labels                # → null  (ผิด)
+```
+Cross-check ด้วย MCP:
+```
+mcp__plugin_atlassian_atlassian__getJiraIssue → fields.labels: ["ready-for-agent"]   # ถูกต้อง
+```
+
+**หมายเหตุ (ไม่ฟันธง):** ยังไม่ยืนยันว่า `--label` ตอน `create` ล้มเหลวจริงหรือเปล่า — เช็ค changelog ของ TP-809 แล้วไม่มี entry ของ field `labels` เลย (Jira ไม่บันทึกค่าตอน create ลง changelog) เป็นไปได้สูงว่า label ติดมาตั้งแต่ create ปกติ และ `edit --labels` ที่ทำเพิ่มทีหลังเป็นแค่ no-op ประเด็นที่ยืนยันแน่นอนมีแค่อย่างเดียว: `view --json` เชื่อไม่ได้สำหรับ field นี้ ไม่ว่าจะ set มาจากตอนไหนก็ตาม
+
+**Workaround:** อย่าเชื่อ `labels` field จาก `acli ... view --json` เพียงอย่างเดียว — cross-check ด้วย Atlassian MCP `getJiraIssue` หรือเปิดหน้าเว็บ ก่อนสรุปว่า label ไม่ถูก set
+
+---
+
 ## Reported
 - **Date:** 2026-06-15
 - **Reporter:** wasikarn / Claude Code session
