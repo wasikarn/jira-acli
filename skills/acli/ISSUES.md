@@ -76,6 +76,25 @@ mcp__plugin_atlassian_atlassian__getJiraIssue → fields.labels: ["ready-for-age
 
 ---
 
+## Issue 4: `acli jira workitem create --description-file`/`--description` เรียกตรงห่อ plain text เป็น ADF paragraph เดียว ไม่มี template
+
+**Severity:** High (root cause คือไม่รู้ว่า `jira-acli` มีอยู่ ไม่ใช่ bug ของ acli เอง)
+**Impact:** เรียก `acli jira workitem create --description-file`/`--description` ตรง ๆ โดยไม่ผ่าน `jira-acli:jira-content` จะห่อ plain text เป็น ADF `paragraph` node เดียว (ไม่มี heading/list ตาม template) และ create ไม่มี `--priority` flag ให้ตั้งเลย
+**Affected commands:**
+- `acli jira workitem create --description-file <file>` / `--description <text>` เรียกตรงจากภายนอก `jira-acli:jira-content`
+
+**Symptom:** (พบตอนสร้าง TP-809/TP-806, 2026-07-06 — เรียกจากภายใน `kbg:to-prd` ซึ่งไม่รู้ว่า `jira-acli` มีอยู่)
+- description flatten เป็น ADF `paragraph` node เดียว (ยืนยันจากอ่าน raw ADF)
+- template shape ผิด (PRD shape ทั่วไป แทนที่จะเป็น canonical Bug/Task template)
+- priority ค้างที่ default ของ Jira — ต้องแก้ด้วยมือทีหลัง
+- labels ตรวจแล้วถูกต้องจริง — สิ่งที่ดูเหมือนผิดตอนแรกคือ Issue 3 ข้างบน (`view --json` misreport) ไม่ใช่ความเสียหายจากเคสนี้
+
+ต้อง reformat + re-verify ทั้ง 2 ticket ทีหลัง
+
+**Workaround / Prevention:** ห้ามเรียก `acli jira workitem create --description-file`/`--description` ตรง ๆ จากที่ไหนก็ตาม รวมถึงจาก skill อื่นที่บอกให้ "publish to tracker/backlog" — ต้องผ่าน `jira-acli:jira-content` เสมอเพื่อ reshape เป็น canonical template ก่อน (routing rule แบบเต็มอยู่ที่ root `~/.claude/CLAUDE.md` § "Atlassian / Jira & Confluence Work")
+
+---
+
 ## Reported
 - **Date:** 2026-06-15
 - **Reporter:** wasikarn / Claude Code session
