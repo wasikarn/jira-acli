@@ -122,24 +122,52 @@ There's no append/patch mechanism for Confluence (unlike `jira-content`'s `acli-
 — `updateConfluencePage` always replaces the **entire** body, so the flow is a manual
 read-modify-write, not a script:
 
+⚠️ **Check for macros BEFORE picking a write format — `contentFormat: "markdown"` silently
+deletes them.** Plain Markdown has no syntax for a Forge macro (`extension` node) or a collapsible
+`expand` wrapper, so a markdown-format `updateConfluencePage` full-body-replace drops every macro
+on the page without warning or error — the write succeeds, the page just loses them. Confirmed
+2026-07-14 on TP-807: a prose-only edit (fixing word choice, no diagram changes intended) wiped all
+7 native "Mermaid diagram" render macros the page had; only caught because the user noticed the
+diagrams had vanished on the live page. Fetch the page as ADF first and check for `extension`/
+`expand` nodes — if any exist, the edit **must** go out as `contentFormat: "adf"` (fetch → apply
+the edit to the ADF JSON directly, or re-run `scripts/inject-mermaid-macros.py` after a markdown
+round-trip to re-add what a markdown write would drop — see "Embedding Mermaid diagrams" above),
+never `"markdown"`. Markdown is only safe when the page has zero macro/expand nodes.
+
 ```
 1. acli first — acli's `confluence page` is only view-*write*-blocked, reads work fine:
    acli confluence page view --id <id> --body-format atlas_doc_format --json \
      | python3 -c "import json,sys; print(json.load(sys.stdin)['body']['atlas_doc_format']['value'])" \
-     | python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf2md.py" -
-   → read the current body as Markdown. Falls back to
-   mcp__plugin_atlassian_atlassian__getConfluencePage (cloudId, pageId,
-   contentFormat: "markdown") only if acli is unavailable/unauthed.
+     > page.adf.json
+   python3 -c "import json; d=json.load(open('page.adf.json')); print(sum(1 for n in d['content'] if n['type'] in ('extension','expand')))"
+   → if > 0, this page has macros — ADF write path only, skip step 3's markdown option.
+   python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf2md.py" page.adf.json
+   → read the current body as Markdown (for review/editing text — the ADF file is still the
+   source of truth for the write). Falls back to mcp__plugin_atlassian_atlassian__getConfluencePage
+   (cloudId, pageId, contentFormat: "markdown") only if acli is unavailable/unauthed — but that
+   fallback can't detect macros either, so still fetch contentFormat: "adf" once to check.
 
-2. Apply the edit to that Markdown (fix a section, add a missing AC, etc.) — keep the rest
-   of the page unchanged. If the page doesn't already follow templates/confluence-spec.md,
-   reshape it to match while editing, don't perpetuate the drift.
+2. Apply the edit. If the page has NO macros, edit the Markdown from step 1 directly (fix a
+   section, add a missing AC, etc.) — keep the rest of the page unchanged. If the page doesn't
+   already follow templates/confluence-spec.md, reshape it to match while editing, don't
+   perpetuate the drift. If the page HAS macros, apply the edit to the ADF JSON's text nodes
+   directly (or edit the markdown and re-run inject-mermaid-macros.py against the result) —
+   never round-trip through a plain-markdown intermediate for the write itself.
 
-3. mcp__plugin_atlassian_atlassian__updateConfluencePage
+3a. No macros — mcp__plugin_atlassian_atlassian__updateConfluencePage
      cloudId: <resolved>  pageId: <same id>  title: <keep or update>
      body: <the full new Markdown — step 1's body with the edit applied>
      contentFormat: "markdown"
-   — genuine MCP-only step, acli's confluence page command cannot write.
+
+3b. Has macros — mcp__plugin_atlassian_atlassian__updateConfluencePage
+     cloudId: <resolved>  pageId: <same id>  title: <keep or update>
+     body: <the full edited ADF JSON — step 2's output, a bare {"type":"doc",...} document>
+     contentFormat: "adf"
+   — either way, genuine MCP-only step, acli's confluence page command cannot write.
+
+4. Verify: fetch the page back as ADF and diff its node count/types against what you sent —
+   don't just check the prose rendered correctly. A macro-count check (extension/expand nodes,
+   before vs. after) is the cheap, specific version of this for any page that had macros.
 ```
 
 Same preview-and-confirm gate as create: show the diff between step 1's body and step 2's edited
