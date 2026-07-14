@@ -187,6 +187,7 @@ def build_extension_node(index, args):
 def inject(content, args):
     code_block_count = 0  # ANY language — see guestParams.index note above
     added = 0
+    rewrapped = 0
     result = []
     for i, node in enumerate(content):
         next_node = content[i + 1] if i + 1 < len(content) else None
@@ -196,7 +197,16 @@ def inject(content, args):
             this_index = code_block_count
             code_block_count += 1
             if already_decorated:
-                result.append(node)  # bare codeBlock + extension — native/old-style insert, leave as-is
+                if getattr(args, "wrap_existing", False):
+                    # bare codeBlock + extension (native /mermaid insert) -> wrap the
+                    # codeBlock; the unchanged extension node is appended by the loop's
+                    # next iteration (it isn't a codeBlock/expand, so it falls through
+                    # to the plain append below) — same localId/index, still valid,
+                    # since wrapping doesn't move the codeBlock's traversal position.
+                    rewrapped += 1
+                    result.append(build_expand_wrapper(node, args.collapse_title))
+                else:
+                    result.append(node)  # native/old-style insert, leave as-is
                 continue
             added += 1
             result.append(build_expand_wrapper(node, args.collapse_title))
@@ -220,7 +230,8 @@ def inject(content, args):
         result.append(node)
 
     print(f"code blocks on page (any language): {code_block_count}, "
-          f"mermaid macros added this run: {added}", file=sys.stderr)
+          f"mermaid macros added this run: {added}, "
+          f"existing bare diagrams rewrapped this run: {rewrapped}", file=sys.stderr)
     return result
 
 
@@ -248,6 +259,10 @@ def main():
     p.add_argument("--extension-type", default=DEFAULT_EXTENSION_TYPE)
     p.add_argument("--collapse-title", default="Diagram source",
                     help="title of the collapsed expand section wrapping the raw mermaid source")
+    p.add_argument("--wrap-existing", action="store_true",
+                    help="also wrap already-decorated bare codeBlock+extension pairs "
+                         "(e.g. native /mermaid editor inserts) in the collapse — off by "
+                         "default so existing diagrams are never touched without asking")
     args = p.parse_args()
 
     raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
