@@ -145,6 +145,21 @@ read-modify-write, not a script:
 Same preview-and-confirm gate as create: show the diff between step 1's body and step 2's edited
 version, update only on the user's explicit go-ahead.
 
+## Known limitations
+
+- **No script → live-write bridge for large bodies.** `createConfluencePage`/`updateConfluencePage`
+  take `body` as a literal text parameter — there is no way to point the tool at a script's output
+  file. Any script that produces a full-page body (e.g. `scripts/inject-mermaid-macros.py`) still
+  needs its output file copied into the tool call by hand, however large the page — the MCP layer
+  has no file-reference mechanism. Confirmed working this way on TP-807 (115K+ characters, 106
+  top-level ADF nodes) 2026-07-14, but only because the write was verified afterward: fetch the live
+  page back and diff its content against the script's own output file (see the diff pattern in
+  `scripts/inject-mermaid-macros.py`'s usage). Treat that verification step as required, not
+  optional, for any hand-copied write past a few KB — a silent transcription slip is otherwise
+  undetectable. The real fix is a script that calls the Atlassian REST API directly (`curl` + an API
+  token) instead of routing through the MCP tool's parameter — out of scope until a repeat pain
+  point justifies building it.
+
 ## Input Contract
 
 - **Required (create):** title, business reason, scope, at least one requirement with its own AC.
