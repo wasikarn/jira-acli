@@ -83,15 +83,24 @@ has the **"Mermaid diagram"** marketplace app installed (a Forge custom-UI macro
 space `BEP`), each code block needs a **separate macro instance immediately after it** to actually
 render as a diagram — one macro renders one code block, it does not scan the whole page.
 
+⚠️ **Use `contentFormat: "adf"` for the fetch-inject-write cycle below — never `"html"`.** Writing
+the macro through `updateConfluencePage(contentFormat="html")` makes Confluence's html-writer
+"helpfully" restructure a code-block-then-matching-extension-macro pattern into three nodes (a
+broken preview extension, the code wrapped in a collapsible `expand`, then the original extension)
+— the diagram renders TWICE with a stray collapsed accordion between them. Confirmed broken by
+visual screenshot 2026-07-14. Writing the identical macro as a proper ADF `extension` node via
+`contentFormat="adf"` does not trigger this — confirmed by both a structural read-back and a
+screenshot, same day, same page: one clean render per diagram, no wrapping, no duplication.
+
 ```bash
 # 1. Write/update the page normally first (Step 5, or the edit flow below) with the
 #    mermaid fences included as plain ```mermaid code blocks in the Markdown body.
-# 2. Fetch the page back as HTML (the round-trip-safe format) and inject the render macro
-#    after every mermaid code block that doesn't already have one:
-#    mcp__...__getConfluencePage(cloudId, pageId, contentFormat="html")  -> save body to page.html
-python3 "${CLAUDE_SKILL_DIR}/scripts/inject-mermaid-macros.py" page.html --page-id <id> > page-with-macros.html
-# 3. Write it back:
-#    mcp__...__updateConfluencePage(cloudId, pageId, body=<page-with-macros.html content>, contentFormat="html")
+# 2. Fetch the page back as ADF (structured JSON, round-trip-safe) and inject the render
+#    macro after every mermaid code block that doesn't already have one:
+#    mcp__...__getConfluencePage(cloudId, pageId, contentFormat="adf")  -> save full response to page.json
+python3 "${CLAUDE_SKILL_DIR}/scripts/inject-mermaid-macros.py" page.json --page-id <id> > doc.json
+# 3. Write the script's output straight back as the body (it's already a bare {"type":"doc",...}):
+#    mcp__...__updateConfluencePage(cloudId, pageId, body=<doc.json content>, contentFormat="adf")
 ```
 
 Idempotent — safe to re-run after adding more diagrams to a page that already has some rendered;
