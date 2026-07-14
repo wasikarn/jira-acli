@@ -104,11 +104,17 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/inject-mermaid-macros.py" page.json --page-
 ```
 
 Idempotent — safe to re-run after adding more diagrams to a page that already has some rendered;
-existing macros are left untouched and not double-counted. The script's default constants
-(extension key, cloud ID, account ID, workspace ARI) are specific to this site/author — see the
-script's own docstring for how to re-derive them if pointed at a different Atlassian site. If the
-target site doesn't have this app installed, the mermaid code blocks still render as readable
-syntax-highlighted text — degrade gracefully, don't treat the macro step as required.
+existing macros are left untouched and not double-counted. By default a newly-decorated code block
+is wrapped in a collapsible `expand` section (title "Diagram source", collapsed on load for every
+viewer — see `--collapse-title` to change the label) so the page shows the rendered diagram with
+the raw syntax tucked behind a click, not a wall of mermaid text above every diagram. A code block
+already followed by a bare (unwrapped) macro — e.g. one inserted natively via the editor's
+`/mermaid` command, like TP-807's 7 diagrams — is left exactly as-is, not retroactively wrapped.
+The script's default constants (extension key, cloud ID, account ID, workspace ARI) are specific to
+this site/author — see the script's own docstring for how to re-derive them if pointed at a
+different Atlassian site. If the target site doesn't have this app installed, the mermaid code
+blocks still render as readable syntax-highlighted text — degrade gracefully, don't treat the macro
+step as required.
 
 ## Editing an existing page
 

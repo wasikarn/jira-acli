@@ -10,6 +10,16 @@ extension-type `com.atlassian.ecosystem`), which DOES render the diagram, but
 it is a *separate* macro instance that must sit immediately after each code
 block — one macro renders one code block, not the whole page.
 
+By default a freshly-decorated mermaid codeBlock is wrapped in a collapsible
+ADF `expand` node (title "Diagram source" — override with --collapse-title),
+so the page shows the rendered diagram with the raw source tucked behind a
+click, not a wall of mermaid syntax above every diagram. `expand` stores no
+open/closed state in the document (same as HTML `<details>` without an `open`
+attribute) — every viewer sees it collapsed on load, there is nothing to set
+for that. A codeBlock already followed by a matching extension (bare, from a
+native /mermaid insert — e.g. TP-807's 7 diagrams) is left exactly as-is, not
+retroactively wrapped; this only applies to newly-decorated code blocks.
+
 Operates on ADF (contentFormat="adf"), not HTML. An earlier version of this
 script transformed the HTML representation instead
 (`<div data-type="extension">`), because that's the syntax
@@ -119,6 +129,29 @@ def is_matching_extension(node, extension_key):
     return node.get("type") == "extension" and node.get("attrs", {}).get("extensionKey") == extension_key
 
 
+def is_mermaid_code_block(node):
+    return node.get("type") == "codeBlock" and node.get("attrs", {}).get("language") == "mermaid"
+
+
+def wrapped_code_block(node):
+    """If `node` is this script's own expand-wrapped code block (single
+    codeBlock child), return that child; else None."""
+    if node.get("type") != "expand":
+        return None
+    inner = node.get("content") or []
+    if len(inner) == 1 and inner[0].get("type") == "codeBlock":
+        return inner[0]
+    return None
+
+
+def build_expand_wrapper(code_block_node, title):
+    return {
+        "type": "expand",
+        "attrs": {"title": title},
+        "content": [code_block_node],
+    }
+
+
 def build_extension_node(index, args):
     local_id = str(uuid.uuid4())
     return {
@@ -156,18 +189,36 @@ def inject(content, args):
     added = 0
     result = []
     for i, node in enumerate(content):
-        result.append(node)
-        if node.get("type") != "codeBlock":
-            continue
-        this_index = code_block_count
-        code_block_count += 1
-        if node.get("attrs", {}).get("language") != "mermaid":
-            continue
         next_node = content[i + 1] if i + 1 < len(content) else None
-        if next_node is not None and is_matching_extension(next_node, args.extension_key):
-            continue  # already has a macro right after it — leave alone
-        added += 1
-        result.append(build_extension_node(this_index, args))
+        already_decorated = next_node is not None and is_matching_extension(next_node, args.extension_key)
+
+        if is_mermaid_code_block(node):
+            this_index = code_block_count
+            code_block_count += 1
+            if already_decorated:
+                result.append(node)  # bare codeBlock + extension — native/old-style insert, leave as-is
+                continue
+            added += 1
+            result.append(build_expand_wrapper(node, args.collapse_title))
+            result.append(build_extension_node(this_index, args))
+            continue
+
+        inner = wrapped_code_block(node)
+        if inner is not None and is_mermaid_code_block(inner):
+            this_index = code_block_count
+            code_block_count += 1
+            result.append(node)
+            if already_decorated:
+                continue  # already wrapped AND already has a macro — untouched
+            added += 1
+            result.append(build_extension_node(this_index, args))
+            continue  # wrapped but missing its macro (e.g. hand-wrapped) — add just the macro
+
+        if node.get("type") == "codeBlock":
+            code_block_count += 1  # non-mermaid — still counts toward the global index
+
+        result.append(node)
+
     print(f"code blocks on page (any language): {code_block_count}, "
           f"mermaid macros added this run: {added}", file=sys.stderr)
     return result
@@ -195,6 +246,8 @@ def main():
     p.add_argument("--workspace-ari", default=DEFAULT_WORKSPACE_ARI)
     p.add_argument("--extension-key", default=DEFAULT_EXTENSION_KEY)
     p.add_argument("--extension-type", default=DEFAULT_EXTENSION_TYPE)
+    p.add_argument("--collapse-title", default="Diagram source",
+                    help="title of the collapsed expand section wrapping the raw mermaid source")
     args = p.parse_args()
 
     raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
