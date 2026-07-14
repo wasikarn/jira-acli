@@ -73,6 +73,34 @@ mcp__plugin_atlassian_atlassian__createConfluencePage
 
 Reply: `✅ Created <title> — <page URL>`
 
+## Embedding Mermaid diagrams
+
+A plain ` ```mermaid ` fenced code block in `contentFormat: "markdown"` converts cleanly to a
+native Confluence `code` macro (language=mermaid, wide breakout) — but that only gets you
+**syntax-highlighted text**. Confluence Cloud has no built-in Mermaid renderer. If the target site
+has the **"Mermaid diagram"** marketplace app installed (a Forge custom-UI macro,
+`extension-type: com.atlassian.ecosystem` — confirmed installed on `100-stars.atlassian.net`,
+space `BEP`), each code block needs a **separate macro instance immediately after it** to actually
+render as a diagram — one macro renders one code block, it does not scan the whole page.
+
+```bash
+# 1. Write/update the page normally first (Step 5, or the edit flow below) with the
+#    mermaid fences included as plain ```mermaid code blocks in the Markdown body.
+# 2. Fetch the page back as HTML (the round-trip-safe format) and inject the render macro
+#    after every mermaid code block that doesn't already have one:
+#    mcp__...__getConfluencePage(cloudId, pageId, contentFormat="html")  -> save body to page.html
+python3 "${CLAUDE_SKILL_DIR}/scripts/inject-mermaid-macros.py" page.html --page-id <id> > page-with-macros.html
+# 3. Write it back:
+#    mcp__...__updateConfluencePage(cloudId, pageId, body=<page-with-macros.html content>, contentFormat="html")
+```
+
+Idempotent — safe to re-run after adding more diagrams to a page that already has some rendered;
+existing macros are left untouched and not double-counted. The script's default constants
+(extension key, cloud ID, account ID, workspace ARI) are specific to this site/author — see the
+script's own docstring for how to re-derive them if pointed at a different Atlassian site. If the
+target site doesn't have this app installed, the mermaid code blocks still render as readable
+syntax-highlighted text — degrade gracefully, don't treat the macro step as required.
+
 ## Editing an existing page
 
 There's no append/patch mechanism for Confluence (unlike `jira-content`'s `acli-edit.sh` for Jira)
