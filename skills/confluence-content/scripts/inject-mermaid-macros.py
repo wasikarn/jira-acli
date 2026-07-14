@@ -40,10 +40,32 @@ What varies between instances (confirmed by diffing 7 real macro instances):
   - `localId` (appears twice per node: `attrs.localId` and
     `attrs.parameters.localId`, always equal) — any fresh UUID4, unique per
     instance.
-  - `attrs.parameters.guestParams.index` — 0-based, sequential in PAGE ORDER
-    across every "Mermaid diagram" macro instance on the page (not just the
-    ones this script adds — if the page already has some, continue the
-    count).
+  - `attrs.parameters.guestParams.index` — 0-based position of THIS
+    extension's paired codeBlock among ALL codeBlock nodes on the page,
+    counting every language, not just mermaid ones. Confirmed against the
+    app's own source (github.com/atlassian-labs/mermaid-diagrams-viewer,
+    custom-ui/src/confluence/code-blocks/index.ts,
+    `getCodeFromCorrespondingBlock`): when `guestParams.index` is set, the
+    renderer resolves the diagram source via
+    `findCodeBlocks(adf).at(index)`, where `findCodeBlocks` collects every
+    `codeBlock` node on the page regardless of `attrs.language` — it does
+    NOT filter to mermaid-only, and it does NOT require the extension to sit
+    next to its codeBlock (adjacency is a readability convention this
+    script follows, not a technical requirement). A page mixing a
+    non-mermaid code block (JSON, bash, ...) among the mermaid ones would
+    silently misindex if you count mermaid blocks only — this script counts
+    ALL codeBlock nodes to match. Empirically indistinguishable from
+    mermaid-only counting on any page seen so far (TP-807 and the scratch
+    test page both happen to have zero non-mermaid code blocks), so this
+    was unverified against a live mixed-language page as of 2026-07-14 —
+    the source reading above is what the fix is based on, not a repro.
+  - Traversal is TOP-LEVEL ONLY (`content` array, one level) — matches the
+    app's `traverse(adf, ...)` (which walks the full tree, including nested
+    panels/expands/table cells) only for the flat structure this skill's
+    templates actually produce. A codeBlock nested inside a table cell or
+    expand would be invisible to this script's counting and insertion.
+    # ponytail: flat traversal only; add recursive traversal if a spec page
+    # ever nests a mermaid block inside a table/panel/expand.
 Everything else (extension-key, cloud-id, account-id, workspace ARI,
 `extensionData.content.version` which is a fixed macro-schema constant and
 NOT the real page version) is a per-site/per-author constant — safe to reuse
@@ -93,10 +115,6 @@ DEFAULT_SPACE_ID = "1081347"
 CONTENT_VERSION = 1  # observed constant across all instances — not the page version
 
 
-def is_mermaid_code_block(node):
-    return node.get("type") == "codeBlock" and node.get("attrs", {}).get("language") == "mermaid"
-
-
 def is_matching_extension(node, extension_key):
     return node.get("type") == "extension" and node.get("attrs", {}).get("extensionKey") == extension_key
 
@@ -134,21 +152,24 @@ def build_extension_node(index, args):
 
 
 def inject(content, args):
-    existing = sum(1 for n in content if is_matching_extension(n, args.extension_key))
+    code_block_count = 0  # ANY language — see guestParams.index note above
     added = 0
     result = []
     for i, node in enumerate(content):
         result.append(node)
-        if not is_mermaid_code_block(node):
+        if node.get("type") != "codeBlock":
+            continue
+        this_index = code_block_count
+        code_block_count += 1
+        if node.get("attrs", {}).get("language") != "mermaid":
             continue
         next_node = content[i + 1] if i + 1 < len(content) else None
         if next_node is not None and is_matching_extension(next_node, args.extension_key):
             continue  # already has a macro right after it — leave alone
-        index = existing + added
         added += 1
-        result.append(build_extension_node(index, args))
-    print(f"mermaid code blocks found: total existing macros: {existing}, "
-          f"macros added this run: {added}", file=sys.stderr)
+        result.append(build_extension_node(this_index, args))
+    print(f"code blocks on page (any language): {code_block_count}, "
+          f"mermaid macros added this run: {added}", file=sys.stderr)
     return result
 
 
