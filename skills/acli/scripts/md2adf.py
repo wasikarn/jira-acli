@@ -15,7 +15,8 @@ Usage:
 
 Supported Markdown: #–###### headings (levels 1–6), ordered/bullet/task (`- [ ]`) lists,
 **bold**, *italic*, `code`, ~~strike~~, [text](url) links, ``` code blocks,
-> blockquotes, --- horizontal rules, blank-line-separated paragraphs.
+> blockquotes, --- horizontal rules, GFM tables (`| a | b |` + `|---|---|`),
+blank-line-separated paragraphs.
 Nested lists are flattened — use H3 sub-headings + flat bullets instead.
 Anything else is kept as literal paragraph text (ADF text is literal — matches acli).
 
@@ -36,6 +37,8 @@ import uuid
 # when both sides are non-word chars.
 # Revert any of these and the `run-tests.sh` G3/G4 cases fail.
 _LINK_URL = r'(?:[^()]|\([^()]*\))*'  # tolerates one level of balanced parens (Foo_(bar))
+# GFM table separator: |---|---| / :---: / --- with no leading/trailing pipe.
+_TABLE_SEP_RE = re.compile(r'^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$')
 
 INLINE_RE = re.compile(
     r'`(?P<code_text>[^`]+)`'
@@ -51,6 +54,39 @@ INLINE_RE = re.compile(
 def _emit_text(nodes, s):
     if s:
         nodes.append({"type": "text", "text": s})
+
+
+def _split_table_row(line):
+    """Split a `| a | b |` row into cell strings, respecting `` `code` `` spans
+    (a pipe inside backticks doesn't end a cell) and `\\|` escapes."""
+    line = line.strip()
+    if line.startswith("|"):
+        line = line[1:]
+    if line.endswith("|"):
+        line = line[:-1]
+    cells, buf, in_code, i = [], [], False, 0
+    while i < len(line):
+        c = line[i]
+        if c == "\\" and i + 1 < len(line) and line[i + 1] == "|":
+            buf.append("|")
+            i += 2
+            continue
+        if c == "`":
+            in_code = not in_code
+            buf.append(c)
+        elif c == "|" and not in_code:
+            cells.append("".join(buf).strip())
+            buf = []
+        else:
+            buf.append(c)
+        i += 1
+    cells.append("".join(buf).strip())
+    return cells
+
+
+def _table_cell(text, header):
+    return {"type": "tableHeader" if header else "tableCell", "attrs": {},
+            "content": [{"type": "paragraph", "content": inline(text)}]}
 
 
 def inline(text):
@@ -190,11 +226,31 @@ def parse(md):
                             for it in items],
             })
             continue
+        # Table (GFM) — header row, then a |---|---| separator, then body rows.
+        # Only fires when the NEXT line is a real separator, so a lone line that
+        # happens to start with "|" (not a table) still falls through to Paragraph.
+        if stripped.startswith("|") and i + 1 < n and _TABLE_SEP_RE.match(lines[i + 1].strip()):
+            header_cells = _split_table_row(stripped)
+            width = len(header_cells)
+            i += 2  # skip header + separator
+            body_rows = []
+            while i < n and lines[i].strip().startswith("|"):
+                row = _split_table_row(lines[i].strip())
+                row = row[:width] + [""] * (width - len(row))  # pad/truncate to header width
+                body_rows.append(row)
+                i += 1
+            rows = [{"type": "tableRow", "content": [_table_cell(c, True) for c in header_cells]}]
+            rows += [{"type": "tableRow", "content": [_table_cell(c, False) for c in row]}
+                     for row in body_rows]
+            content.append({"type": "table",
+                            "attrs": {"isNumberColumnEnabled": False, "layout": "default"},
+                            "content": rows})
+            continue
         # Paragraph — consecutive plain lines until blank/special
         buf = []
         while i < n and lines[i].strip():
             s = lines[i].strip()
-            if re.match(r"^(#{1,6})\s+|^\d+\.\s+|^[-*]\s+|^>\s*|^```\s*|^(\*{3,}|-{3,}|_{3,})\s*$", s):
+            if re.match(r"^(#{1,6})\s+|^\d+\.\s+|^[-*]\s+|^>\s*|^```\s*|^(\*{3,}|-{3,}|_{3,})\s*$|^\|", s):
                 break
             buf.append(s)
             i += 1
