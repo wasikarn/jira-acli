@@ -134,6 +134,30 @@ print('table count:', count_tables(d['fields']['description'] or {}))
 
 ---
 
+## Issue 6: `acli jira workitem assign --assignee <accountId>` silently unassigns, but `edit --from-json` resolves the same accountId correctly
+
+**Status: FIXED (2026-07-15)** — the dedicated `assign` subcommand's accountId bug is real (see below), but it's scoped to that one subcommand, not to acli as a whole. `acli jira workitem edit --from-json` accepts a plain accountId string in the `assignee` field and resolves it correctly — verified against two different accounts (self-assign + a teammate), both confirmed via `view --json` afterward. New wrapper: `skills/acli/scripts/acli-assign.sh KEY ACCOUNT_ID`. This closes what `SKILL.md` previously documented as an MCP-only gap ("When acli can't" § Assign by accountId) — assigning a known accountId no longer needs the Atlassian MCP at all. **Resolving** an accountId from a name/privacy-hidden email in the first place is still genuinely MCP-only (`lookupJiraAccountId`, no acli equivalent) — that part of the old gap still stands.
+
+**Severity:** Low (workaround was already known and cheap — one MCP call — but the acli-first path is now closed too)
+**Impact:** Before this fix, any accountId-based assignment routed through the Atlassian MCP, which requires that plugin be installed/authed separately from acli. Now it's a pure acli path.
+
+**Symptom (the original bug, still real, just narrower than documented):**
+```bash
+acli jira workitem assign --key TP-880 --assignee "712020:aa9ef966-977c-47f3-865a-0da1a416b388"
+# → silently unassigns instead of assigning (documented 2026-06/07, re-confirmed by the pre-existing ⚠️ in SKILL.md)
+```
+
+**Working path (found 2026-07-15, while assigning TP-880/TP-882/TP-539 for real during a TP-807 readiness check):**
+```bash
+bash skills/acli/scripts/acli-assign.sh TP-880 "712020:aa9ef966-977c-47f3-865a-0da1a416b388"
+# → SUCCESS - Work item TP-880 has been successfully edited
+# under the hood: acli jira workitem edit --from-json '{"issues":["TP-880"],"assignee":"712020:aa9ef966-..."}' --yes
+```
+
+**Why the discrepancy:** unclear without acli's source — plausibly `assign --assignee` runs its own client-side email/`@me`/`default` resolution and falls through to "clear assignee" on anything that doesn't match those three shapes, while `edit --from-json`'s `assignee` field passes through closer to the raw REST API body, which accepts either an email or an accountId server-side. Not confirmed against acli's source, just against observed behavior.
+
+---
+
 ## Reported
 - **Date:** 2026-06-15
 - **Reporter:** wasikarn / Claude Code session
