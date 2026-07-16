@@ -28,7 +28,7 @@ No `run-tests.sh` exists in this repo despite one comment in `md2adf.py` referen
 
 ### Plugin structure
 
-`.claude-plugin/plugin.json` + `marketplace.json` declare the plugin; `defaultEnabled: false` means installers must opt in via `settings.json`. Skills live under `skills/<name>/`, each with a required `SKILL.md` (frontmatter `name` + `description` triggers auto-invocation, `when_to_use` adds trigger phrases/exclusions — combined they're capped at 1,536 characters in the skill listing, per Claude Code's official frontmatter spec) plus `scripts/` and/or `references/` loaded on demand. Agents live at `agents/*.md` (flat, no subdirectory) — auto-discovered by the same convention, no manifest entry needed (see the kbg-harness plugin for the precedent this follows).
+`.claude-plugin/plugin.json` + `marketplace.json` declare the plugin; `defaultEnabled: false` means installers must opt in via `settings.json`. Skills live under `skills/<name>/`, each with a required `SKILL.md` (frontmatter `name` + `description` triggers auto-invocation, `when_to_use` adds trigger phrases/exclusions — combined they're capped at 1,536 characters in the skill listing, per Claude Code's official frontmatter spec) plus `scripts/` and/or `references/` loaded on demand. Agents live at `agents/*.md` (flat, no subdirectory) — auto-discovered by the same convention, no manifest entry needed (see the kbg-harness plugin for the precedent this follows). `CHANGELOG.md` at the plugin root records one entry per version bump (see `@README.md`'s "Versioning" section).
 
 ### The three skills, and the routing doctrine that ties them
 

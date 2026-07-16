@@ -69,4 +69,9 @@ Ships `defaultEnabled: false` — add `"jira-acli@wasikarn": true` to your Claud
 ## Versioning
 
 Bump `version` in **both** `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
-on every release — same-version edits to a cached plugin are silent no-ops.
+on every release — same-version edits to a cached plugin are silent no-ops. Add a matching
+entry to [`CHANGELOG.md`](CHANGELOG.md) in the same change.
+
+## Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md) for release notes.
