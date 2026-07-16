@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "jira-acli",
   "version": "0.1.17",
-  "description": "acli-first Jira/Confluence toolkit: a pure-mechanics acli skill (bulk work-item ops via JQL, ADF↔markdown conversion) paired with jira-content (Bug/Story/Task/Epic/Sub-task + comments) and confluence-content (Spec/PRD pages), each owning its product's canonical templates. Atlassian MCP is the fallback, not the default.",
+  "description": "acli-first Jira/Confluence toolkit: a pure-mechanics acli skill (bulk work-item ops via JQL, ADF↔markdown conversion) paired with jira-content (Bug/Story/Task/Epic/Sub-task + comments) and confluence-content (Spec/PRD pages), each owning its product's canonical templates, plus two preview-then-stop dispatchable agents (jira-expert, confluence-expert) that wrap them for multi-step work. Atlassian MCP is the fallback, not the default.",
   "author": {
     "name": "KoBig",
     "url": "https://github.com/wasikarn"

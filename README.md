@@ -25,6 +25,21 @@ skills inside a general engineering harness and moved out here to stand on its o
 (`templates/acceptance-criteria.md`, at the plugin root) so the format can't drift
 between the two products. All three skills ship together and are not separable.
 
+## Agents
+
+Two dispatchable subagents (`agents/*.md`) wrap the skills above for non-trivial,
+multi-step work you'd rather hand off than drive call-by-call:
+
+- **`jira-expert`** — Jira triage, bulk JQL ops, and template-conforming ticket/comment
+  authoring. Backed by `acli` + `jira-content`.
+- **`confluence-expert`** — Confluence page reads and Spec/PRD authoring. Backed by
+  `acli` + `confluence-content`.
+
+Both are **preview-then-stop**: neither holds MCP tools, and neither fires a mutating
+acli command itself. Each drafts and renders the payload, then returns the exact
+command/call for you to run after review — this plugin's acli and MCP calls hit real
+production Jira/Confluence.
+
 ## Prerequisites
 
 This plugin is **not self-contained**. It needs, installed separately:
