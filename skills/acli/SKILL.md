@@ -39,6 +39,7 @@ Full auth model + per-product details → `REFERENCE.md` § "Auth model".
 # 1. FIND — JQL is the selector for everything downstream
 acli jira workitem search --jql "project = TEAM AND statusCategory != Done" --fields key,summary,status
 acli jira workitem search --jql "..." --json     # parse | --csv export | --web open | --count | --paginate
+# ⚠️ bare --json/--csv silently caps at ~30 rows (Jira's page size) — no error, no truncation notice. Verified 2026-07-24: 227 real matches, unpaginated --json returned exactly 30. Always --paginate, or cross-check the count against --count first — this applies to reads, not just pre-mutation previews.
 
 # 2. INSPECT — ~80% fewer tokens than raw JSON:
 acli jira workitem view KEY-123 --json | python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py
@@ -49,8 +50,8 @@ acli jira workitem create --summary "X" --project TEAM --type Task --assignee @m
 acli jira workitem create-bulk --from-csv issues.csv       # or --from-json; --generate-json scaffolds input
 
 # 4. MUTATE — target by --key | --jql | --filter
-acli jira workitem transition --key KEY-1 --list                          # discover valid statuses FIRST
 acli jira workitem transition --jql "project = TEAM AND status = 'To Do'" --status "In Progress" --yes
+# ⚠️ no acli-native way to list valid transitions read-only — `--list` was removed (confirmed gone in 1.3.22-stable). See "When acli can't" for the MCP fallback; otherwise an invalid target status fails loud per-item at fire time (no --ignore-errors), it doesn't silently skip.
 acli jira workitem edit --key "KEY-1,KEY-2" --summary "..." --labels a,b
 # ⚠️ edit --description REPLACES the whole description. Append safely: bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md
 # Templated comments (status update / QA / blocker / decision) route to jira-acli:jira-content.
@@ -109,6 +110,7 @@ acli is the default. A small, closed set of operations genuinely need `mcp__plug
 
 - **Set/​change parent on an *existing* issue** — `edit --from-json` has no parent field and rejects a `parent` key; `--parent`/`parentIssueId` work only at *create* time (sub-tasks). → MCP `editJiraIssue cloudId:<id> issueIdOrKey:"TP-NNN" fields:{parent:{key:"TP-505"}}`.
 - **Resolving an accountId** from a name/privacy-hidden email in the first place — acli has no lookup command for this. → MCP `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`. (Once you have the accountId, assigning it is **not** an MCP case anymore — `bash scripts/acli-assign.sh KEY ACCOUNT_ID` does it via acli's own `edit --from-json`, which resolves accountId correctly; only the dedicated `assign --assignee` subcommand mis-resolves it.)
+- **Discover valid transitions for an issue, read-only** — `transition --key/--jql ... --list` no longer exists (confirmed removed: the installed `1.3.22-stable` returns `✗ unknown flag: --list`; no `acli jira workflow` subcommand or `view` expand covers this either). → MCP `getTransitionsForJiraIssue cloudId:<id> issueIdOrKey:"KEY"`, filter results by `isAvailable:true`. If the MCP isn't available, firing `transition` directly is an acceptable fallback — an invalid workflow edge fails loud per-item (no `--ignore-errors`), it doesn't silently skip.
 - **fixVersion / release versions** — acli has no `version create`, `edit --from-json` rejects `fixVersions`, and `search --fields fixVersions` errors (read it via `view --json` + parse). → MCP or the Jira UI.
 - **Issue-type metadata for a project** — no acli command exposes which fields/issue-types a project accepts at create time (`jira field` only manages custom fields; `create --generate-json`'s schema doesn't vary by project/type). → MCP `getJiraProjectIssueTypesMetadata cloudId:<id> projectIdOrKey:"TP"` (singular — one project per call) to list issue types, then `getJiraIssueTypeMetaWithFields cloudId:<id> projectIdOrKey:"TP" issueTypeId:"<id>"` for that type's actual field list, when a create rejects and you need to confirm why.
 - **Priority / Environment / Affects-Version at *create* time** — none of these three appear in `create --generate-json`'s schema or `--help` output, for any project/type (verified empirically). → set via MCP `createJiraIssue`'s `additional_fields` — see `jira-acli:jira-content` § Step 5b.

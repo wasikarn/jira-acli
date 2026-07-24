@@ -1,6 +1,6 @@
 # acli Reference
 
-Full command tree for acli `1.3.18-stable`. Verified against the installed binary's `--help`. When in doubt, `acli <path> --help` is authoritative for the installed version.
+Full command tree for acli `1.3.22-stable` (re-verified 2026-07-24 — the command surface drifts across minor versions with no deprecation warning; see Issue 7 in `ISSUES.md`). When in doubt, `acli <path> --help` is authoritative for the installed version.
 
 **Two files:**
 - This one — core: top-level surfaces, auth model, command tables, format overview. Loaded on demand.
@@ -12,7 +12,7 @@ Full command tree for acli `1.3.18-stable`. Verified against the installed binar
 brew tap atlassian/homebrew-acli
 brew install acli
 brew upgrade acli
-acli --version          # acli version 1.3.18-stable
+acli --version          # acli version 1.3.22-stable (yours may differ — this doc trails the binary)
 ```
 
 Config lives in `~/.config/acli/*.yaml` — one file per product (`jira_config.yaml`, `confluence_config.yaml`, `global_auth_config.yaml`, `rovodev_config.yaml`, …). Treat auth config files as secrets; don't cat them.
@@ -56,7 +56,7 @@ acli jira auth logout
 | `create` | Single create |
 | `create-bulk` | Bulk create from CSV/JSON |
 | `search` | JQL / filter search |
-| `view` | Read one or more by key |
+| `view` | Read a single work item by key (no batch — `KEY-1,KEY-2` is treated as one literal key and errors) |
 | `edit` | Update fields |
 | `transition` | Change status |
 | `assign` | Set/remove assignee |
@@ -96,6 +96,10 @@ acli jira workitem search --filter 10001 --web
 ```
 Flags → `references/REFERENCE-detail.md` § search.
 
+> ⚠️ **Bare `--json`/`--csv` (no `--paginate`) silently caps at ~30 rows** — Jira's default page size, no truncation warning on stdout or stderr, success or failure. Verified live (2026-07-24): a JQL with 227 real matches returned exactly 30 rows unpaginated. Always add `--paginate`, or cross-check the row count against a separate `--count` call, before trusting a search result — this applies to reads, not just pre-mutation previews.
+>
+> ⚠️ **Date-typed fields can't be projected via `--fields`/`--json`/`--csv`** — `updated`, `created`, `resolutiondate`, `duedate` are all rejected (`✗ field 'X' is not allowed`), same failure class as `fixVersions`. JQL itself still filters/sorts on them fine (`updated <= -14d`, `ORDER BY updated ASC`) — you just can't display the value from `search`; fall back to `view --fields <field>` per key for that.
+
 ### view
 ```bash
 acli jira workitem view KEY-123 --fields summary,comment --json
@@ -120,14 +124,14 @@ Flags → `references/REFERENCE-detail.md` § edit.
 > bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --remove-section "HEADING" # drop a section by exact heading (incl. nested)
 > bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --replace-section "HEADING" new.md # replace a section in place
 > ```
+> Append mode is structurally safe regardless of `md2adf.py`'s Markdown-subset limits — untouched sections pass through as live ADF, never re-parsed (verified by reading `acli-edit.py`'s merge logic). `--replace-section`'s new content, though, is generated fresh through `md2adf.py` — replacing a section that itself needs a table/nested-list/panel is subject to the same limits as a full-body replace, just scoped to that one section.
 
 ### transition
 ```bash
-acli jira workitem transition --key TP-1 --list      # discover valid statuses for THIS issue first
 acli jira workitem transition --key "K-1,K-2" --status Done
 acli jira workitem transition --jql "project = TEAM" --status "In Progress"
 ```
-Flags → `references/REFERENCE-detail.md` § transition. Status names must match the workflow exactly — run `--list` to read the valid transitions before guessing (don't brute-force status strings).
+Flags → `references/REFERENCE-detail.md` § transition. Status names must match the workflow exactly. **No acli-native read-only way to list valid transitions** — `--list` was removed (confirmed gone in the installed `1.3.22-stable`). See `SKILL.md` § "When acli can't" for the MCP fallback (`getTransitionsForJiraIssue`); otherwise an invalid target status fails loud per-item at fire time (no `--ignore-errors`), it doesn't silently skip.
 
 ### assign
 ```bash

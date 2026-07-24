@@ -6,10 +6,10 @@ an ad-hoc python printer. It bakes in the two things every one-off reinvents:
 
   - the list-or-dict unwrap — acli has returned a bare list AND a dict keyed
     issues / workItems / values across versions/commands;
-  - the nested-field guards — status / issuetype / parent / assignee are each
-    dict-or-None, so naive `f['status']['name']` crashes on unassigned/no-parent.
+  - the nested-field guards — status / issuetype / assignee are each
+    dict-or-None, so naive `f['status']['name']` crashes on unassigned.
 
-Columns: key · type · status · parent · assignee · summary. Reads stdin.
+Columns: key · type · status · assignee · summary. Reads stdin.
 Fails loud (exit 1) on invalid JSON; prints "(no matches)" on an empty set.
 """
 import json
@@ -46,21 +46,19 @@ def main():
     table = []
     for it in rows:
         f = it.get("fields", {}) if isinstance(it, dict) else {}
-        parent = f.get("parent")
         table.append([
             it.get("key", "?") if isinstance(it, dict) else "?",
             _name(f.get("issuetype")),
             _name(f.get("status")),
-            ("p:" + parent["key"]) if isinstance(parent, dict) and parent.get("key") else "-",
             _person(f.get("assignee")) or "-",
             (f.get("summary") or "").strip(),
         ])
 
     # width-align all columns except the trailing summary
-    widths = [max(len(r[i]) for r in table) for i in range(5)]
+    widths = [max(len(r[i]) for r in table) for i in range(4)]
     for r in table:
-        cells = "  ".join(r[i].ljust(widths[i]) for i in range(5))
-        print(f"{cells}  {r[5]}")
+        cells = "  ".join(r[i].ljust(widths[i]) for i in range(4))
+        print(f"{cells}  {r[4]}")
     print(f"\n{len(table)} item(s)", file=sys.stderr)
 
 

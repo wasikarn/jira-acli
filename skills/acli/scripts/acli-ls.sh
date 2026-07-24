@@ -9,10 +9,13 @@
 #   bash acli-ls.sh --jql "project = TP AND statusCategory != Done"
 #   bash acli-ls.sh --key TP-1,TP-2,TP-3        # convenience: becomes key IN (...) ORDER BY key
 #   bash acli-ls.sh --filter 10001
-# Columns: key · type · status · parent · assignee · summary.
+# Columns: key · type · status · assignee · summary.
+# NOTE: `parent` used to be a column here but acli's `search --fields` unconditionally
+# rejects it ("field 'parent' is not allowed", confirmed 1.3.22-stable, ISSUES.md Issue 7)
+# regardless of JQL/issue type — for a single key's parent, use `view --fields parent` instead.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-FIELDS="key,summary,status,issuetype,parent,assignee"
+FIELDS="key,summary,status,issuetype,assignee"
 
 JQL="" ; FILTER="" ; KEYS=""
 while [ $# -gt 0 ]; do
@@ -31,9 +34,9 @@ if [ -n "$KEYS" ]; then
 fi
 
 if [ -n "$JQL" ]; then
-  acli jira workitem search --jql "$JQL" --fields "$FIELDS" --json | python3 "$HERE/acli-ls.py"
+  acli jira workitem search --jql "$JQL" --fields "$FIELDS" --paginate --json | python3 "$HERE/acli-ls.py"
 elif [ -n "$FILTER" ]; then
-  acli jira workitem search --filter "$FILTER" --fields "$FIELDS" --json | python3 "$HERE/acli-ls.py"
+  acli jira workitem search --filter "$FILTER" --fields "$FIELDS" --paginate --json | python3 "$HERE/acli-ls.py"
 else
   echo "acli-ls: need --jql, --key, or --filter" >&2
   exit 2

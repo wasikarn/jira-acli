@@ -158,6 +158,39 @@ bash skills/acli/scripts/acli-assign.sh TP-880 "712020:aa9ef966-977c-47f3-865a-0
 
 ---
 
+## Issue 7: acli 1.3.22-stable drift — `transition --list` removed, bare `search --json`/`--csv` silently caps at ~30 rows
+
+**Severity:** High (two independent fail-loud violations, found via empirical skill-creator review — 3 real test tasks run against prod 100-stars.atlassian.net, 2026-07-24)
+
+**Impact:**
+- `acli jira workitem transition --key/--jql ... --list` — documented across `SKILL.md`, `REFERENCE.md`, `references/REFERENCE-detail.md`, and `agents/jira-expert.md` as the way to discover valid transitions read-only — no longer exists. `✗ Error: unknown flag: --list` on the installed `1.3.22-stable` (docs were previously verified against `1.3.18-stable`). No replacement acli command exists — `view` never exposes transitions, no `acli jira workflow` subcommand.
+- `acli jira workitem search --jql "..." --json` (or `--csv`) with no `--paginate` silently caps at ~30 rows (Jira's page size) with **zero warning**, success or failure, even when the true match count is much higher. `scripts/acli-ls.sh` (the canonical JQL→table helper) had the same gap.
+- **Found while fixing the above:** `scripts/acli-ls.sh`'s default `--fields` list included `parent`, but `search --fields` unconditionally rejects it (`✗ Error: field 'parent' is not allowed`) — reproduced against every JQL/issue-type combination tried, not scoped to sub-tasks. This meant `acli-ls.sh` errored out on *every* invocation, not just ones needing pagination — a bigger break than the truncation bug it was ostensibly demonstrating.
+
+**Affected files:**
+- `skills/acli/SKILL.md` (Core loop, "When acli can't")
+- `skills/acli/REFERENCE.md` (§ search, § transition, § view)
+- `skills/acli/references/REFERENCE-detail.md` (transition flags)
+- `agents/jira-expert.md` (Hard rule 1 — read-only command list)
+- `skills/acli/scripts/acli-ls.sh`
+
+**Symptom:**
+```bash
+acli --version                                                                    # → acli version 1.3.22-stable
+acli jira workitem transition --key TP-884 --list                                # ✗ Error: unknown flag: --list
+
+acli jira workitem search --jql "project = TP AND statusCategory != Done" --json  # → 30 rows
+acli jira workitem search --jql "project = TP AND statusCategory != Done" --count # → 227
+```
+
+**Workaround:**
+- Transition discovery: MCP `getTransitionsForJiraIssue cloudId:<id> issueIdOrKey:"KEY"`, filter `isAvailable:true` (verified working against TP-884). No MCP available → fire `transition` directly; an invalid edge fails loud per-item (no `--ignore-errors`), it doesn't silently skip — acceptable but not preferred.
+- Search truncation: always pass `--paginate`, or cross-check the row count against a separate `--count` call, before trusting any unpaginated `search --json`/`--csv` result — for reads, not just pre-mutation previews.
+
+**Status:** Docs and `acli-ls.sh`/`acli-ls.py` fixed 2026-07-24 (this pass — added `--paginate`, dropped the non-projectable `parent` field and column entirely rather than leave it always rendering `-`, corrected all four doc references, added the MCP fallback row). Verified live post-fix: the same 227-match JQL now returns all 108 open/14-day-stale rows through `acli-ls.sh` with no error. Re-check `REFERENCE.md`'s flag tables periodically against `acli --version` — this class of drift (a documented flag quietly disappearing, or a field quietly becoming non-projectable, across a minor version bump) has no acli-side deprecation warning.
+
+---
+
 ## Reported
 - **Date:** 2026-06-15
 - **Reporter:** wasikarn / Claude Code session

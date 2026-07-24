@@ -27,7 +27,7 @@ Loaded on demand. Core command tables + format overview live in
 
 ### transition
 
-`-k/--key`, `--jql`, `--filter`, `-s/--status`, `--list`, `--ignore-errors`, `-y/--yes`, `--json`.
+`-k/--key`, `--jql`, `--filter`, `-s/--status`, `--ignore-errors`, `-y/--yes`, `--json`. No `--list` — removed in current acli (confirmed gone in `1.3.22-stable`); see `../SKILL.md` § "When acli can't" for read-only transition discovery via MCP.
 
 ### assign
 
