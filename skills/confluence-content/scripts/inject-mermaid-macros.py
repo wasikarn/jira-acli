@@ -17,8 +17,9 @@ click, not a wall of mermaid syntax above every diagram. `expand` stores no
 open/closed state in the document (same as HTML `<details>` without an `open`
 attribute) — every viewer sees it collapsed on load, there is nothing to set
 for that. A codeBlock already followed by a matching extension (bare, from a
-native /mermaid insert — e.g. TP-807's 7 diagrams) is left exactly as-is, not
-retroactively wrapped; this only applies to newly-decorated code blocks.
+native /mermaid insert made before this script ever touched the page) is left
+exactly as-is, not retroactively wrapped; this only applies to newly-decorated
+code blocks.
 
 Operates on ADF (contentFormat="adf"), not HTML. An earlier version of this
 script transformed the HTML representation instead

@@ -49,8 +49,8 @@ Resolve at runtime; never hardcode IDs.
 
 | Field | Resolution |
 |---|---|
-| **Site / cloudId** | Re-derive against `acli/REFERENCE.md` + `acli/SKILL.md` § "When acli can't" before naming any `mcp__...` tool here. cloudId is MCP-only — resolve via `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several. |
-| **Space** | `acli confluence space list --json` / `acli confluence space view --key <KEY> --json` — acli has full space CRUD. Fall back to `mcp__plugin_atlassian_atlassian__getConfluenceSpaces` only if acli can't find it. Ask the user if ambiguous. |
+| **Site / cloudId** | Re-derive against `acli/REFERENCE.md` + `acli/SKILL.md` § "When acli can't" before naming any `mcp__...` tool here. cloudId is MCP-only — resolve via `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several. **If you're an MCP-less caller (e.g. the `confluence-expert` agent, which holds no MCP tools by design)**, this field can never be resolved locally — name it as an outstanding gap in your handoff instead of guessing or skipping it. |
+| **Space** | `acli confluence space list --keys <KEY> --json` to resolve — acli has full space CRUD, but inconsistently: `create`/`archive`/`update`/`restore` all take `--key`, `view` alone takes `--id` (`space view --key` fails `✗ unknown flag: --key`, confirmed live 2026-07-24). Grab `.results[0].id` from the `list --keys` response, then `space view --id <id> --json` only if you need more than list already returned. Fall back to `mcp__plugin_atlassian_atlassian__getConfluenceSpaces` only if acli can't find it. Ask the user if ambiguous. |
 | **Parent page** | Only if the user wants this nested under an existing page; resolve its `pageId`. Omit for a top-level page. |
 | **Title** | From the spec's subject; confirm with the user. |
 
@@ -109,7 +109,8 @@ is wrapped in a collapsible `expand` section (title "Diagram source", collapsed 
 viewer — see `--collapse-title` to change the label) so the page shows the rendered diagram with
 the raw syntax tucked behind a click, not a wall of mermaid text above every diagram. A code block
 already followed by a bare (unwrapped) macro — e.g. one inserted natively via the editor's
-`/mermaid` command, like TP-807's 7 diagrams — is left exactly as-is, not retroactively wrapped.
+`/mermaid` command before this script ever touched the page — is left exactly as-is, not
+retroactively wrapped.
 The script's default constants (extension key, cloud ID, account ID, workspace ARI) are specific to
 this site/author — see the script's own docstring for how to re-derive them if pointed at a
 different Atlassian site. If the target site doesn't have this app installed, the mermaid code
@@ -139,8 +140,16 @@ never `"markdown"`. Markdown is only safe when the page has zero macro/expand no
    acli confluence page view --id <id> --body-format atlas_doc_format --json \
      | python3 -c "import json,sys; print(json.load(sys.stdin)['body']['atlas_doc_format']['value'])" \
      > page.adf.json
-   python3 -c "import json; d=json.load(open('page.adf.json')); print(sum(1 for n in d['content'] if n['type'] in ('extension','expand')))"
-   → if > 0, this page has macros — ADF write path only, skip step 3's markdown option.
+   python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf-node-diff.py" page.adf.json | grep -E "^(extension|expand):"
+   → if either count is > 0, this page has macros — ADF write path only, skip step 3's markdown option.
+   → empty output is only safe to read as "no macros" if adf-node-diff.py itself ran clean. It exits
+   non-zero with FATAL on bad input, and that failure prints to stderr — stdout is empty either way, so
+   an error and a genuinely macro-free page look identical if you only glance at the grep line. Check the
+   exit code (or just look at stderr) before treating silence as a green light; on any error, re-fetch and
+   re-check rather than defaulting to markdown.
+   → this walks the ADF tree recursively (every depth, not just top-level) — a shallow top-level-only
+   count would miss a macro nested inside a table cell, panel, or layout section and falsely green-light
+   a markdown write, reproducing the exact 2026-07-14 incident below on a different page shape.
    python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf2md.py" page.adf.json
    → read the current body as Markdown (for review/editing text — the ADF file is still the
    source of truth for the write). Falls back to mcp__plugin_atlassian_atlassian__getConfluencePage

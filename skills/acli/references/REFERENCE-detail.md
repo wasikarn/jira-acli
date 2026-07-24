@@ -49,6 +49,10 @@ Loaded on demand. Core command tables + format overview live in
 
 Clone-only (`--from-project`, company-managed only) or `--from-json`; flags `-k/--key`, `-n/--name`, `-d/--description`, `-u/--url`, `-l/--lead-email`. `sprint create` requires `--name` + `--board`; dates ISO 8601.
 
+### confluence space
+
+`list`: `--keys` (comma-separated, filter), `--type` (global|personal), `--status` (current|archived, default current), `--expand` (description,homepage,permissions), `-l/--limit` (default 50), `--json`. `create`: `--key`, `--name`, `--description`, `--private`, `--alias`, `--template-key`, `--json`. `archive`/`restore`: `--key` only. `update`: `--key`, `--name`, `--description`, `--status`, `--type`, `--json`. `view`: `--id` (not `--key` — see `../REFERENCE.md` § confluence/admin), plus `--icon`, `--labels`, `--operations`, `--permissions`, `--properties`, `--role-assignments` (EAP only), `--include-all`, `--desc-format` (plain|view), `--json`. Verified live against `1.3.22-stable`, 2026-07-24.
+
 ### confluence blog create
 
 `--space-id`, `--title`, `--body`, `--status` (current|draft, default current), `--private`, `--created-at` (ISO 8601), `--from-file`, `--from-json`, `--generate-json`, `-j/--json`.

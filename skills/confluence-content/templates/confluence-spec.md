@@ -31,7 +31,7 @@ Loaded by `jira-acli:confluence-content` Step 1–2. AC format/register/coverage
 
 ### R1 — [ชื่อสั้น]
 
-*As a <persona/role>, I want <goal> so that <benefit/reason>.*
+*ในฐานะ <persona/role> ฉันต้องการ <goal> เพื่อ <benefit/reason>*
 
 **เกณฑ์การยอมรับ (Acceptance Criteria):**
 
@@ -47,7 +47,7 @@ Loaded by `jira-acli:confluence-content` Step 1–2. AC format/register/coverage
 
 ### R2 — [ชื่อสั้น]
 
-*As a <persona/role>, I want <goal> so that <benefit/reason>.*
+*ในฐานะ <persona/role> ฉันต้องการ <goal> เพื่อ <benefit/reason>*
 
 **เกณฑ์การยอมรับ (Acceptance Criteria):**
 

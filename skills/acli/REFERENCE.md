@@ -216,10 +216,10 @@ acli confluence blog create --from-file ./content.html      # or --from-json / -
 
 # space — archive | create | list | restore | update | view  (full CRUD)
 acli confluence space create --key SPACEKEY --name "Space Name" --description "..." [--private --alias X --template-key K]
-acli confluence space list
-acli confluence space view --key SPACEKEY
+acli confluence space list --keys SPACEKEY --json   # filter by key(s); omit --keys to list all
+acli confluence space view --id SPACE_ID            # ⚠️ --id, NOT --key — the one space subcommand that breaks the pattern
 ```
-`blog create` body is **storage format (XHTML)**, not Jira's ADF. Flags → `references/REFERENCE-detail.md` § confluence blog create.
+⚠️ **`space view` alone takes `--id`, every other `space` subcommand takes `--key`.** `create`/`archive`/`update`/`restore` all resolve by `--key SPACEKEY`; `view` rejects `--key` outright (`✗ unknown flag: --key`, confirmed live on `1.3.22-stable`, 2026-07-24) and needs the numeric `--id` instead. Resolve it via `space list --keys SPACEKEY --json` → `.results[0].id` first. `blog create` body is **storage format (XHTML)**, not Jira's ADF. Flags → `references/REFERENCE-detail.md` § confluence space / confluence blog create.
 
 ⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluencePage`/`updateConfluencePage`, which take `contentFormat: "html"|"markdown"|"adf"` — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, `contentFormat: "markdown"` with a raw Markdown body is simplest — see `jira-acli:confluence-content` § `templates/confluence-spec.md` for a Spec/PRD template built on this.
 

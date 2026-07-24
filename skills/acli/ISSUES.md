@@ -189,6 +189,28 @@ acli jira workitem search --jql "project = TP AND statusCategory != Done" --coun
 
 **Status:** Docs and `acli-ls.sh`/`acli-ls.py` fixed 2026-07-24 (this pass — added `--paginate`, dropped the non-projectable `parent` field and column entirely rather than leave it always rendering `-`, corrected all four doc references, added the MCP fallback row). Verified live post-fix: the same 227-match JQL now returns all 108 open/14-day-stale rows through `acli-ls.sh` with no error. Re-check `REFERENCE.md`'s flag tables periodically against `acli --version` — this class of drift (a documented flag quietly disappearing, or a field quietly becoming non-projectable, across a minor version bump) has no acli-side deprecation warning.
 
+## Issue 8: `acli confluence space view` takes `--id`, not `--key` — breaks the pattern of every other `space` subcommand
+
+**Severity:** Medium (one broken documented command, found via empirical `confluence-content` skill review — 3 real test tasks run against prod 100-stars.atlassian.net via `confluence-expert`, 2026-07-24)
+
+**Impact:** `confluence-content/SKILL.md`'s Step 3 metadata-resolution table told callers to run `acli confluence space view --key <KEY> --json` to resolve a space. That flag doesn't exist on `space view` — confirmed live, and independently rediscovered by two of the three test agents (the draft-new-page test and, separately, this session's own live verification). `create`/`archive`/`update`/`restore` all resolve by `--key SPACEKEY` consistently — `view` alone rejects `--key` and requires the numeric `--id` instead, with no warning that it's the odd one out.
+
+**Affected files:**
+- `skills/confluence-content/SKILL.md` (Step 3, Space row)
+- `skills/acli/REFERENCE.md` (§ confluence/admin)
+- `skills/acli/references/REFERENCE-detail.md` (no `confluence space` section existed before this fix)
+
+**Symptom:**
+```bash
+acli confluence space view --key BEP --json     # ✗ Error: unknown flag: --key
+acli confluence space list --keys BEP --json    # works — returns id 1081347 among other fields
+acli confluence space view --id 1081347 --json  # works
+```
+
+**Workaround:** resolve the numeric id first via `space list --keys <KEY> --json` → `.results[0].id`, then `space view --id <id>` only if you need more detail than `list` already returned.
+
+**Status:** Fixed 2026-07-24 (this pass — corrected the Step 3 example in `confluence-content/SKILL.md`, `acli/REFERENCE.md`, and added a verified `confluence space` per-flag section to `acli/references/REFERENCE-detail.md`). Same drift class as Issue 7 — a documented flag that either never existed as written or silently diverged from the rest of its command family, caught only by actually running it against the live 1.3.22-stable binary.
+
 ---
 
 ## Reported
