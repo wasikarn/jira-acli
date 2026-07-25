@@ -124,6 +124,8 @@ bash "${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh" KEY desc.md   # full replace
 
 Same preview-and-confirm gate as create: render the new body (both scripts support `--dry-run`), show it, edit only on the user's explicit go-ahead. Note `--dry-run` still contacts production — both scripts fetch the live description first, then skip only the final write; there's no fully offline way to preview an edit against a real ticket.
 
+To sanity-check the merge logic itself with zero production contact (e.g. while developing this skill, or validating a tricky `--replace-section` heading match before risking it on a real ticket), call the underlying merge script directly against local files instead of going through `acli-edit.sh`: `python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/acli-edit.py" MODE KEY CUR.json OUT.json [NEW.json] [HEADING]` (`MODE` is `append`/`remove`/`replace`; `CUR.json` is any local ADF doc shaped like a real description, doesn't need to come from a live ticket). This is a testing aid, not part of the normal user-facing edit flow — the two commands above stay the documented way to actually edit a ticket.
+
 Before any full-body replace (`acli-set-desc.sh`, or `--replace-section` on a section that might carry one) on an existing ticket, count structural nodes first — `acli jira workitem view KEY --json | python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf-node-diff.py" -`. If `table`/`expand`/`panel`/`extension` count > 0, a Markdown round-trip silently drops them (see `jira-acli:acli` § Description format) — edit around the affected section instead of a full-body replace.
 
 ## Editing an existing templated comment

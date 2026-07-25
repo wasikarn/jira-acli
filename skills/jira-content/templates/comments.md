@@ -23,8 +23,8 @@ that has real structure to it.
 - **Every comment should leave the reader knowing what happens next**, not just what happened —
   a status update without "ขั้นตอนถัดไป" is a log entry no one can act on.
 - **No unresolved dates.** "คาดว่าจะเสร็จ" and any other date field: state it if known, leave it
-  blank if not — never guess a date to fill the field (see `acli/SKILL.md` METHODOLOGY: fail loud,
-  never silently drop or invent a value).
+  blank if not — never guess a date to fill the field (see `jira-acli:acli`'s METHODOLOGY: fail
+  loud, never silently drop or invent a value).
 
 Send any of these through the comment ADF pipeline — `comment create` and `comment update` take
 ADF differently, don't assume they match (see `jira-acli:acli` § Description format):
