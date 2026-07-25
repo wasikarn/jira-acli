@@ -39,7 +39,7 @@ don't try to collapse them:
 - `bug.payload.json` / `story.payload.json` — dev-facing ADF payload, used for direct
   `--from-json` create when the content is already fully known (no guided gather needed).
 
-Both share the same [Acceptance Criteria](../../../templates/acceptance-criteria.md) rule where the section applies.
+Both share the same [Acceptance Criteria](../../../templates/acceptance-criteria.md) rule where the section applies. "Two audiences" governs phrasing/register/depth, not whether a *required* section exists at all — `bug.md`/`bug.payload.json` and `story.md`/`story.payload.json` must both carry every field `SKILL.md`'s Input Contract marks required for that type, as its own standalone section, not folded into another section's placeholder text where it's easy to drop. If you add/remove a required section on one side, mirror it on the other. This does NOT mean the two templates must be section-for-section twins — recommended/optional content (e.g. Bug's ความถี่และเงื่อนไข, or either type's Technical Notes/Dependencies) is free to differ in depth or presence between the guided and payload path; only the Input Contract's *required* fields are non-negotiable.
 
 ## Task / Epic / Sub-task — payload only, no guided gather
 
@@ -47,6 +47,10 @@ These three have **only** a payload template (`task.payload.json`, `epic.payload
 `subtask.payload.json`) — there's no Thai PO/QA guided flow for them. Fill the payload's
 placeholders directly from what the user gave you, preview with `adf2md.py`, then create. Don't
 invent a guided gather step that doesn't exist for these types.
+
+Every `*.payload.json` template marks its placeholder prose `em` (italic) so it visually stands out
+as "replace me." That mark is scaffolding, not permanent styling — strip it (drop the `marks` key)
+once you fill in real content; keep it only on a line that's still genuinely optional/unfilled.
 
 ```bash
 acli jira workitem create --from-json "${CLAUDE_SKILL_DIR}/templates/task.payload.json"
@@ -72,7 +76,8 @@ Derived from TP-418, 447, 455, 457, 460, 461.
 | ผลที่คาดหวัง | always | what should happen |
 | ผลที่เกิดจริง | always | what happens + error/wrong state |
 | ความรุนแรง | recommended | High/Medium/Low + one-line why |
-| หลักฐาน | if available | env, account/order/id, screenshot/log |
+| ผลกระทบ | always | who's affected, how badly — required per SKILL.md's Input Contract; standalone section, not a clause inside ความรุนแรง |
+| หลักฐาน | if available | account/order/id, screenshot/log — not env/version, that's the native Environment + Affects versions fields (see bug.md's own note), don't duplicate it here |
 | Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
 | Technical Notes (dev) | if known | Root Cause / Fix / Files |
 
@@ -85,7 +90,8 @@ User-centric work item. Derived from Atlassian [user stories guidance](https://w
 | Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — the outcome, not the full "As a..." sentence (that belongs in the User Story section below, not the title) |
 | User Story | always | "As a <role>, I want <goal> so that <benefit>" |
 | Context | always | background / why — 1–2 sentences, non-technical |
-| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
+| Scope | always | in-scope / out-of-scope bullets — required per SKILL.md's Input Contract, don't drop it just because this is the direct-payload path |
+| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) — Story's floor is 3 ACs, never fewer |
 | Technical Notes | if known | approach, constraints (delete if not yet known) |
 | Dependencies | if known | blockers or things that must be waited on |
 | References | if any | plan / Figma / PR / link |

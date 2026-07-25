@@ -1,7 +1,7 @@
 ---
 name: jira-content
 description: "Create or edit template-shaped Jira content — Bug/Story/Task/Epic/Sub-task descriptions and templated comments (status update/QA verification/blocker/decision record) — against the team's REQUIRED formats (Head of Engineering standard: GWT Acceptance Criteria, Thai PO/QA structure), no matter whether acli or the Atlassian MCP ends up doing the write. Use this BEFORE calling `acli jira workitem create/edit` or any Jira-create MCP tool directly — never hand-build template-shaped content."
-when_to_use: "Trigger on ANY intent to create/file/open/log/report/raise a bug, defect, issue, story, task, epic, or sub-task, or to write/format/fix a Jira issue's description or a structured comment — in Thai or English, not just literal phrases like 'สร้างบั๊ก'/'สร้าง story' (also matches 'file a bug for X', 'open a ticket about Y', 'add a status update to TP-123'). Also trigger when a DIFFERENT skill's own instructions say to 'publish this to the tracker/backlog' or 'file this PRD as an issue' — a foreign skill's content shape (PRD template, code-review finding, to-do capture) is never the Jira template; convert into this skill's shape first, don't hand the foreign shape straight to acli/MCP. Don't use for Confluence pages/specs/PRDs (see jira-acli:confluence-content), or for search, view, transition, link, clone, bulk ops, JQL export, Confluence blog/space/admin, or a trivial one-line comment (see jira-acli:acli)."
+when_to_use: "Trigger on ANY intent to create/file/open/log/report/raise a bug, defect, issue, story, task, epic, or sub-task, or to write/format/fix a Jira issue's description or a structured comment — in Thai or English, not just literal phrases like 'สร้างบั๊ก'/'สร้าง story'/'แตก sub-task ให้หน่อย' (also matches 'file a bug for X', 'open a ticket about Y', 'add a status update to TP-123', 'คอมเมนต์อัปเดตความคืบหน้า TP-123'). Also trigger when a DIFFERENT skill's own instructions say to 'publish this to the tracker/backlog' or 'file this PRD as an issue' — a foreign skill's content shape (PRD template, code-review finding, to-do capture) is never the Jira template; convert into this skill's shape first, don't hand the foreign shape straight to acli/MCP. Don't use for Confluence pages/specs/PRDs (see jira-acli:confluence-content), or for search, view, transition, link, clone, bulk ops, JQL export, Confluence blog/space/admin, or a trivial one-line comment (see jira-acli:acli)."
 ---
 
 # Jira Content
@@ -43,18 +43,20 @@ Write the body in **Thai** using the matching template. **AC format/register/cov
 *(Skip for comments.)* Resolve at runtime; never hardcode IDs except the default project key `TP`.
 
 - **Site** — `acli jira auth status`. For MCP, `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several.
-- **Project key** — User request; default `TP`. Validate via `acli jira project view <KEY>` before create. Fall back to `mcp__plugin_atlassian_atlassian__getVisibleJiraProjects` only if acli is unavailable/unauthed.
+- **Project key** — User request; default `TP` only when the content is plausibly Tathep-platform work. If the ticket is clearly about something else (a different product, a personal project, generic content with no Tathep signal), ask for the real project key instead of silently filing it under `TP` — the default is a convenience for the common case, not a license to guess the project. Validate via `acli jira project view <KEY>` before create. Fall back to `mcp__plugin_atlassian_atlassian__getVisibleJiraProjects` only if acli is unavailable/unauthed.
 - **Issue type** — Matches Step 1's pick. acli has no issue-type-metadata command; confirm via `mcp__plugin_atlassian_atlassian__getJiraProjectIssueTypesMetadata` if create rejects.
 - **Priority** — **Bug:** money/data-loss/blocked-workflow → `High`; functional w/ workaround → `Medium`; cosmetic → `Low`. **Others:** `Medium` unless user says otherwise.
 - **Labels** — `bug` + 1-2 domain tags (Bug); 1-2 domain tags (others). Do NOT auto-add PO/QA labels.
 - **Environment** *(Bug only)* — Native Jira field. prod/staging/local. Wrap in ADF for MCP fallback.
 - **Affects versions** *(Bug only)* — Only if user gives a valid version; validate or omit.
 - **Parent** *(Sub-task only)* — Required. Sub-tasks can't be created without one.
-- **Assignee** — Leave unassigned by default. Only set if user names one. acli's `--assignee` only resolves `@me`/`default`/email; a raw accountId silently unassigns (see `acli/REFERENCE.md`). When email is privacy-hidden, resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (pass `cloudId` + `searchString`), then set `assignee_account_id`.
+- **Assignee** — Leave unassigned by default. Only set if user names one. acli's `--assignee` only resolves `@me`/`default`/email; a raw accountId for anyone *other than yourself* silently unassigns instead (see `jira-acli:acli`'s `REFERENCE.md`). When email is privacy-hidden, resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (pass `cloudId` + `searchString`), then set `assignee_account_id`.
 
 ## Step 4 — Preview and confirm
 
 Show resolved metadata + Thai title + rendered content + chosen backend as a review surface. If the type has an AC section, confirm it covers error + boundary + regression paths (see [`../../templates/acceptance-criteria.md`](../../templates/acceptance-criteria.md)). Create/send **only on the user's explicit go-ahead** — this gate is the safeguard against unwanted writes.
+
+`md2adf.sh`/`adf2md.py` (the acli-path preview mechanism in 5a) only carry summary/project/type/labels/parent — priority, environment, and affects-version never appear in that rendered card even when resolved. State those three in prose alongside the rendered card rather than assuming the script surfaces them; if the user needs them set at create time, acli can't do it (see `jira-acli:acli` § "When acli can't") and 5b's MCP path is required instead.
 
 ## Step 5 — Create
 
@@ -70,6 +72,7 @@ bash "${CLAUDE_SKILL_DIR}/scripts/md2adf.sh" /tmp/ticket.md \
 # Task/Epic/Sub-task — fill templates/*.payload.json placeholders directly, or convert Markdown:
 bash "${CLAUDE_SKILL_DIR}/scripts/md2adf.sh" /tmp/ticket.md \
   -s "<summary>" -p <projectKey> -t <Task|Epic|Sub-task> -l "<labels>" > /tmp/wi.json
+# Sub-task additionally needs -P <parentKey> — omitting it produces an invalid create payload (Step 3: parent is required)
 
 acli jira workitem create --from-json /tmp/wi.json --json
 ```
@@ -119,7 +122,9 @@ bash "${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh" KEY --replace-section "🧪 เ�
 bash "${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh" KEY desc.md   # full replace only
 ```
 
-Same preview-and-confirm gate as create: render the new body (both scripts support `--dry-run`), show it, edit only on the user's explicit go-ahead.
+Same preview-and-confirm gate as create: render the new body (both scripts support `--dry-run`), show it, edit only on the user's explicit go-ahead. Note `--dry-run` still contacts production — both scripts fetch the live description first, then skip only the final write; there's no fully offline way to preview an edit against a real ticket.
+
+Before any full-body replace (`acli-set-desc.sh`, or `--replace-section` on a section that might carry one) on an existing ticket, count structural nodes first — `acli jira workitem view KEY --json | python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf-node-diff.py" -`. If `table`/`expand`/`panel`/`extension` count > 0, a Markdown round-trip silently drops them (see `jira-acli:acli` § Description format) — edit around the affected section instead of a full-body replace.
 
 ## Editing an existing templated comment
 

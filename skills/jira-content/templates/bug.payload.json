@@ -180,6 +180,32 @@
         "content": [
           {
             "type": "text",
+            "text": "ผลกระทบ"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "ใครถูกกระทบ และรุนแรงแค่ไหน — required per SKILL.md Input Contract, อย่าให้เหลือแค่วงเล็บใน ความรุนแรง",
+            "marks": [
+              {
+                "type": "em"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
             "text": "หลักฐาน (ถ้ามี)"
           }
         ]
@@ -187,20 +213,6 @@
       {
         "type": "bulletList",
         "content": [
-          {
-            "type": "listItem",
-            "content": [
-              {
-                "type": "paragraph",
-                "content": [
-                  {
-                    "type": "text",
-                    "text": "Env: prod/staging, browser/OS, วันที่"
-                  }
-                ]
-              }
-            ]
-          },
           {
             "type": "listItem",
             "content": [

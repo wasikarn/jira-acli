@@ -53,14 +53,23 @@ Write the description in **Thai** using this structure:
 
 ## 🧪 เกณฑ์การยอมรับ (Acceptance Criteria) — สำหรับ QA
 
-**AC1 — [Short title]**
+**AC1 — [Short title] (happy path)**
 
 * กำหนดให้: [precondition]
 * เมื่อ: [action]
 * ผลลัพธ์: [expected outcome — be specific, plain business language only]
 
-**AC2 — [Short title]**
-...
+**AC2 — [Short title] (error/edge case)**
+
+* กำหนดให้: [precondition]
+* เมื่อ: [action]
+* ผลลัพธ์: [expected outcome]
+
+**AC3 — [Short title] (regression/permission — Story's 3rd required AC, plus per-surface/fallback ACs on top where the change spans multiple screens or affects existing data)**
+
+* กำหนดให้: [precondition]
+* เมื่อ: [action]
+* ผลลัพธ์: [expected outcome]
 
 ---
 

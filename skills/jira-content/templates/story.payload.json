@@ -69,6 +69,84 @@
         "content": [
           {
             "type": "text",
+            "text": "Scope"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "อยู่ในขอบเขตรอบนี้",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "<bullet>"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "ไม่อยู่ในขอบเขตรอบนี้ (สำคัญ — แจ้ง QA ให้ทราบ)",
+            "marks": [
+              {
+                "type": "strong"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "<bullet>"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2
+        },
+        "content": [
+          {
+            "type": "text",
             "text": "Acceptance Criteria"
           }
         ]
@@ -248,7 +326,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "ผลลัพธ์: <boundary (เช่น 0 = ฟรี) หรือ regression ถ้าเกี่ยวข้อง — ลบ AC นี้ได้ถ้าไม่มี>"
+                    "text": "ผลลัพธ์: <boundary (เช่น 0 = ฟรี) หรือ regression — Story ต้องมีอย่างน้อย 3 AC เสมอ ถ้าไม่มี boundary/regression ที่เข้ากับเคสนี้ ให้แทนด้วย per-surface AC หรือ fallback AC (ข้อมูลเดิมที่ยังไม่มีของใหม่) แทน — ห้ามลบ AC นี้ทิ้ง>"
                   }
                 ]
               }
