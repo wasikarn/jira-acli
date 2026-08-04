@@ -8,6 +8,31 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.23] — 2026-08-04
+
+`confluence-content`: closed the un-actioned follow-up finding logged in 0.1.22 — a JQL search
+undercount (an `acli --json` result reported "30 hits," true count 395) in the Step 1
+Jira-cross-check step. Investigated first as a possible `acli` fix: re-tested the same class of
+gap directly against `acli`, once with 2 new fixture evals (a primary-task count query and a
+bulk-mutation preview, both grounded in real live counts on project TP) and cross-checked
+against an earlier, already-completed 3-iteration `acli` fixture round from earlier this session
+that had independently tested the identical pagination-cap trap (`eval-pagination-search`). Both
+rounds agree: `acli`'s existing `--count`/`--paginate` warning is reliably applied whenever a
+Jira search is the agent's stated primary task — 100% pass rate across all runs in both rounds,
+with or without the skill invoked. The real miss only reproduces when a Jira search is a
+secondary, incidental step nested inside a larger, different-domain task (drafting a Confluence
+page) — an attention-competition failure, not a missing-warning failure, and not something an
+edit to `acli`'s own text would reach. Fix applied at the actual locus instead:
+`confluence-content`'s Step 1 paragraph now explicitly names this failure mode and repeats the
+`--count`/`--paginate` cross-check instruction at the point where the search result is about to
+be trusted, rather than relying on the warning living only in a different skill's file.
+`jira-content` was checked for the same nested-search pattern and doesn't have one — it doesn't
+search Jira for grounding facts before authoring content, so no equivalent fix was needed there.
+This one wasn't run through the full fixture-eval + review-fixtures + iterate-skill loop — the
+diagnosis (two independent non-discriminating rounds) already located the fix precisely enough
+that a live re-test would mostly re-confirm the diagnosis rather than surface anything new;
+worth a lighter-weight verification pass in a future session if this area gets touched again.
+
 ## [0.1.22] — 2026-08-04
 
 `confluence-content`: closed 3 real defects found via a fixture-eval + `kbg:review-fixtures`

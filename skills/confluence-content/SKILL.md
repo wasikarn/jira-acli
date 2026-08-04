@@ -44,6 +44,15 @@ boundary/regression AC should assert, and specific numbers (retry counts, timeou
 stated as fact rather than flagged as placeholders can be wrong in exactly the way Jira would have
 caught.
 
+This search is easy to under-verify precisely because it's secondary to the page draft, not the
+task itself — confirmed gap (2026-08-04): a fixture run's search reported "30 hits" and moved
+straight to drafting without noticing `acli`'s own `--json`/`--csv` output silently caps at ~30
+rows (documented in `jira-acli:acli`'s SKILL.md); the true count was 395. No wrong fact reached
+the final page that time, but most of the matching tickets were never actually read. Before
+treating this search's result as the full picture, cross-check with `--count` or re-run with
+`--paginate` — same discipline `acli` already documents for its own reads, worth restating here
+because attention naturally goes to the page you're writing, not the research step feeding it.
+
 Don't skip this because the page technically isn't a "new feature" — "this is documenting existing
 behavior, not proposing something new" is not an exemption; existing-behavior claims are exactly
 the kind of thing Jira tickets (bug reports, prior implementation tickets) tend to correct or
