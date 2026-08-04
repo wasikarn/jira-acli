@@ -8,6 +8,45 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.25] — 2026-08-04
+
+`confluence-expert` (agent): first-ever fixture-eval + `kbg:review-fixtures` + `kbg:iterate-skill`
+loop against this agent (no prior workspace existed). 3 evals × with_agent/baseline, grounded in
+live production data on `100-stars.atlassian.net`: a real Confluence page (TP-807 Spec, id
+`217743376`, independently confirmed to carry 7 `expand` + 7 `extension` macro nodes — the exact
+page that lost all 7 diagram macros to a markdown-format full-body-replace in a real 2026-07-14
+incident already documented in `confluence-content/SKILL.md`), a confirmed-nonexistent "incident
+log" page in space BEP, and the real TP-826 ticket (also used in the `jira-expert` round earlier
+this session). Iteration 1's review found 0 critical/major findings and exactly 1 double-confirmed
+minor: `agents/confluence-expert.md`'s Hard Rule 4 ("Never touch Jira work items") has no read-only
+carve-out, so a run correctly deferred a Jira transition but declined even a one-line status check
+first — current behavior wasn't wrong under the existing wording, but the check would have
+improved the handoff at no real cost. The round's one genuine technical bug — a baseline run
+recommending `contentFormat: "storage"` for the real `updateConfluencePage` MCP tool, which only
+accepts `html`/`markdown`/`adf` (independently verified against the live tool schema by both
+reviewers) — traced to the *baseline*, not the target, confirming `confluence-expert`'s specialized
+MCP-format knowledge has real, measurable value. Iteration 2's fix (one sentence added to Hard Rule
+4 permitting a single read-only lookup to confirm a handoff fact, with explicit limits on what it
+may not be used for) closed the finding precisely — re-verified live: the regenerated run performed
+exactly one `workitem view` call, explicitly stated it stopped there, and both reviewers confirmed
+the reported facts matched production exactly. No regressions in the other 2 evals. One new,
+double-confirmed-but-non-harmful minor finding surfaced during the iteration-2 Verify pass — the
+new sentence's "a fact you're about to hand off" wording is ambiguous between "handoff to
+jira-expert" and "fact used in my own draft," and a regenerated run reached for the broader reading
+once; both reviewers independently confirmed this caused no actual over-reach (call stayed scoped,
+no legality judgment, no recommendation formed) and was mechanically justified regardless (the
+paginated search result genuinely truncated the relevant ticket's summary). The mechanical tally is
+therefore flat (1 minor → 1 minor) rather than "improved," but the original finding is verifiably
+closed and the replacement finding caused zero demonstrated harm — the user chose to stop at
+iteration 2 (of a 3-iteration cap) rather than chase a non-harmful wording nit, and logged a
+second, single-sourced follow-up (the rule doesn't specify which command satisfies "one lookup";
+observed instrument choice varied between a full `workitem view` and a narrower `search --fields`)
+as un-actioned for a future pass. **Flagged, not actioned:** this leaves the product-boundary
+rules asymmetric — `jira-expert.md`'s mirror rule ("Never touch Confluence. Defer to
+`confluence-expert`...") has no matching read-only carve-out. No fixture evidence exists that
+`jira-expert` actually hits this gap, so it wasn't speculatively patched (Rule 2); a future
+fixture round against `jira-expert` should check for it before mirroring the sentence.
+
 ## [0.1.24] — 2026-08-04
 
 `jira-expert` (agent): closed 1 real defect found via a fixture-eval + `kbg:review-fixtures`
