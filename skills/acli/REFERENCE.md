@@ -178,7 +178,7 @@ Flags → `references/REFERENCE-detail.md` § clone.
 acli jira project create --from-project TEAM --key NEWTEAM --name "New Project" --lead-email me@x.com
 acli jira project create --generate-json        # or --from-json project.json
 acli jira project list --limit 30               # one of --limit | --recent | --paginate is REQUIRED (no bare list)
-acli jira project view KEY
+acli jira project view --key KEY
 
 # sprint: create | delete | list-workitems | update | view
 acli jira sprint create --name "Sprint 1" --board 5 --start 2025-01-01 --end 2025-01-14 --goal "..."
