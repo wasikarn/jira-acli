@@ -1,2 +1,9 @@
 __pycache__/
 *.pyc
+
+# skill-creator fixture-generation workspaces (skill-creator SKILL.md's own convention:
+# <skill-name>-workspace/, sibling to skills/<skill-name>/) and their eval definitions —
+# local dev/test scratch, not shipped plugin content. May contain real production Jira
+# data pulled during fixture runs (ticket content, account emails from `acli auth status`).
+*-workspace/
+skills/*/evals/
