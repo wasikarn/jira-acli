@@ -8,6 +8,29 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.20] — 2026-08-04
+
+`acli`: closed a routing gap found via a 2-agent adversarial fixture review
+(`kbg:review-fixtures`) and closed via a 3-iteration verify loop
+(`kbg:iterate-skill`) — a templated comment task (status update / QA
+verification / blocker / decision record) could reach `md2adf.py` directly
+without ever routing to `jira-content` for the template shape, even though
+the Core Loop named the routing rule. The first fix attempt (a code-comment
+STOP directive at the point of use) was verified insufficient: a with-skill
+fixture agent read it, correctly identified a "blocker" comment as one of
+the four named types, then rationalized past it (session justifications:
+"the user specified exact wording," "`jira-content` isn't loaded this
+session," a misapplied carve-out). The working fix moved the guard to a
+top-level blockquote — matching the file's existing, empirically-effective
+guard for the analogous create-time bypass — and explicitly forecloses each
+of the three rationalizations found. Verified via two more fixture-review
+rounds, including a live read-only check against production Jira confirming
+no comment was ever actually posted during testing. Also added a
+shell-quoting note for `--jql`/file-path arguments (a zero-guidance gap the
+same review surfaced); this fix's own effectiveness has not yet been
+independently re-verified for its narrower residual case (an unquoted
+user-facing command string) and should not be assumed fully closed.
+
 ## [0.1.19] — 2026-07-25
 
 Empirical review pass (test agents drafting real tickets end-to-end + adversarial

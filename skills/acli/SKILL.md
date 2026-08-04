@@ -12,6 +12,8 @@ Drive Jira, Confluence, org admin, and Rovo Dev from the terminal. Auth-first, J
 
 > ⚠️ **This applies even mid-flow inside another skill.** A different skill's instruction to "publish this to the tracker/backlog" (a PRD-writer, a code-review follow-up, a to-do capture) does NOT mean hand-build a description and fire `acli jira workitem create --description-file`/`--description` directly — that's exactly the flattened-plain-text failure this file warns about (real incident: TP-809, TP-806). Stop and load `jira-acli:jira-content` for the template shape first, whatever content standard the calling skill uses.
 
+> ⚠️ **The same guard applies to comments.** If a comment task names or clearly matches one of the four templated types — status update, QA verification, blocker, decision record — that classification wins over any specific wording/format the user asked for ("bold BLOCKED label," exact bullets, anything) and over `jira-content` being unavailable this session. Load `jira-acli:jira-content` for the template shape first. If it's genuinely unreachable, don't ship a same-shaped draft that silently omits its required fields — say so explicitly to the user and name the missing field(s) (e.g. blocker's "impact if unanswered" line).
+
 ---
 
 ## Always first: auth gate
@@ -40,6 +42,7 @@ Full auth model + per-product details → `REFERENCE.md` § "Auth model".
 acli jira workitem search --jql "project = TEAM AND statusCategory != Done" --fields key,summary,status
 acli jira workitem search --jql "..." --json     # parse | --csv export | --web open | --count | --paginate
 # ⚠️ bare --json/--csv silently caps at ~30 rows (Jira's page size) — no error, no truncation notice. Verified 2026-07-24: 227 real matches, unpaginated --json returned exactly 30. Always --paginate, or cross-check the count against --count first — this applies to reads, not just pre-mutation previews.
+# Always double-quote --jql and any interpolated file-path argument — JQL text searches can embed apostrophes/spaces (e.g. summary ~ "user's request") that break unquoted or single-quoted shell args.
 
 # 2. INSPECT — ~80% fewer tokens than raw JSON:
 acli jira workitem view KEY-123 --json | python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py
@@ -54,8 +57,8 @@ acli jira workitem transition --jql "project = TEAM AND status = 'To Do'" --stat
 # ⚠️ no acli-native way to list valid transitions read-only — `--list` was removed (confirmed gone in 1.3.22-stable). See "When acli can't" for the MCP fallback; otherwise an invalid target status fails loud per-item at fire time (no --ignore-errors), it doesn't silently skip.
 acli jira workitem edit --key "KEY-1,KEY-2" --summary "..." --labels a,b
 # ⚠️ edit --description REPLACES the whole description. Append safely: bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md
-# Templated comments (status update / QA / blocker / decision) route to jira-acli:jira-content.
-python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py note.md > /tmp/note.json && acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json
+# ⚠️ Templated comment guard applies here too (see top of file) — no "user specified exact wording" exception, no "jira-content unavailable" exception. Command below is ONLY for a note that is none of the four templated types.
+python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py note.md > /tmp/note.json && acli jira workitem comment create --key KEY-1 --body-file /tmp/note.json   # plain ad hoc note only — see guard above
 acli jira workitem comment create --key KEY-1 --body "..."   # OK ONLY for a single plain sentence
 # comment update needs --body-adf FILE (its --body/--body-file are plain-text-only, no ADF auto-detect):
 acli jira workitem comment update --key KEY-1 --id 10001 --body-adf /tmp/note.json
