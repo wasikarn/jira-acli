@@ -51,7 +51,7 @@ Clone-only (`--from-project`, company-managed only) or `--from-json`; flags `-k/
 
 ### confluence space
 
-`list`: `--keys` (comma-separated, filter), `--type` (global|personal), `--status` (current|archived, default current), `--expand` (description,homepage,permissions), `-l/--limit` (default 50), `--json`. `create`: `--key`, `--name`, `--description`, `--private`, `--alias`, `--template-key`, `--json`. `archive`/`restore`: `--key` only. `update`: `--key`, `--name`, `--description`, `--status`, `--type`, `--json`. `view`: `--id` (not `--key` — see `../REFERENCE.md` § confluence/admin), plus `--icon`, `--labels`, `--operations`, `--permissions`, `--properties`, `--role-assignments` (EAP only), `--include-all`, `--desc-format` (plain|view), `--json`. Verified live against `1.3.22-stable`, 2026-07-24.
+`list`: `--keys` (comma-separated — ⚠️ accepted but does NOT filter, confirmed live 2026-08-04; always returns the full space list regardless, match `key` client-side instead of trusting the response order), `--type` (global|personal), `--status` (current|archived, default current), `--expand` (description,homepage,permissions), `-l/--limit` (default 50), `--json`. `create`: `--key`, `--name`, `--description`, `--private`, `--alias`, `--template-key`, `--json`. `archive`/`restore`: `--key` only. `update`: `--key`, `--name`, `--description`, `--status`, `--type`, `--json`. `view`: `--id` (not `--key` — see `../REFERENCE.md` § confluence/admin), plus `--icon`, `--labels`, `--operations`, `--permissions`, `--properties`, `--role-assignments` (EAP only), `--include-all`, `--desc-format` (plain|view), `--json`. Verified live against `1.3.22-stable`, 2026-07-24 (space CRUD) / 2026-08-04 (`--keys` filter behavior).
 
 ### confluence blog create
 
