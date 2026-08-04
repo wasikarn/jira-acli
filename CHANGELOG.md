@@ -8,6 +8,39 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.24] — 2026-08-04
+
+`jira-expert` (agent): closed 1 real defect found via a fixture-eval + `kbg:review-fixtures`
++ `kbg:iterate-skill` loop against this repo's first Agent target (3 evals × with_agent/
+baseline, 2 iterations, 2 independent reviewers per round — the loop stopped at iteration 2
+by user choice, under the 3-iteration cap). Iteration 1's review found with_agent's ad hoc
+label-vocabulary check during Bug drafting used a bare `--json` call over a broad query,
+silently capped at 30 of 519 real matches, and concluded a label (`notification`) didn't
+exist when it actually did (in use on TP-1003 and TP-777) — inventing `push-notification`
+as a new label instead of reusing existing vocabulary. This is the same nested-search-under-
+a-different-primary-task failure mode already fixed once in `confluence-content` (0.1.23),
+now independently reproduced a third time this session, this time inside `jira-expert`'s own
+ad hoc verification searches rather than a stated search task. A second, minor finding in the
+same round: with_agent's rendered Bug preview listed a "simpler" acli create option first even
+though its own transcript called that option "not recommended," risking a user picking the
+option that silently drops a field they'd explicitly stated. Iteration 2's fix (a completeness
+caveat added to Hard Rule 1 — ad hoc verification searches are subject to the same
+`--count`/`--paginate` discipline as a stated search task; an option-ordering rule added to
+the Output section — order/label multiple drafted paths by actual recommendation, not
+simplicity) closed both, independently re-verified live by both reviewers against production
+Jira (exact label counts, ticket keys, and search counts all reproduced). No regressions in
+the other 2 evals; no over-correction (read-only tool-call counts held flat or dropped).
+Per the loop's iteration cap (3), and since both target findings closed clean on the first
+re-verification, the user chose to stop at iteration 2 rather than continue. One new,
+single-sourced finding surfaced during the iteration-2 Verify pass — with_agent's duplicate-
+precedent search is Latin-script-only in a project where most summaries are Thai, missing a
+real related ticket (TP-777) that its own label check found by a different path — logged as a
+new, un-actioned follow-up for a future pass, not folded into this release. This session also
+uncovered and documented a standing methodology caveat for any future fixture round in this
+repo: this project's own `CLAUDE.md` auto-imports `acli/SKILL.md` in full, so a "baseline" (no
+target skill/agent read) still carries acli's own mechanical knowledge — any eval aimed at
+discriminating on acli-level knowledge alone will not discriminate in this repo's environment.
+
 ## [0.1.23] — 2026-08-04
 
 `confluence-content`: closed the un-actioned follow-up finding logged in 0.1.22 — a JQL search
