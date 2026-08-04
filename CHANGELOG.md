@@ -8,6 +8,36 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.22] — 2026-08-04
+
+`confluence-content`: closed 3 real defects found via a fixture-eval + `kbg:review-fixtures`
++ `kbg:iterate-skill` loop (3 evals × with/without skill, 3 iterations, 2 independent
+reviewers per round). Iteration 1's review found 2 MAJORs and 1 MINOR: the "editing an
+existing page" procedure never re-checked the page's version immediately before firing a
+write, only at the initial read; drafting a new Spec's Requirements/AC never cross-checked
+Jira, so a fixture run assumed continuous spend tracking for a system that actually
+processes spend in discrete booking increments; and the Mermaid-embed procedure had no
+Failure Modes guidance for a mid-sequence failure. Iteration 1's fix (a version-recheck
+step 2.5 before the write; a Step 1 Jira-cross-check paragraph for new Specs; 2 new Failure
+Modes bullets) closed all three, confirmed by two more independent reviewers — one of whom
+independently re-tested the injector's idempotency claim by running it twice and diffing
+the output — but surfaced a new MAJOR: the Jira-cross-check paragraph's "for a new Spec"
+wording let a sibling eval (documenting an existing webhook-retry flow, not a "new Spec")
+reason its way past the rule and invent every retry-policy number, recreating the original
+failure through a scoping loophole. Iteration 2's fix (widened the rule's scope to any page
+asserting specific system-behavior facts, and explicitly foreclosed the "this isn't really
+a Spec" rationalization) was independently re-verified by both reviewers via live Jira
+reads (TP-834, TP-826, TP-140) confirming the research is load-bearing — concrete AC lines,
+diagram steps, and a "no DLQ" domain fact all trace directly to real tickets, not decorative
+citation. Per the loop's iteration cap (3), this fix session stops here. The same final
+round surfaced one new, unrelated finding: a spec-page-draft fixture accepted an
+`acli --json` search result reporting "30 hits" without a `--paginate`/`--count`
+cross-check — the real count was 395 (a >13x undercount, matching the exact silent-cap trap
+`acli/SKILL.md` already documents elsewhere). No wrong fact reached the final page this
+time, but the gap is real and traces to Step 1's Jira-cross-check paragraph not mentioning
+result-completeness verification — logged as a new, un-actioned follow-up finding for a
+future pass, not folded into this release.
+
 ## [0.1.21] — 2026-08-04
 
 `jira-content`: closed 2 real defects found via a fixture-eval + `kbg:review-fixtures` +

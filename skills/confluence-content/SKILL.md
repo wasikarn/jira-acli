@@ -33,6 +33,27 @@ Ask per section: business reason, scope, each requirement (R1/R2…) as its own 
 own Acceptance Criteria. Ask all at once, not one by one. If the user already provided enough
 context, skip to Step 2.
 
+Before drafting Requirements/AC for any page that asserts specific facts about how a system
+behaves — a new feature Spec, but also a runbook, an architecture doc, or existing-behavior
+documentation that happens to use the Spec template's Requirements/AC structure — a quick Jira
+search (`acli jira workitem search --jql "..."`) for adjacent or related tickets is worth doing
+first, even though this skill owns Confluence content, not Jira content. The domain facts that
+shape a page's Acceptance Criteria often live in Jira, not in what the user typed — e.g. whether
+the underlying system processes the thing continuously or in discrete steps changes what a
+boundary/regression AC should assert, and specific numbers (retry counts, timeouts, thresholds)
+stated as fact rather than flagged as placeholders can be wrong in exactly the way Jira would have
+caught.
+
+Don't skip this because the page technically isn't a "new feature" — "this is documenting existing
+behavior, not proposing something new" is not an exemption; existing-behavior claims are exactly
+the kind of thing Jira tickets (bug reports, prior implementation tickets) tend to correct or
+contradict. Confirmed gap (twice): one fixture run skipped this and produced a Spec with an AC
+implying continuous tracking for a system that actually processes spend in discrete booking
+increments; a second run reasoned its way past this exact rule ("this isn't really a Spec") and
+then invented every retry/backoff number in its Requirements/AC instead of running one read-only
+search. This is research, not authoring — any actual Jira write still routes through
+`jira-acli:jira-content`.
+
 ## Step 2 — Format the content
 
 Write the body in **Thai** using `templates/confluence-spec.md`. **Acceptance Criteria
@@ -163,6 +184,13 @@ never `"markdown"`. Markdown is only safe when the page has zero macro/expand no
    directly (or edit the markdown and re-run inject-mermaid-macros.py against the result) —
    never round-trip through a plain-markdown intermediate for the write itself.
 
+2.5. Immediately before firing 3a/3b — not back at step 1 — re-fetch the page and check its
+   version number (or, lacking that, its content) against what step 1 captured. The
+   preview-and-confirm gate below can leave an arbitrarily long gap between the read and the
+   write; a full-body replace after that gap will silently clobber any edit someone else made to
+   the page in the interval, the same way a stale markdown write clobbers macros. If the version
+   changed, stop — re-diff against the new content and re-preview rather than overwriting it.
+
 3a. No macros — mcp__plugin_atlassian_atlassian__updateConfluencePage
      cloudId: <resolved>  pageId: <same id>  title: <keep or update>
      body: <the full new Markdown — step 1's body with the edit applied>
@@ -217,6 +245,13 @@ version, update only on the user's explicit go-ahead.
 - Confluence page ID not found or ambiguous (title search returns >1 match); ask the user to
   confirm the page or paste its URL/tiny-link.
 - User does not confirm at preview gate — creation/edit is skipped.
+- The Mermaid embed sequence ("Embedding Mermaid diagrams" above) fails or is interrupted after
+  the page write but before the inject-and-write-back step — the page is left with plain
+  syntax-highlighted code blocks, not broken or partially corrupted. Re-run
+  `scripts/inject-mermaid-macros.py` once ready; it's idempotent and leaves already-rendered
+  diagrams untouched.
+- A page's version changed between your initial read and your write (see "Editing an existing
+  page" step 2.5) — stop and re-diff against the new content, don't overwrite it.
 
 ## Related
 
