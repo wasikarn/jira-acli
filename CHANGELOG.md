@@ -8,6 +8,41 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.21] — 2026-08-04
+
+`jira-content`: closed 2 real defects found via a fixture-eval + `kbg:review-fixtures` +
+`kbg:iterate-skill` loop (3 evals × with/without skill, 3 iterations, 2 independent
+reviewers per round). Iteration 1's review found a CRITICAL — a Bug's resolved-metadata
+preview table stated Labels as `bug, billing, csv-export`, but the actual rendered
+command (both the acli `-l` flag and the MCP `additional_fields.labels` payload) silently
+dropped `bug`, carrying only the two domain tags — and a MAJOR: the project-key guard
+asked the user to pick from all 11 visible Jira projects without first checking which
+support the requested issue type, where a blind pick could dead-end on a project that
+can't even hold a Story. Iteration 2's fix (a Step 4 cross-check between the stated
+metadata table and the actual rendered payload; a proactive issue-type check before
+asking) closed both, confirmed by two more independent reviewers each independently
+re-running the live checks against production — but surfaced 2 new, narrower MAJORs in
+the same fixture set: a non-default MCP draft option set `cloudId` to the site hostname
+instead of the resolved GUID (the new cross-check was scoped to table-displayed fields
+only, missing payload-only ones), and no documented rule distinguished when a
+user-stated value forces the whole create over to MCP vs. when an agent-inferred value
+doesn't — producing two individually-defensible but undocumented-as-consistent backend
+choices across sibling evals. Iteration 3's fix (extended the cross-check to
+payload-only values like `cloudId`; added an explicit "user-stated vs. agent-inferred"
+rule to Step 5) closed both, independently re-verified live by both reviewers — but the
+same round surfaced a CRITICAL, unrelated to this iteration's own diff: the
+blocker-comment eval's `with_skill` output shipped an unflagged fabricated claim
+("other QA work sharing the same environment is also stalled," unsupported by the
+ticket or the user's request) in content that would post to a real production ticket if
+approved, plus a disclosure regression versus the prior iteration's equivalent run (an
+internally-reasoned Backlog/checklist-status tension was never surfaced to the user this
+time). Per the loop's iteration cap (3), this fix session stops here — the confirmed
+labels/project-guard/cloudId/backend-default fixes are kept; the comment-fabrication gap
+traces to `templates/comments.md`'s ground rules ("never invent a value" is currently
+scoped explicitly to the date field only, not generalized to impact-content) and is
+logged as a new, un-actioned follow-up finding for a future pass, not folded into this
+release.
+
 ## [0.1.20] — 2026-08-04
 
 `acli`: closed a routing gap found via a 2-agent adversarial fixture review
