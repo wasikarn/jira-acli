@@ -8,6 +8,41 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.26] — 2026-08-04
+
+`jira-expert` (agent): closed the asymmetry flagged as un-actioned in 0.1.25 — does
+`jira-expert.md`'s Hard Rule 4 ("Never touch Confluence") have the same read-only-lookup gap
+`confluence-expert.md`'s Hard Rule 4 had before its 0.1.25 fix? A purpose-built eval (real TP-807,
+its 10 real sub-tasks, its linked Confluence spec page id 217743376) confirmed yes, plus a second,
+unrelated gap. Iteration 1's 2-reviewer review found two double-confirmed major findings: (1) Hard
+Rule 4 gap — with_agent correctly deferred all Confluence access but couldn't answer the user's
+direct "is the spec finalized?" question at all, forcing a needless second-agent round-trip;
+reviewers split on severity (minor vs major) and on fix shape (a narrow metadata-only carve-out vs
+a target-bounded, attribution-required one) — the user chose the latter (reviewer 2's design) via
+an explicit gate. (2) JQL-thoroughness gap, unrelated to Confluence — with_agent never ran
+`parent = TP-807` (pure Jira, zero Confluence involvement) and as a result falsely claimed "no
+visibility into implementation progress," missing all 10 real sub-tasks (2 unstarted); this fix
+landed in the "Read/search/triage" guidance, not Hard Rule 4. Iteration 2's fix closed both,
+re-verified live by 2 independent reviewers: `parent = TP-807` now runs and correctly surfaces the
+2 unstarted sub-tasks; the Confluence carve-out held to all four of its bounds (one call, one
+page, no traversal, attribution with version/date surviving into the actual drafted comment
+payload, no contradiction-scanning) and the run now answers the user's original question via
+attribution instead of punting it. Verdict: **improved** (0 critical/2 major → 0 critical/0
+major), a clean result unlike 0.1.25's flat verdict. One new double-confirmed minor surfaced: the
+carve-out's "a single read-only lookup" wording is a call-count bound, not a mechanism pin, so
+with_agent went to the Atlassian MCP instead of acli's own `confluence page view
+--include-version` (the doctrinally-correct default per `skills/acli/SKILL.md`) — self-disclosed,
+zero factual harm, and confirmed unreachable in real deployment: `jira-expert.md`'s own Hard Rule
+3 ("You hold no MCP tools") already forecloses the MCP path independently of Hard Rule 4's
+mechanism silence, and the actual frontmatter grant (`Read, Grep, Glob, Bash`) confirms it —
+logged as un-actioned, matching this file's own "flag, don't silently ship" pattern. A second new
+finding (with_agent's volunteered "correction" about the Confluence space key was itself wrong —
+BEP is the real key, the task brief was right) was double-confirmed but not tallied: it's a
+general model-accuracy slip (inferring a canonical identifier from a URL path) rather than
+anything Hard Rule 4 governs, though it arguably falls under Hard Rule 1's existing
+under-verified-secondary-claims addendum — noted for a future pass rather than folded into this
+one.
+
 ## [0.1.25] — 2026-08-04
 
 `confluence-expert` (agent): first-ever fixture-eval + `kbg:review-fixtures` + `kbg:iterate-skill`
