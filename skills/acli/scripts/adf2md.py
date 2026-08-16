@@ -142,6 +142,8 @@ def render_table(node):
         cells = [inline_cell(c) for c in row.get("content", []) if isinstance(c, dict)]
         if not rows:
             ncols = len(cells)
+        else:
+            cells = (cells + [""] * ncols)[:ncols]  # pad/truncate ragged rows to header width
         rows.append("| " + " | ".join(cells) + " |")
     if not rows:
         return ""
