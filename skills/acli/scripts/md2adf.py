@@ -250,7 +250,13 @@ def parse(md):
         buf = []
         while i < n and lines[i].strip():
             s = lines[i].strip()
-            if re.match(r"^(#{1,6})\s+|^\d+\.\s+|^[-*]\s+|^>\s*|^```\s*|^(\*{3,}|-{3,}|_{3,})\s*$|^\|", s):
+            if re.match(r"^(#{1,6})\s+|^\d+\.\s+|^[-*]\s+|^>\s*|^```\s*|^(\*{3,}|-{3,}|_{3,})\s*$", s):
+                break
+            # Must match the table dispatch's own lookahead exactly (line ~232) — a
+            # bare `^\|` break here would fire on a "|"-line with no real separator
+            # following, breaking with zero lines consumed and looping forever
+            # (same failure shape the blockquote comment above already warns about).
+            if s.startswith("|") and i + 1 < n and _TABLE_SEP_RE.match(lines[i + 1].strip()):
                 break
             buf.append(s)
             i += 1

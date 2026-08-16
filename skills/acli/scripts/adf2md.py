@@ -192,7 +192,8 @@ def render_card(payload):
         parts.append("  ".join(meta))
     desc = f.get("description")
     if desc:
-        parts.append("## Description\n\n" + render_doc(desc))
+        body = render_doc(desc) if isinstance(desc, dict) else str(desc)
+        parts.append("## Description\n\n" + body)
     comments = ((f.get("comment") or {}).get("comments")) or []
     if comments:
         lines = [f"## Comments ({len(comments)})"]

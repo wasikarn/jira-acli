@@ -13,9 +13,18 @@ import json, sys
 
 
 def _text(node):
-    return "".join(
-        t.get("text", "") for t in node.get("content", []) if t.get("type") == "text"
-    ).strip()
+    # A heading built via Jira's emoji picker mixes "text" nodes with "emoji"/
+    # "mention"/"status" nodes — text-only extraction would silently drop those
+    # and never match the full displayed heading. Mirrors adf2md.py's inline().
+    parts = []
+    for t in node.get("content", []):
+        ty = t.get("type")
+        if ty == "text":
+            parts.append(t.get("text", ""))
+        elif ty in ("emoji", "mention", "status"):
+            attrs = t.get("attrs", {})
+            parts.append(attrs.get("text") or attrs.get("shortName") or "")
+    return "".join(parts).strip()
 
 
 def _section_end(nodes, start):
