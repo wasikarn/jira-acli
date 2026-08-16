@@ -81,8 +81,9 @@ def render_block(node, indent=0):
         return pad + inline(node.get("content", []))
     if ty in ("bulletList", "orderedList"):
         ordered = ty == "orderedList"
+        start = node.get("attrs", {}).get("order", 1)  # ADF orderedList.attrs.order: first item's number, default 1
         lines = []
-        for i, li in enumerate(node.get("content", []), 1):
+        for i, li in enumerate(node.get("content", []), start):
             if not isinstance(li, dict):
                 continue
             marker = f"{i}." if ordered else "-"
