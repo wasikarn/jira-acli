@@ -34,6 +34,9 @@ def render_text(node):
         t = f"~~{t}~~"
     if "underline" in marks:
         t = f"<u>{t}</u>"
+    if "subsup" in marks:
+        tag = "sup" if marks["subsup"].get("attrs", {}).get("type") == "sup" else "sub"
+        t = f"<{tag}>{t}</{tag}>"
     if "link" in marks:
         t = f"[{t}]({marks['link'].get('attrs', {}).get('href', '')})"
     return t
