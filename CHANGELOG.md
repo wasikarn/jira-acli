@@ -8,6 +8,53 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.27] — 2026-08-21
+
+8 commits landed since 0.1.26 without a version/changelog update; this entry
+catches all of them up.
+
+`adf2md.py` (the ADF→Markdown reader): fixed four independent rendering bugs
+found via parallel fan-out review and drill-down verification against
+Atlassian's official ADF docs — `render_card()` crashed with a raw
+`AttributeError` instead of exiting cleanly when `fields.description` was a
+plain string rather than ADF; the `subsup` mark (superscript/subscript)
+wasn't rendered at all, silently dropping the styling; `orderedList.attrs.order`
+was ignored, so a list resuming after an interrupting paragraph/image always
+renumbered from 1; and `render_table` didn't pad ragged body rows to the
+header's column count the way `md2adf.py`'s write side already did, producing
+a misaligned Markdown table. All four verified with minimal repros; all
+regression suites still passed.
+
+`acli-edit.py`: `--remove-section`/`--replace-section` heading matching only
+read `"text"`-type inline nodes, so a heading built via Jira's emoji picker
+(e.g. "🎯 Goals") could never be matched even when the user typed the exact
+displayed text — now also pulls text from emoji/mention/status nodes.
+
+Docs: corrected three verified inaccuracies found via drill-down/live
+verification — `confluence space list --keys` doesn't actually filter (still
+returns the full unfiltered list; the prior Issue 8 fix's own workaround
+silently resolved the wrong space), `acli jira project view` requires
+`--key` as an explicit flag rather than a bare positional, and CLAUDE.md's
+Architecture section overstated `confluence-content`'s MCP dependency (reads
+go through `acli confluence page view` first) and the path-resolution
+convention (2 of 5 `.sh` wrappers use `dirname "$0"`, not `BASH_SOURCE[0]`).
+
+`acli-new.sh`/`acli-assign.sh`: found via a full-repo Standards audit of
+every tracked `.sh`/`.py` script — neither previewed its payload before
+firing, unlike `acli-set-desc.sh`; both now support `--dry-run`.
+`acli-new.sh`'s bare-doc guard also collided the ADF node-type key with the
+Jira issue-type key (a custom issue type literally named "doc" would have
+false-positived); now checks for `"summary"` instead. `md2adf.py` gained
+write support for `<u>`/`<sup>`/`<sub>` so underline/subsup marks round-trip
+with `adf2md.py` instead of silently dropping on rewrite (mark shapes
+verified against Atlassian's official ADF docs). Also deduped two repeated
+logic blocks: a result-parsing one-liner shared by
+`acli-assign.sh`/`acli-edit.sh` (now `print-edit-result.py`), and
+`acli-edit.py`'s heading-text extraction (now imports `adf2md.py`'s
+`plain_inline_text` instead of re-deriving it). `inject-mermaid-macros.py`'s
+7 site-identity flags are now bundled into a `SiteConfig` dataclass instead
+of being threaded individually.
+
 ## [0.1.26] — 2026-08-04
 
 `jira-expert` (agent): closed the asymmetry flagged as un-actioned in 0.1.25 — does
