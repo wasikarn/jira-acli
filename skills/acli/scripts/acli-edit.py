@@ -9,22 +9,10 @@ Usage:
 
 Modes: append | remove | replace
 """
-import json, sys
+import json, os, sys
 
-
-def _text(node):
-    # A heading built via Jira's emoji picker mixes "text" nodes with "emoji"/
-    # "mention"/"status" nodes — text-only extraction would silently drop those
-    # and never match the full displayed heading. Mirrors adf2md.py's inline().
-    parts = []
-    for t in node.get("content", []):
-        ty = t.get("type")
-        if ty == "text":
-            parts.append(t.get("text", ""))
-        elif ty in ("emoji", "mention", "status"):
-            attrs = t.get("attrs", {})
-            parts.append(attrs.get("text") or attrs.get("shortName") or "")
-    return "".join(parts).strip()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from adf2md import plain_inline_text as _text
 
 
 def _section_end(nodes, start):

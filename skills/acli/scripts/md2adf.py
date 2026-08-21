@@ -14,9 +14,9 @@ Usage:
                                                   # `acli jira workitem create --from-json`
 
 Supported Markdown: #–###### headings (levels 1–6), ordered/bullet/task (`- [ ]`) lists,
-**bold**, *italic*, `code`, ~~strike~~, [text](url) links, ``` code blocks,
-> blockquotes, --- horizontal rules, GFM tables (`| a | b |` + `|---|---|`),
-blank-line-separated paragraphs.
+**bold**, *italic*, `code`, ~~strike~~, [text](url) links, <u>underline</u>,
+<sup>sup</sup>/<sub>sub</sub>, ``` code blocks, > blockquotes, --- horizontal
+rules, GFM tables (`| a | b |` + `|---|---|`), blank-line-separated paragraphs.
 Nested lists are flattened — use H3 sub-headings + flat bullets instead.
 Anything else is kept as literal paragraph text (ADF text is literal — matches acli).
 
@@ -48,6 +48,9 @@ INLINE_RE = re.compile(
     r'|\*(?P<italic_text>[^*`]+)\*'
     r'|(?<![\w])_(?P<italic2_text>[^_`]+)_(?![\w])'
     r'|~~(?P<strike_text>[^~`]+)~~'
+    r'|<u>(?P<underline_text>[^<]+)</u>'
+    r'|<sup>(?P<sup_text>[^<]+)</sup>'
+    r'|<sub>(?P<sub_text>[^<]+)</sub>'
 )
 
 
@@ -121,6 +124,15 @@ def inline(text):
         elif gd.get("strike_text") is not None:
             nodes.append({"type": "text", "text": gd["strike_text"],
                           "marks": [{"type": "strike"}]})
+        elif gd.get("underline_text") is not None:
+            nodes.append({"type": "text", "text": gd["underline_text"],
+                          "marks": [{"type": "underline"}]})
+        elif gd.get("sup_text") is not None:
+            nodes.append({"type": "text", "text": gd["sup_text"],
+                          "marks": [{"type": "subsup", "attrs": {"type": "sup"}}]})
+        elif gd.get("sub_text") is not None:
+            nodes.append({"type": "text", "text": gd["sub_text"],
+                          "marks": [{"type": "subsup", "attrs": {"type": "sub"}}]})
         pos = m.end()
     if pos < len(text):
         _emit_text(nodes, text[pos:])

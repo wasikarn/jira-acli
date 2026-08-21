@@ -105,6 +105,7 @@ import copy
 import json
 import sys
 import uuid
+from dataclasses import dataclass
 
 # ── site-specific constants (100-stars.atlassian.net / TaThep) ─────────────
 # Re-derive these if this script is ever pointed at a different Atlassian
@@ -124,6 +125,32 @@ DEFAULT_WORKSPACE_ARI = (
 DEFAULT_SPACE_KEY = "BEP"
 DEFAULT_SPACE_ID = "1081347"
 CONTENT_VERSION = 1  # observed constant across all instances — not the page version
+
+
+@dataclass(frozen=True)
+class SiteConfig:
+    """The per-site identity fields that always travel together to build an
+    extension node — as opposed to per-run options (page id, collapse title,
+    wrap-existing) which vary independently of the site."""
+    extension_key: str
+    extension_type: str
+    cloud_id: str
+    account_id: str
+    workspace_ari: str
+    space_key: str
+    space_id: str
+
+    @classmethod
+    def from_args(cls, args):
+        return cls(
+            extension_key=args.extension_key,
+            extension_type=args.extension_type,
+            cloud_id=args.cloud_id,
+            account_id=args.account_id,
+            workspace_ari=args.workspace_ari,
+            space_key=args.space_key,
+            space_id=args.space_id,
+        )
 
 
 def is_matching_extension(node, extension_key):
@@ -154,28 +181,29 @@ def build_expand_wrapper(code_block_node, title):
 
 
 def build_extension_node(index, args):
+    site = SiteConfig.from_args(args)
     local_id = str(uuid.uuid4())
     return {
         "type": "extension",
         "attrs": {
-            "extensionType": args.extension_type,
-            "extensionKey": args.extension_key,
+            "extensionType": site.extension_type,
+            "extensionKey": site.extension_key,
             "parameters": {
                 "layout": "extension",
                 "guestParams": {"index": index},
                 "forgeEnvironment": "PRODUCTION",
                 "embeddedMacroContext": {
-                    "accountId": args.account_id,
-                    "cloudId": args.cloud_id,
-                    "contextIds": [args.workspace_ari],
+                    "accountId": site.account_id,
+                    "cloudId": site.cloud_id,
+                    "contextIds": [site.workspace_ari],
                     "extensionData": {
                         "type": "macro",
                         "content": {"id": args.page_id, "type": "page", "version": CONTENT_VERSION},
-                        "space": {"id": args.space_id, "key": args.space_key},
+                        "space": {"id": site.space_id, "key": site.space_key},
                     },
                 },
                 "localId": local_id,
-                "extensionId": f"ari:cloud:ecosystem::extension/{args.extension_key}",
+                "extensionId": f"ari:cloud:ecosystem::extension/{site.extension_key}",
                 "extensionTitle": "Mermaid diagram",
             },
             "text": "Mermaid diagram",

@@ -80,6 +80,20 @@ def test_existing_bold_then_code_not_merged():
     assert any(m["type"] == "code" for n in marked for m in n["marks"])
 
 
+def test_underline_and_subsup_round_trip():
+    # adf2md.py renders underline/subsup marks as these same tags — this is the
+    # write-side half of that round-trip (previously a silent one-way gap).
+    md = "plain <u>underlined</u> and <sup>sup</sup> and <sub>sub</sub>"
+    doc = parse(md)
+    nodes = doc["content"][0]["content"]
+    sup_node = next(n for n in nodes if n.get("text") == "sup")
+    sub_node = next(n for n in nodes if n.get("text") == "sub")
+    underline_node = next(n for n in nodes if n.get("text") == "underlined")
+    assert {"type": "underline"} in underline_node["marks"]
+    assert sup_node["marks"] == [{"type": "subsup", "attrs": {"type": "sup"}}]
+    assert sub_node["marks"] == [{"type": "subsup", "attrs": {"type": "sub"}}]
+
+
 if __name__ == "__main__":
     tests = [v for k, v in list(globals().items()) if k.startswith("test_")]
     failed = 0

@@ -92,7 +92,7 @@ matching — re-use that approach when hand-editing ADF (`content[]` nodes of
 | Read body/desc from file | `--from-file` / `--body-file` / `--description-file` |
 | Markdown → ADF for `--from-json` | `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` |
 | Read a work item cheaply (ADF → md) | `acli ... view KEY --json \| python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (~80% fewer tokens) |
-| Create from Markdown in one step | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-new.sh desc.md -s "..." -p TP -t Bug` |
+| Create from Markdown in one step | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-new.sh desc.md -s "..." -p TP -t Bug [--dry-run]` (preview the card first — see Create safety) |
 | Append to a description (no loss) | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md` |
 | Remove a description section | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --remove-section "HEADING"` |
 | Replace a section in place | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --replace-section "HEADING" new.md` |

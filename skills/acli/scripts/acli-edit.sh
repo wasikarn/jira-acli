@@ -48,4 +48,4 @@ if [ "$DRY_RUN" = "true" ]; then
 fi
 
 acli jira workitem edit --from-json "$tmp_payload" --yes --json \
-  | python3 -c "import json,sys; r=json.load(sys.stdin)['results'][0]; print(r['status'], '-', r['message'])"
+  | python3 "$SCRIPT_DIR/print-edit-result.py"

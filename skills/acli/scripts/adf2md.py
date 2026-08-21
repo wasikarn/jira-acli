@@ -42,6 +42,24 @@ def render_text(node):
     return t
 
 
+def plain_inline_text(node):
+    """Flatten a heading (or similar) node's content to a plain comparable string —
+    no mark-based formatting. Used where the caller matches a heading typed by
+    hand (e.g. acli-edit.py's --replace-section/--remove-section), not rendering
+    Markdown; a bold/emoji heading built via Jira's editor mixes "text" nodes
+    with "emoji"/"mention"/"status" nodes, so a text-only join would silently
+    drop those and never match the full displayed heading."""
+    parts = []
+    for t in node.get("content", []):
+        ty = t.get("type")
+        if ty == "text":
+            parts.append(t.get("text", ""))
+        elif ty in ("emoji", "mention", "status"):
+            attrs = t.get("attrs", {})
+            parts.append(attrs.get("text") or attrs.get("shortName") or "")
+    return "".join(parts).strip()
+
+
 def inline(nodes):
     out = []
     for n in nodes or []:

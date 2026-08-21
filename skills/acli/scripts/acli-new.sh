@@ -5,18 +5,31 @@
 # Collapses the write → tempfile → create → parse-key dance into one command.
 #
 # Usage:
-#   acli-new.sh DESC.md -s "Summary" -p PROJECT -t Type [-l a,b] [-P PARENT-KEY]
+#   acli-new.sh DESC.md -s "Summary" -p PROJECT -t Type [-l a,b] [-P PARENT-KEY] [--dry-run]
 #
 # Sub-task: add -P/--parent PARENT-KEY and -t Sub-task. All flags after DESC.md
-# are forwarded verbatim to md2adf.py.
+# are forwarded verbatim to md2adf.py (except --dry-run, stripped before forwarding).
+#
+# --dry-run: render the payload as Markdown and exit — nothing sent to Jira.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-  sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
   exit 0
 fi
+
+DRY_RUN=false
+new_args=()
+for arg in "$@"; do
+  if [ "$arg" = "--dry-run" ]; then
+    DRY_RUN=true
+  else
+    new_args+=("$arg")
+  fi
+done
+set -- "${new_args[@]}"
 
 tmp=$(mktemp)
 trap 'rm -f "$tmp"' EXIT
@@ -24,9 +37,15 @@ trap 'rm -f "$tmp"' EXIT
 # md2adf only emits a create payload when -s/-p/-t are present; otherwise a bare
 # ADF doc, which can't be created. Build it, then refuse the bare-doc case loudly.
 python3 "$SCRIPT_DIR/md2adf.py" "$@" > "$tmp"
-if ! python3 -c "import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get('type')!='doc' else 1)" "$tmp"; then
+if ! python3 -c "import json,sys; sys.exit(0 if 'summary' in json.load(open(sys.argv[1])) else 1)" "$tmp"; then
   echo "FATAL: need -s/--summary, -p/--project, -t/--type to create (got a bare ADF doc)" >&2
   exit 1
+fi
+
+if [ "$DRY_RUN" = "true" ]; then
+  echo "=== Dry run — new work item preview (nothing sent) ===" >&2
+  python3 "$SCRIPT_DIR/adf2md.py" "$tmp"
+  exit 0
 fi
 
 # Create and surface the new key. pipefail makes an acli error abort the pipe.
