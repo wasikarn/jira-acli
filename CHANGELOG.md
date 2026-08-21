@@ -8,6 +8,16 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.28] — 2026-08-21
+
+`CLAUDE.md`: fixed a doc-drift regression introduced by 0.1.27's own change —
+adding `SCRIPT_DIR`/`print-edit-result.py` to `acli-assign.sh` silently broke
+the Architecture section's claim that the script "needs neither [path
+resolution]; it calls no sibling script." Corrected the wrapper count (4 of 5
+→ all 5) and folded `acli-assign.sh` into the `BASH_SOURCE[0]` group. Found
+via a deep-audit pass re-verifying 0.1.27's changes against the live files
+instead of trusting the prior summary.
+
 ## [0.1.27] — 2026-08-21
 
 8 commits landed since 0.1.26 without a version/changelog update; this entry
