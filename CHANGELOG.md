@@ -8,6 +8,22 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.29] — 2026-09-03
+
+Prompt-cleanup pass, no behavior change.
+
+`skills/jira-content/SKILL.md`: trimmed the frontmatter `description` +
+`when_to_use` from ~1,468 to 1,289 characters — same triggers, exclusions,
+and foreign-skill guard, just fewer words — restoring headroom under Claude
+Code's 1,536-character cap so the next routing tweak doesn't silently get
+truncated out of the skill listing.
+
+`agents/jira-expert.md`, `agents/confluence-expert.md`: rewrote four dated
+"Confirmed gap (2026-08-04)" narrative paragraphs as present-tense rules.
+The reasons behind each rule are kept; the incident-report framing (what
+was tried, when, what happened) is gone, since an agent reading the file
+needs the rule, not the history.
+
 ## [0.1.28] — 2026-08-21
 
 `CLAUDE.md`: fixed a doc-drift regression introduced by 0.1.27's own change —
