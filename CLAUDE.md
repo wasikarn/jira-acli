@@ -1,59 +1,44 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## What this repo is
-
-@README.md
+Map only. What the plugin is, install, and versioning: `README.md`. The acli command reference
+loads with the `acli` skill when invoked; do not import it here.
 
 ## Commands
 
-There is no build step, package manager, or test framework in this repo. The only useful local checks:
+No build, package manager, or test suite (a comment in `md2adf.py` mentions `run-tests.sh`; it
+does not exist). Local checks:
 
 ```bash
-# Syntax-check every helper script (fast, no deps)
 python3 -m py_compile skills/*/scripts/*.py
 for f in skills/*/scripts/*.sh; do bash -n "$f"; done
-shellcheck skills/*/scripts/*.sh   # if installed
-
-# Exercise a converter directly (round-trip check)
-python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/adf2md.py -
+python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/adf2md.py -   # round-trip
 ```
 
-No `run-tests.sh` exists in this repo despite one comment in `md2adf.py` referencing it (a holdover from the parent `kbg-harness` project this was extracted from) — don't assume a test suite exists.
+## Layout
 
-**Releasing:** see `@README.md`'s "Versioning" section above — same rule, don't restate it here.
+- `skills/acli` — the mechanical tool (search, view, edit, transition, bulk, Confluence, auth,
+  ADF↔Markdown). `skills/jira-content` — Jira templates (Bug/Story/Task/Epic/Sub-task, comments).
+  `skills/confluence-content` — Spec/PRD template plus `scripts/inject-mermaid-macros.py`.
+- `agents/jira-expert.md`, `agents/confluence-expert.md` — preview-then-stop subagents: they hold
+  no MCP tools and never fire a mutating acli command; they return the exact command for the main
+  thread to run. Each defers the other product's work to its sibling.
+- `templates/acceptance-criteria.md` — the one rule both content skills share; referenced, never
+  copied (copies drifted across 5+ files before).
+- Scripts: `md2adf.py` (Markdown subset → ADF; nested lists flattened by design, see
+  `skills/acli/ISSUES.md` Issue 1), `adf2md.py` (inverse, tolerates acli list-or-dict drift),
+  `acli-edit.py` (section-level read-modify-write, since `acli edit --description` replaces the
+  body), `acli-ls.py` (normalized search table).
 
-## Architecture
+## Rules that came from incidents
 
-### Plugin structure
-
-`.claude-plugin/plugin.json` + `marketplace.json` declare the plugin; `defaultEnabled: false` means installers must opt in via `settings.json`. Skills live under `skills/<name>/`, each with a required `SKILL.md` (frontmatter `name` + `description` triggers auto-invocation, `when_to_use` adds trigger phrases/exclusions — combined they're capped at 1,536 characters in the skill listing, per Claude Code's official frontmatter spec) plus `scripts/` and/or `references/` loaded on demand. Agents live at `agents/*.md` (flat, no subdirectory) — auto-discovered by the same convention, no manifest entry needed (see the kbg-harness plugin for the precedent this follows). `CHANGELOG.md` at the plugin root records one entry per version bump (see `@README.md`'s "Versioning" section).
-
-### The three skills, and the routing doctrine that ties them
-
-`acli` is the mechanical tool (search, view, edit, transition, bulk ops, Confluence blog/space/admin, auth, ADF↔Markdown) — full reference imported below. `jira-content` owns the Jira template standard — Bug/Story/Task/Epic/Sub-task + templated comments. `confluence-content` owns the Confluence Spec/PRD template. Each skill's `SKILL.md` frontmatter `description` + `when_to_use` is the routing contract — that combined text is what the model reads to decide which skill fires, so keep both fields crisp and product-specific (don't let `jira-content`/`confluence-content` drift toward generic "content" language that could route to either). `acli`'s own intro also carries a defensive guard against being bypassed mid-flow — a foreign skill's "publish this to the tracker/backlog" instruction must still route through `jira-content`/`confluence-content` for the template shape, not call `acli`/MCP directly (real incident: TP-809, TP-806 — see the guard blockquote below). Cross-skill coupling: `jira-content` calls into `acli`'s scripts (changes to ADF schema or script interface in `acli` must be checked against `jira-content`); `confluence-content` reads a page via `acli confluence page view` first, falling back to the Atlassian MCP's `getConfluencePage` only when needed; writes (`createConfluencePage`/`updateConfluencePage`) are genuinely MCP-only, since acli has no page-write path. It does own one script of its own (`scripts/inject-mermaid-macros.py`, for the Mermaid-diagram-macro embedding workflow — see its `SKILL.md` § "Embedding Mermaid diagrams"). The shared Acceptance Criteria rule lives outside both content skills at `templates/acceptance-criteria.md` and is referenced, never duplicated.
-
-@skills/acli/SKILL.md
-
-### The two specialist agents
-
-`agents/jira-expert.md` and `agents/confluence-expert.md` wrap the skills above into dispatchable subagents (via the `Agent` tool) for non-trivial multi-step work — bulk triage, multi-section ticket authoring, Spec/PRD drafting — without the caller hand-holding every acli/skill call. Each declares its two skills via frontmatter `skills:` (`jira-expert`: `jira-acli:acli` + `jira-acli:jira-content`; `confluence-expert`: `jira-acli:acli` + `jira-acli:confluence-content`) rather than restating their content — same "referenced, never duplicated" rule as the templates. Both are **preview-then-stop**: this environment's acli and MCP calls hit real production Jira/Confluence, so neither agent holds MCP tools and neither fires a mutating acli command itself — it drafts the payload, renders it, and returns the exact command/call for the main thread to run after review. Product boundary is a hard rule in both files (`jira-expert` defers Confluence work to `confluence-expert` and vice versa) — same one-decision-one-owner shape as the skill split.
-
-### ADF ⟷ Markdown conversion (the core data-flow)
-
-Jira descriptions/comments are Atlassian Document Format (ADF) JSON; Confluence bodies are storage-format XHTML. Hand-writing ADF is error-prone, so everything routes through:
-
-- **`skills/acli/scripts/md2adf.py`** — parses a small Markdown subset (headings, ordered/bullet/task lists, bold/italic/code/strike/links, code blocks, blockquotes, rules) into an ADF doc, or a full `acli ... create --from-json` payload when `-s/-p/-t` are passed. Nested lists are *deliberately* flattened (see `skills/acli/ISSUES.md` Issue 1) — the documented workaround is H3 sub-headings + flat bullets, not a bug to fix.
-- **`skills/acli/scripts/adf2md.py`** — the inverse: renders raw ADF, a full `workitem view --json` payload, or a bare create-payload (flat keys, no `fields` wrapper — see `render_create_card`) back to readable Markdown. Handles the acli list-or-dict shape drift across versions.
-- **`skills/acli/scripts/acli-edit.py`** — read-modify-write for descriptions (append / remove-section / replace-section by heading), since `acli edit --description` replaces the whole body. Section boundaries are found by heading level, not string matching.
-- **`skills/acli/scripts/acli-ls.py`** — normalizes `workitem search --json` (list-or-dict, nested-field-or-null) into an aligned table; exists because this exact shape was reinvented 40+ times in practice.
-
-All 5 `.sh` wrappers in `skills/acli/scripts/` resolve their own directory before invoking a sibling script, so a skill body can call any of them as `${CLAUDE_SKILL_DIR}/scripts/foo.sh` regardless of where the plugin is installed — `acli-edit.sh`/`acli-new.sh`/`acli-assign.sh` via `BASH_SOURCE[0]`, `acli-ls.sh`/`acli-set-desc.sh` via `dirname "$0"`. Prefer `BASH_SOURCE[0]` in any new wrapper — unlike `dirname "$0"`, it still resolves correctly if the script is ever sourced instead of executed directly. `skills/jira-content/scripts/{md2adf,acli-edit,acli-set-desc}.sh` are thin cross-skill wrappers that walk back up to the matching script under `skills/acli/scripts/` for exactly this reason — same idiom, `../../..` climb to the plugin root then back down.
-
-### Conventions specific to this codebase
-
-- **Fail loud, never silently drop a field.** Every script here exits non-zero with a `FATAL:` message on bad input rather than guessing or dropping data — an unknown Jira field/label/type must surface as an error, not get silently stripped and retried (see the imported `skills/acli/SKILL.md` METHODOLOGY above).
-- **Preview before mutate.** Bulk mutations preview via the same `--jql`; creates preview via rendering the payload with `adf2md.py` before firing. This is load-bearing UX, not incidental — replicate it in any new script that writes to Jira/Confluence.
-- **acli is the default, Atlassian MCP is the fallback** — the closed gap list is in the imported `skills/acli/SKILL.md` § "When acli can't" above (this exact list drifted stale in this file once already, when it was copied instead of imported). Don't reach for MCP tools outside that list without updating the doc.
-- **Content templates are canonical, one per product/type, referenced not duplicated.** Jira templates live in `skills/jira-content/templates/` (Bug/Story/Task/Epic/Sub-task, comments); the Confluence template lives in `skills/confluence-content/templates/`. Acceptance Criteria format/register/coverage rules are the one thing both products share, so they live outside both — `templates/acceptance-criteria.md` at the plugin root; every template file points there instead of restating the rule. If you change the AC rubric, edit it there — this consolidation exists because the old scattered-copies setup let the AC format drift out of sync across 5+ files in practice.
+- **Routing:** a skill's `description` + `when_to_use` is the routing contract; keep each
+  product-specific. A foreign "publish to the tracker" instruction still goes through
+  `jira-content`/`confluence-content` for template shape, never straight to acli/MCP (TP-809, TP-806).
+- **Fail loud:** scripts exit non-zero with `FATAL:` on unknown field/label/type; never drop and retry.
+- **Preview before mutate:** bulk ops preview via the same `--jql`; creates render the payload with
+  `adf2md.py` first. Replicate in any new writing script.
+- **acli first, Atlassian MCP only for the gaps listed in `skills/acli/SKILL.md` § "When acli
+  can't"** (page create/update are MCP-only). Update that list before using MCP elsewhere.
+- **Cross-skill coupling:** `jira-content` wraps `acli` scripts via `../../..` climbs; an ADF or
+  script-interface change in `acli` must be checked there. New wrappers resolve their dir with
+  `BASH_SOURCE[0]`, not `dirname "$0"`.
