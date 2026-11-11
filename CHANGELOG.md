@@ -8,6 +8,14 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.32] — 2026-11-12
+Every Atlassian MCP v2 tool name in the skills, agents and `inject-mermaid-macros.py`
+now carries its v1 name beside it (`createConfluenceContent` (v1: `createConfluencePage`)),
+so a connection still on v1 (live until 2027-03-01) is not sent to a missing tool.
+Also renamed the `mcp__plugin_atlassian_atlassian__`-prefixed v1 names that 0.1.31 missed
+(`createConfluencePage`, `updateConfluencePage`, `getConfluencePage`, `getVisibleJiraProjects`,
+`getJiraProjectIssueTypesMetadata`, `getConfluenceSpaces`). v2 parameter shapes still unverified.
+
 ## [0.1.31] — 2026-11-12
 Atlassian MCP tool names moved from v1 to v2 across the skills and agents:
 `createConfluencePage`/`updateConfluencePage`/`getConfluencePage` →

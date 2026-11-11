@@ -1,6 +1,6 @@
 ---
 name: confluence-content
-description: "Create or edit the content of a Confluence Spec/PRD page against the team's canonical template (business reason, scope, per-requirement GWT Acceptance Criteria) — via the Atlassian MCP (acli's `confluence page` command is view-only, it can't create or update). Use this BEFORE calling createConfluenceContent/updateConfluenceContent directly — never hand-build the page body."
+description: "Create or edit the content of a Confluence Spec/PRD page against the team's canonical template (business reason, scope, per-requirement GWT Acceptance Criteria) — via the Atlassian MCP (acli's `confluence page` command is view-only, it can't create or update). Use this BEFORE calling createConfluenceContent/updateConfluenceContent (v1: createConfluencePage/updateConfluencePage) directly — never hand-build the page body."
 when_to_use: "Trigger on ANY intent to create/write/draft a Confluence page, spec, PRD, or design doc, or to edit/update/fix/revise an existing Confluence page's content — in Thai or English, not just literal phrases like 'สร้าง spec' (also matches 'write a spec for X', 'draft a PRD for Y', 'update the Confluence page for Z', 'add a section to the design doc'). Don't use for Jira issues (Bug/Story/Task/Epic/Sub-task/comments — see jira-acli:jira-content), Confluence blogs/spaces/admin ops, or viewing a page without editing it (see jira-acli:acli)."
 ---
 
@@ -80,7 +80,7 @@ Resolve at runtime; never hardcode IDs.
 | Field | Resolution |
 |---|---|
 | **Site / cloudId** | Re-derive against `acli/REFERENCE.md` + `acli/SKILL.md` § "When acli can't" before naming any `mcp__...` tool here. cloudId is MCP-only — resolve via `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several. **If you're an MCP-less caller (e.g. the `confluence-expert` agent, which holds no MCP tools by design)**, this field can never be resolved locally — name it as an outstanding gap in your handoff instead of guessing or skipping it. |
-| **Space** | `acli confluence space list --json` to resolve — acli has full space CRUD, but inconsistently: `create`/`archive`/`update`/`restore` all take `--key`, `view` alone takes `--id` (`space view --key` fails `✗ unknown flag: --key`, confirmed live 2026-07-24). ⚠️ **`--keys <KEY>` does not filter** — confirmed live 2026-08-04: it returns the same full unfiltered space list whether passed or omitted. Don't grab `.results[0].id` — match the target `key` explicitly instead: `acli confluence space list --json \| python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='<KEY>'][0])"`. Then `space view --id <id> --json` only if you need more than list already returned. Fall back to `mcp__plugin_atlassian_atlassian__getConfluenceSpaces` only if acli can't find it. Ask the user if ambiguous. |
+| **Space** | `acli confluence space list --json` to resolve — acli has full space CRUD, but inconsistently: `create`/`archive`/`update`/`restore` all take `--key`, `view` alone takes `--id` (`space view --key` fails `✗ unknown flag: --key`, confirmed live 2026-07-24). ⚠️ **`--keys <KEY>` does not filter** — confirmed live 2026-08-04: it returns the same full unfiltered space list whether passed or omitted. Don't grab `.results[0].id` — match the target `key` explicitly instead: `acli confluence space list --json \| python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='<KEY>'][0])"`. Then `space view --id <id> --json` only if you need more than list already returned. Fall back to `mcp__plugin_atlassian_atlassian__listConfluenceSpaces` (v1: `getConfluenceSpaces`) only if acli can't find it. Ask the user if ambiguous. |
 | **Parent page** | Only if the user wants this nested under an existing page; resolve its `pageId`. Omit for a top-level page. |
 | **Title** | From the spec's subject; confirm with the user. |
 
@@ -91,7 +91,7 @@ Show resolved metadata (site, space, parent, title) + rendered Thai content as a
 ## Step 5 — Create
 
 ```
-mcp__plugin_atlassian_atlassian__createConfluencePage
+mcp__plugin_atlassian_atlassian__createConfluenceContent (v1: `createConfluencePage`)
   cloudId:       <resolved>
   spaceId:       <resolved>
   title:         <spec title>
@@ -127,10 +127,10 @@ screenshot, same day, same page: one clean render per diagram, no wrapping, no d
 #    mermaid fences included as plain ```mermaid code blocks in the Markdown body.
 # 2. Fetch the page back as ADF (structured JSON, round-trip-safe) and inject the render
 #    macro after every mermaid code block that doesn't already have one:
-#    mcp__...__getConfluencePage(cloudId, pageId, contentFormat="adf")  -> save full response to page.json
+#    mcp__...__getConfluenceContent(cloudId, pageId, contentFormat="adf")  -> save full response to page.json   # v1: getConfluencePage
 python3 "${CLAUDE_SKILL_DIR}/scripts/inject-mermaid-macros.py" page.json --page-id <id> > doc.json
 # 3. Write the script's output straight back as the body (it's already a bare {"type":"doc",...}):
-#    mcp__...__updateConfluencePage(cloudId, pageId, body=<doc.json content>, contentFormat="adf")
+#    mcp__...__updateConfluenceContent(cloudId, pageId, body=<doc.json content>, contentFormat="adf")   # v1: updateConfluencePage
 ```
 
 Idempotent — safe to re-run after adding more diagrams to a page that already has some rendered;
@@ -182,7 +182,7 @@ never `"markdown"`. Markdown is only safe when the page has zero macro/expand no
    a markdown write, reproducing the exact 2026-07-14 incident below on a different page shape.
    python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf2md.py" page.adf.json
    → read the current body as Markdown (for review/editing text — the ADF file is still the
-   source of truth for the write). Falls back to mcp__plugin_atlassian_atlassian__getConfluencePage
+   source of truth for the write). Falls back to mcp__plugin_atlassian_atlassian__getConfluenceContent (v1: `getConfluencePage`)
    (cloudId, pageId, contentFormat: "markdown") only if acli is unavailable/unauthed — but that
    fallback can't detect macros either, so still fetch contentFormat: "adf" once to check.
 
@@ -200,12 +200,12 @@ never `"markdown"`. Markdown is only safe when the page has zero macro/expand no
    the page in the interval, the same way a stale markdown write clobbers macros. If the version
    changed, stop — re-diff against the new content and re-preview rather than overwriting it.
 
-3a. No macros — mcp__plugin_atlassian_atlassian__updateConfluencePage
+3a. No macros — mcp__plugin_atlassian_atlassian__updateConfluenceContent (v1: `updateConfluencePage`)
      cloudId: <resolved>  pageId: <same id>  title: <keep or update>
      body: <the full new Markdown — step 1's body with the edit applied>
      contentFormat: "markdown"
 
-3b. Has macros — mcp__plugin_atlassian_atlassian__updateConfluencePage
+3b. Has macros — mcp__plugin_atlassian_atlassian__updateConfluenceContent (v1: `updateConfluencePage`)
      cloudId: <resolved>  pageId: <same id>  title: <keep or update>
      body: <the full edited ADF JSON — step 2's output, a bare {"type":"doc",...} document>
      contentFormat: "adf"

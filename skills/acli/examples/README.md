@@ -86,7 +86,7 @@ acli confluence blog create --space-id 12345 --title "X" \
 ```
 Why: Confluence's storage format is XHTML, the inverse of Jira. ADF here renders as literal JSON text.
 
-**`createConfluenceContent`/`updateConfluenceContent` (MCP, the only way to create/update a *page* — acli's `confluence page` is view-only) is a different content model entirely:** `contentFormat` is `"html"` (Confluence's own HTML+ dialect — `data-type` attributes for panels/status/task-lists/etc., NOT the same thing as `blog create`'s storage XHTML), `"markdown"`, or `"adf"`. For a plain document with headings/lists/bold — no Confluence-specific panels/macros — pass `contentFormat: "markdown"` and the raw Markdown body directly; skip hand-authoring HTML or ADF entirely. Template for this → `jira-acli:confluence-content` § `templates/confluence-spec.md`.
+**`createConfluenceContent`/`updateConfluenceContent` (v1: `createConfluencePage`/`updateConfluencePage`) (MCP, the only way to create/update a *page* — acli's `confluence page` is view-only) is a different content model entirely:** `contentFormat` is `"html"` (Confluence's own HTML+ dialect — `data-type` attributes for panels/status/task-lists/etc., NOT the same thing as `blog create`'s storage XHTML), `"markdown"`, or `"adf"`. For a plain document with headings/lists/bold — no Confluence-specific panels/macros — pass `contentFormat: "markdown"` and the raw Markdown body directly; skip hand-authoring HTML or ADF entirely. Template for this → `jira-acli:confluence-content` § `templates/confluence-spec.md`.
 
 ---
 
