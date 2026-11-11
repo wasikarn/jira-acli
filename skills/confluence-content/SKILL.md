@@ -1,6 +1,6 @@
 ---
 name: confluence-content
-description: "Create or edit the content of a Confluence Spec/PRD page against the team's canonical template (business reason, scope, per-requirement GWT Acceptance Criteria) — via the Atlassian MCP (acli's `confluence page` command is view-only, it can't create or update). Use this BEFORE calling createConfluencePage/updateConfluencePage directly — never hand-build the page body."
+description: "Create or edit the content of a Confluence Spec/PRD page against the team's canonical template (business reason, scope, per-requirement GWT Acceptance Criteria) — via the Atlassian MCP (acli's `confluence page` command is view-only, it can't create or update). Use this BEFORE calling createConfluenceContent/updateConfluenceContent directly — never hand-build the page body."
 when_to_use: "Trigger on ANY intent to create/write/draft a Confluence page, spec, PRD, or design doc, or to edit/update/fix/revise an existing Confluence page's content — in Thai or English, not just literal phrases like 'สร้าง spec' (also matches 'write a spec for X', 'draft a PRD for Y', 'update the Confluence page for Z', 'add a section to the design doc'). Don't use for Jira issues (Bug/Story/Task/Epic/Sub-task/comments — see jira-acli:jira-content), Confluence blogs/spaces/admin ops, or viewing a page without editing it (see jira-acli:acli)."
 ---
 
@@ -11,7 +11,7 @@ template. Jira and Confluence are different products with different content shap
 owns Confluence only. Jira issue content is `jira-acli:jira-content`'s job.
 
 **Backend: Atlassian MCP only** — acli's `confluence page` command is view-only, so
-`createConfluencePage`/`updateConfluencePage` are the only way to create or update a page. There is
+`createConfluenceContent`/`updateConfluenceContent` are the only way to create or update a page. There is
 no acli path here, unlike Jira. Template lives at
 [`templates/confluence-spec.md`](templates/confluence-spec.md).
 
@@ -86,7 +86,7 @@ Resolve at runtime; never hardcode IDs.
 
 ## Step 4 — Preview and confirm
 
-Show resolved metadata (site, space, parent, title) + rendered Thai content as a review surface. Confirm each requirement's AC covers error + boundary + regression paths (see `../../templates/acceptance-criteria.md`). Create/update **only on the user's explicit go-ahead** — `createConfluencePage`/`updateConfluencePage` have no dry-run.
+Show resolved metadata (site, space, parent, title) + rendered Thai content as a review surface. Confirm each requirement's AC covers error + boundary + regression paths (see `../../templates/acceptance-criteria.md`). Create/update **only on the user's explicit go-ahead** — `createConfluenceContent`/`updateConfluenceContent` have no dry-run.
 
 ## Step 5 — Create
 
@@ -114,7 +114,7 @@ space `BEP`), each code block needs a **separate macro instance immediately afte
 render as a diagram — one macro renders one code block, it does not scan the whole page.
 
 ⚠️ **Use `contentFormat: "adf"` for the fetch-inject-write cycle below — never `"html"`.** Writing
-the macro through `updateConfluencePage(contentFormat="html")` makes Confluence's html-writer
+the macro through `updateConfluenceContent(contentFormat="html")` makes Confluence's html-writer
 "helpfully" restructure a code-block-then-matching-extension-macro pattern into three nodes (a
 broken preview extension, the code wrapped in a collapsible `expand`, then the original extension)
 — the diagram renders TWICE with a stray collapsed accordion between them. Confirmed broken by
@@ -150,12 +150,12 @@ step as required.
 ## Editing an existing page
 
 There's no append/patch mechanism for Confluence (unlike `jira-content`'s `acli-edit.sh` for Jira)
-— `updateConfluencePage` always replaces the **entire** body, so the flow is a manual
+— `updateConfluenceContent` always replaces the **entire** body, so the flow is a manual
 read-modify-write, not a script:
 
 ⚠️ **Check for macros BEFORE picking a write format — `contentFormat: "markdown"` silently
 deletes them.** Plain Markdown has no syntax for a Forge macro (`extension` node) or a collapsible
-`expand` wrapper, so a markdown-format `updateConfluencePage` full-body-replace drops every macro
+`expand` wrapper, so a markdown-format `updateConfluenceContent` full-body-replace drops every macro
 on the page without warning or error — the write succeeds, the page just loses them. Confirmed
 2026-07-14 on TP-807: a prose-only edit (fixing word choice, no diagram changes intended) wiped all
 7 native "Mermaid diagram" render macros the page had; only caught because the user noticed the
@@ -221,7 +221,7 @@ version, update only on the user's explicit go-ahead.
 
 ## Known limitations
 
-- **No script → live-write bridge for large bodies.** `createConfluencePage`/`updateConfluencePage`
+- **No script → live-write bridge for large bodies.** `createConfluenceContent`/`updateConfluenceContent`
   take `body` as a literal text parameter — there is no way to point the tool at a script's output
   file. Any script that produces a full-page body (e.g. `scripts/inject-mermaid-macros.py`) still
   needs its output file copied into the tool call by hand, however large the page — the MCP layer

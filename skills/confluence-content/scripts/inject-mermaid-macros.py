@@ -24,9 +24,9 @@ code blocks.
 Operates on ADF (contentFormat="adf"), not HTML. An earlier version of this
 script transformed the HTML representation instead
 (`<div data-type="extension">`), because that's the syntax
-createConfluencePage/updateConfluencePage document for contentFormat="html".
+createConfluenceContent/updateConfluenceContent document for contentFormat="html".
 That path is BROKEN: writing a codeBlock immediately followed by a matching
-extension div through `updateConfluencePage(contentFormat="html")` makes
+extension div through `updateConfluenceContent(contentFormat="html")` makes
 Confluence's html-format writer "helpfully" restructure it into three nodes —
 an incomplete preview extension before the code, the code wrapped in a
 collapsible `expand` macro, and the original extension after — and the
@@ -42,7 +42,7 @@ never "html", for this.
 Discovered 2026-07-14 against TP-807's spec page (100-stars.atlassian.net,
 space BEP) by inserting the macro once by hand via the Confluence editor's
 `/mermaid` slash command, then reading the page back with
-`getConfluencePage(contentFormat="adf")` to see the real extension node shape
+`getConfluenceContent(contentFormat="adf")` to see the real extension node shape
 Confluence itself produces — confirmed identical in every field to this
 script's hand-built node before trusting it. Verified present on 7 instances
 on one page (all `codeBlock` -> `extension` pairs, no wrapping, no gaps).
@@ -86,12 +86,12 @@ and re-running this discovery if the org/site changes.
 
 Usage:
   # 1. Fetch the current page as ADF:
-  #      getConfluencePage(cloudId, pageId, contentFormat="adf")  -> save the
+  #      getConfluenceContent(cloudId, pageId, contentFormat="adf")  -> save the
   #      full JSON response to a file (this script reads either the full
   #      page object or a bare {"type":"doc",...} body).
   # 2. Run this script; it prints the updated doc JSON on stdout.
   # 3. Feed that JSON straight back as the `body` argument to
-  #      updateConfluencePage(cloudId, pageId, body=<output>, contentFormat="adf")
+  #      updateConfluenceContent(cloudId, pageId, body=<output>, contentFormat="adf")
   python3 inject-mermaid-macros.py page.json --page-id 217743376 > doc.json
   python3 inject-mermaid-macros.py - --page-id 217743376 < page.json > doc.json
 
@@ -265,7 +265,7 @@ def inject(content, args):
 
 
 def extract_doc(data):
-    """Accept either a full getConfluencePage response or a bare ADF doc."""
+    """Accept either a full getConfluenceContent response or a bare ADF doc."""
     if data.get("type") == "doc" and "content" in data:
         return data
     body = data.get("body")

@@ -8,6 +8,15 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.31] — 2026-11-12
+Atlassian MCP tool names moved from v1 to v2 across the skills and agents:
+`createConfluencePage`/`updateConfluencePage`/`getConfluencePage` →
+`createConfluenceContent`/`updateConfluenceContent`/`getConfluenceContent`,
+`getTransitionsForJiraIssue` → `listJiraIssueTransitions`, and three `get*` →
+`list*` renames. `skills/acli/SKILL.md` carries the v1→v2 table. v1 stays live
+until 2027-03-01. Parameter shapes (`cloudId`, `contentFormat`) are NOT
+verified against v2; names come from Atlassian's supported-tools page only.
+
 ## [0.1.30] — 2026-11-12
 Reference refresh against acli `1.3.40-stable` (was `1.3.22-stable`); docs only.
 Crawled the full `--help` tree and diffed it against `skills/acli/REFERENCE.md` +
