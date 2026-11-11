@@ -27,7 +27,7 @@ Loaded on demand. Core command tables + format overview live in
 
 ### transition
 
-`-k/--key`, `--jql`, `--filter`, `-s/--status`, `--ignore-errors`, `-y/--yes`, `--json`. No `--list` — removed in current acli (confirmed gone in `1.3.22-stable`); see `../SKILL.md` § "When acli can't" for read-only transition discovery via MCP.
+`-k/--key`, `--jql`, `--filter`, `-s/--status`, `--ignore-errors`, `-y/--yes`, `--json`. No `--list` — removed in current acli (still gone in `1.3.40-stable`, 2026-11-12); see `../SKILL.md` § "When acli can't" for read-only transition discovery via MCP.
 
 ### assign
 
@@ -51,7 +51,7 @@ Clone-only (`--from-project`, company-managed only) or `--from-json`; flags `-k/
 
 ### confluence space
 
-`list`: `--keys` (comma-separated — ⚠️ accepted but does NOT filter, confirmed live 2026-08-04; always returns the full space list regardless, match `key` client-side instead of trusting the response order), `--type` (global|personal), `--status` (current|archived, default current), `--expand` (description,homepage,permissions), `-l/--limit` (default 50), `--json`. `create`: `--key`, `--name`, `--description`, `--private`, `--alias`, `--template-key`, `--json`. `archive`/`restore`: `--key` only. `update`: `--key`, `--name`, `--description`, `--status`, `--type`, `--json`. `view`: `--id` (not `--key` — see `../REFERENCE.md` § confluence/admin), plus `--icon`, `--labels`, `--operations`, `--permissions`, `--properties`, `--role-assignments` (EAP only), `--include-all`, `--desc-format` (plain|view), `--json`. Verified live against `1.3.22-stable`, 2026-07-24 (space CRUD) / 2026-08-04 (`--keys` filter behavior).
+`list`: `--keys` (comma-separated — ⚠️ accepted but does NOT filter, confirmed live 2026-08-04; always returns the full space list regardless, match `key` client-side instead of trusting the response order), `--type` (global|personal), `--status` (current|archived, default current), `--expand` (description,homepage,permissions), `-l/--limit` (default 50), `--json`. `create`: `--key`, `--name`, `--description`, `--private`, `--alias`, `--template-key`, `--json`. `archive`/`restore`: `--key` only. `update`: `--key`, `--name`, `--description`, `--status`, `--type`, `--json`. `view`: `--id` (not `--key` — see `../REFERENCE.md` § confluence/admin), plus `--icon`, `--labels`, `--operations`, `--permissions`, `--properties`, `--role-assignments` (EAP only), `--include-all`, `--desc-format` (plain|view), `--json`. Flags re-checked against `1.3.40-stable` help 2026-11-12; behavior verified live on `1.3.22-stable`, 2026-07-24 (space CRUD) / 2026-08-04 (`--keys` filter behavior).
 
 ### confluence blog create
 
@@ -59,7 +59,7 @@ Clone-only (`--from-project`, company-managed only) or `--from-json`; flags `-k/
 
 ### confluence page view
 
-`--body-format storage|atlas_doc_format|view`. Include flags: `--include-labels`, `--include-version`, `--include-direct-children`, `--include-properties`, `--status current,draft,archived`, `--version N`, `--get-draft`.
+`--id`, `--body-format storage|atlas_doc_format|view`, `--json`. Include flags: `--include-labels`, `--include-version`, `--include-versions`, `--include-direct-children`, `--include-properties`, `--include-collaborators`, `--include-likes`, `--include-operations`, `--include-favorited-by-current-user-status`, `--include-webresources`, `--status current,draft,archived`, `--version N`, `--get-draft`.
 
 ## Edit: manual read-modify-write (surgical in-place edits)
 

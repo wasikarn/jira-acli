@@ -8,6 +8,17 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.30] — 2026-11-12
+Reference refresh against acli `1.3.40-stable` (was `1.3.22-stable`); docs only.
+Crawled the full `--help` tree and diffed it against `skills/acli/REFERENCE.md` +
+`references/REFERENCE-detail.md`: workitem flag tables already matched. Fixed
+the rest: `acli completion` removed, `acli guard` added, global `auth login` has
+no `--web` (per-product logins do), `confluence page view` gained six
+`--include-*` flags, `transition` accepts `--ignore-errors` (docs said it
+didn't), and the board/filter/field/admin/watcher subcommand lists were
+completed. Behavioral claims (30-row cap, `space list --keys`) were not
+re-run: acli was unauthenticated.
+
 ## [0.1.29] — 2026-09-03
 
 Prompt-cleanup pass, no behavior change.

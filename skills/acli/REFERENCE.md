@@ -1,6 +1,6 @@
 # acli Reference
 
-Full command tree for acli `1.3.22-stable` (re-verified 2026-07-24 — the command surface drifts across minor versions with no deprecation warning; see Issue 7 in `ISSUES.md`). When in doubt, `acli <path> --help` is authoritative for the installed version.
+Full command tree for acli `1.3.40-stable` (help/flag surface re-verified 2026-11-12; behavioral claims keep their own dates — the command surface drifts across minor versions with no deprecation warning; see Issue 7 in `ISSUES.md`). When in doubt, `acli <path> --help` is authoritative for the installed version.
 
 **Two files:**
 - This one — core: top-level surfaces, auth model, command tables, format overview. Loaded on demand.
@@ -12,7 +12,7 @@ Full command tree for acli `1.3.22-stable` (re-verified 2026-07-24 — the comma
 brew tap atlassian/homebrew-acli
 brew install acli
 brew upgrade acli
-acli --version          # acli version 1.3.22-stable (yours may differ — this doc trails the binary)
+acli --version          # acli version 1.3.40-stable (yours may differ — this doc trails the binary)
 ```
 
 Config lives in `~/.config/acli/*.yaml` — one file per product (`jira_config.yaml`, `confluence_config.yaml`, `global_auth_config.yaml`, `rovodev_config.yaml`, …). Treat auth config files as secrets; don't cat them.
@@ -27,7 +27,7 @@ Config lives in `~/.config/acli/*.yaml` — one file per product (`jira_config.y
 | `acli admin` | Org admin (user lifecycle) — needs admin auth |
 | `acli rovodev` | Rovo Dev AI coding agent (beta), separate scoped API token |
 | `acli config` | `gov-cloud` toggle (Atlassian Government Cloud) |
-| `acli completion` | Shell autocompletion script |
+| `acli guard` | Atlassian Guard CLI (`edm` Exact Data Match); downloads itself on first run |
 | `acli feedback` | Submit feedback/report |
 
 Global flags: only `-h/--help` and `-v/--version`. There is **no** global `--site`/`--profile` flag — site is bound at auth time, per product. `--json` (and `--csv`/`--web` where applicable) are per-command.
@@ -36,7 +36,7 @@ Global flags: only `-h/--help` and `-v/--version`. There is **no** global `--sit
 
 Two independent layers:
 
-- **Global** — `acli auth login|logout|status|switch`. OAuth only (`--web`). Used by admin + cross-product.
+- **Global** — `acli auth login|logout|status|switch`. OAuth only (no flags — `--web` exists on the per-product logins, not here). Used by cross-product.
 - **Per-product** — `acli jira auth ...`, `acli confluence auth ...`. Each can be OAuth *or* API token, and reports its own status/type. `acli auth status` (global) can say "Jira, Confluence not authenticated with your global profile" while `acli jira auth status` shows `api_token` and works fine.
 
 ```bash
@@ -63,7 +63,7 @@ acli jira auth logout
 | `comment` | `create`/`list`/`update`/`delete`/`visibility` |
 | `link` | `create`/`delete`/`list`/`type` |
 | `attachment` | `list`/`delete` |
-| `watcher` | watcher commands |
+| `watcher`, `list-watchers` | `watcher list`/`remove`; `list-watchers` is a top-level alias for listing |
 | `clone` | Duplicate (optionally `--to-project`/`--to-site`) |
 | `delete`, `archive`, `unarchive` | Lifecycle |
 
@@ -131,7 +131,7 @@ Flags → `references/REFERENCE-detail.md` § edit.
 acli jira workitem transition --key "K-1,K-2" --status Done
 acli jira workitem transition --jql "project = TEAM" --status "In Progress"
 ```
-Flags → `references/REFERENCE-detail.md` § transition. Status names must match the workflow exactly. **No acli-native read-only way to list valid transitions** — `--list` was removed (confirmed gone in the installed `1.3.22-stable`). See `SKILL.md` § "When acli can't" for the MCP fallback (`getTransitionsForJiraIssue`); otherwise an invalid target status fails loud per-item at fire time (no `--ignore-errors`), it doesn't silently skip.
+Flags → `references/REFERENCE-detail.md` § transition. Status names must match the workflow exactly. **No acli-native read-only way to list valid transitions** — `--list` was removed (still gone in `1.3.40-stable`, re-checked 2026-11-12). See `SKILL.md` § "When acli can't" for the MCP fallback (`getTransitionsForJiraIssue`); otherwise an invalid target status fails loud per-item at fire time (it doesn't silently skip unless you pass `--ignore-errors`).
 
 ### assign
 ```bash
@@ -184,18 +184,18 @@ acli jira project view --key KEY
 acli jira sprint create --name "Sprint 1" --board 5 --start 2025-01-01 --end 2025-01-14 --goal "..."
 acli jira sprint list-workitems ...
 
-# board: create | delete | get | list-projects | list-sprints | search
+# board: create | delete | get | list-projects | list-sprints | search | view
 acli jira board search
 acli jira board list-sprints ...
 
-# filter: add-favourite | change-owner | get | get-columns | list | reset-columns | search | update
+# filter: add-favourite | change-owner | get | get-columns | list | list-columns | reset-columns | search | update | view
 acli jira filter list --my            # one of --my | --favourite is REQUIRED
 acli jira filter search
 
 # dashboard: search
 acli jira dashboard search
 
-# field: cancel-delete | create | delete | update   (custom fields)
+# field: cancel-delete | create | delete | restore | update   (custom fields)
 acli jira field create ...
 ```
 `project create` is clone-only (`--from-project`, company-managed only) or `--from-json`; flags `-k/--key`, `-n/--name`, `-d/--description`, `-u/--url`, `-l/--lead-email`. `sprint create` requires `--name` + `--board`; dates ISO 8601.
@@ -219,13 +219,14 @@ acli confluence space create --key SPACEKEY --name "Space Name" --description ".
 acli confluence space list --json                   # ⚠️ --keys does NOT filter (confirmed live 2026-08-04) — always returns the full list
 acli confluence space view --id SPACE_ID            # ⚠️ --id, NOT --key — the one space subcommand that breaks the pattern
 ```
-⚠️ **`space view` alone takes `--id`, every other `space` subcommand takes `--key`.** `create`/`archive`/`update`/`restore` all resolve by `--key SPACEKEY`; `view` rejects `--key` outright (`✗ unknown flag: --key`, confirmed live on `1.3.22-stable`, 2026-07-24) and needs the numeric `--id` instead. ⚠️ **`space list --keys` doesn't filter** (confirmed live 2026-08-04 — `--keys SPACEKEY` returns the identical full space list as omitting it entirely). Resolve the id by matching `key` client-side instead: `space list --json | python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='SPACEKEY'][0])"` — never grab `.results[0]` blindly, it's whatever order the account's spaces happen to list in, not a filtered match. `blog create` body is **storage format (XHTML)**, not Jira's ADF. Flags → `references/REFERENCE-detail.md` § confluence space / confluence blog create.
+⚠️ **`space view` alone takes `--id`, every other `space` subcommand takes `--key`.** `create`/`archive`/`update`/`restore` all resolve by `--key SPACEKEY`; `view` rejects `--key` outright (`✗ unknown flag: --key`, confirmed live on `1.3.22-stable` 2026-07-24; `--key` still rejected on `1.3.40-stable` 2026-11-12) and needs the numeric `--id` instead. ⚠️ **`space list --keys` doesn't filter** (confirmed live 2026-08-04 — `--keys SPACEKEY` returns the identical full space list as omitting it entirely). Resolve the id by matching `key` client-side instead: `space list --json | python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='SPACEKEY'][0])"` — never grab `.results[0]` blindly, it's whatever order the account's spaces happen to list in, not a filtered match. `blog create` body is **storage format (XHTML)**, not Jira's ADF. Flags → `references/REFERENCE-detail.md` § confluence space / confluence blog create.
 
 ⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluencePage`/`updateConfluencePage`, which take `contentFormat: "html"|"markdown"|"adf"` — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, `contentFormat: "markdown"` with a raw Markdown body is simplest — see `jira-acli:confluence-content` § `templates/confluence-spec.md` for a Spec/PRD template built on this.
 
 ## admin / rovodev / config
 
 ```bash
+# admin auth: login (--email, --token from stdin) | logout | status | switch
 # admin user lifecycle (managed accounts) — needs `acli admin auth`
 acli admin user activate|deactivate|delete|cancel-delete ...
 
