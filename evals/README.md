@@ -160,3 +160,41 @@ They run with the plugin loaded only (`--ablation none`), 5 runs each, spend cap
 **Commitment (operator, 2026-11-13).** If a skill fires in fewer than 8 of its 10 trigger runs, the recommendation
 is to convert it to a plain doc with a `CLAUDE.md` pointer, since the skill packaging then adds nothing over the
 doc. Template-shape scores are reported beside it.
+
+### Result (2026-11-13, plugin 0.1.51, commit df8bba7, `claude-opus-5-5`, CLI 2.1.322)
+
+**Part A**, graders frozen at `21ecf8b671503290`. 5 runs per arm, $5.79, no run errors, and the skill fired in
+10 of 10 with-arm runs. Full result: `results/2026-11-13-round2-a.json`.
+
+| case | with / without / Δ | cost per run with / without | turns with / without |
+|---|---|---|---|
+| `holdout2-confluence-content-refund-auto-approve` | 1.000 / 1.000 / 0.000 | $0.425 / $0.189 | 7.0 / 4.8 |
+| `holdout2-confluence-content-scheduled-s3-export` | 1.000 / 0.975 / +0.025 | $0.356 / $0.187 | 6.8 / 5.2 |
+
+`confluence-content` passes the rule: with-skill mean 1.000, no case loses. There was one miss, in the no-skill
+arm (`trap-no-90-day-retention`), and it is a false fail too. The page says "The PM first draft ... says our copy is
+kept for 90 days. On 2026-11-10 ... our copy is kept for **30 days**". The labelled-mention rule in the writer's brief
+held: round 1 had 18 false fails per arm, round 2 had 0 with and 1 without. Round 1's pending decision is settled:
+`confluence-content` stays a skill.
+
+**Part B**, graders frozen at `eabee73456197199`. Plugin arm only, 5 runs per case, $7.25, no run errors. Full
+result: `results/2026-11-13-round2-b.json`.
+
+| case | skill fired | template shape | cost per run | turns |
+|---|---|---|---|---|
+| `trigger-jira-content-bug-th` | 5/5 | 20/20 | $0.349 | 7.4 |
+| `trigger-jira-content-decision-en` | 5/5 | 10/10 | $0.252 | 6.6 |
+| `trigger-confluence-content-points-th` | 5/5 | 15/15 | $0.422 | 6.0 |
+| `trigger-confluence-content-ratelimit-en` | 5/5 | 15/15 | $0.428 | 7.6 |
+
+Both skills fired in 10 of 10 runs on prompts that never named them, and every trace shows
+`Launching skill: jira-acli:...`. That is well above the 8-of-10 commitment, so both stay skills. Every Bug and spec
+run wrote acceptance criteria as Thai `กำหนดให้`/`เมื่อ`/`ผลลัพธ์` blocks, including the English rate-limit request,
+as the skills' "write the body in Thai" rule says.
+
+**Limits.**
+- Part B has no no-skill arm. Its shape graders also accept generic English labels ("Problem", "Out of scope",
+  "Given:"), so they show that the skill applies its template. They do not show that plain Claude would not.
+- In round 1, Thai bug tickets without the skill used checkbox lists instead of Given/When/Then blocks. That was
+  seen while reading misses and was not graded.
+- Cost: a with-skill run costs 1.4x to 2.4x a plain one across both rounds.

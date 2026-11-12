@@ -1,0 +1,1965 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.322",
+  "startedAt": "2026-11-12T17:14:22.063Z",
+  "durationSeconds": 230,
+  "costUsd": 5.785414599999999,
+  "partial": false,
+  "suite": {
+    "root": "<eval-copy>/jira-acli",
+    "ablation": "with-without",
+    "tagFilters": [
+      "holdout2"
+    ],
+    "threshold": 0,
+    "concurrency": 4,
+    "plugins": [
+      {
+        "name": "jira-acli",
+        "version": "0.1.51",
+        "path": "<eval-copy>/jira-acli"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "holdout2-confluence-content-refund-auto-approve",
+      "dir": "evals/holdout2-confluence-content-refund-auto-approve",
+      "source": "mixed",
+      "promptMarkdown": "Use the `jira-acli:confluence-content` skill (Skill tool, `skill: \"jira-acli:confluence-content\"`) to draft the Confluence spec page for our refund auto-approve feature in the shop backoffice. The source material is in this directory: the team chat export, the meeting notes and an older draft. Everything you need is in those files and nobody is available to answer questions, so do not ask any. If the files do not say something, mark it as unknown in the page; do not invent it.\n\nWrite the page in Thai, with English technical terms (endpoint, flag, error code and so on) left in English, to `spec.md`. That is the only file to create; do not edit the source files. Do not create, publish or update anything in Jira or Confluence, and do not run `acli` or any Jira or Confluence tool.\n\nYour final message is one line naming the file you wrote, nothing else.\n\nIf the Skill tool reports the skill as unknown or unavailable, do the same task yourself and still end with the final message described above.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "internal-no-budget",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "180[,.]?000|180\\s*[kK]\\b|1\\.8\\s*แสน|แสนแปด",
+            "flags": "",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-endpoint",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "/v2/refunds/\\S*auto-approve",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-epic-key",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "\\bSHOP-2141\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-flag-and-error",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-threshold-300",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "(?<![\\d,.])300(?![\\d,])",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?confluence-content\"",
+            "min": 1
+          }
+        },
+        {
+          "name": "trap-no-500-threshold",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?![^\\n]*\\|)(?:[^\"“”~\\n]|~(?!~)|[\"“][^\"”\\n]*[\"”]|~~[^~\\n]*~~)*?(?:อนุมัติ|approv(?:e|es|ed|al))[^\\n|\"“()]*?(?:ไม่เกิน|ต่ำกว่า|น้อยกว่า|≤|<=|<|under|below|up to|at most|not exceeding)\\s*(?:฿\\s*)?500(?![\\d,])(?!\\s*(?:บาท|THB|฿)?\\s*(?:→|->|=>|(?:เปลี่ยน|ลด)?\\s*เป็น|(?:changed |reduced |lowered )?to\\b))|^[ \\t]*(?:[-*+][ \\t]+|\\d+[.)][ \\t]+)?(?:\\*\\*)?(?:auto-?approve[ \\t]+)?(?:threshold|เพดาน(?:ยอด)?|วงเงิน)(?:[ \\t]*auto-?approve)?(?:\\*\\*)?[ \\t]*[:=][ \\t]*(?:\\*\\*)?[ \\t]*(?:ไม่เกิน[ \\t]*|≤[ \\t]*|<=?[ \\t]*)?(?:฿[ \\t]*)?500(?![\\d,])(?![ \\t]*(?:บาท|THB|฿)?[ \\t]*(?:→|->|=>))",
+            "flags": "im",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "trap-no-invented-monthly-cap",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "\\d+\\s*(?:ครั้ง|times?|refunds?|requests?|คำขอ)\\s*(?:(?:/|ต่อ|per|a|each)\\s*(?:user|customer|ลูกค้า|คน|account|บัญชี)\\s*)?(?:/|ต่อ|per|a|each|ใน\\s*1)\\s*(?:เดือน|month)",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "trap-no-shopcoin-plan",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?![^\\n]*\\|)(?:[^\"“”~\\n]|~(?!~)|[\"“][^\"”\\n]*[\"”]|~~[^~\\n]*~~)*?(?:(?:จะ|ระบบ)[ \\t]*(?:auto-?approve[ \\t]*(?:และ)?[ \\t]*)?คืน(?:เงิน)?[ \\t]*(?:เข้า|เป็น|ไปยัง|ไปที่|ไป)[ \\t]*(?:wallet[ \\t]*)?ShopCoin|\\b(?:will|shall|are|is|get)[ \\t]+(?:be[ \\t]+)?(?:refunded|credited|issued|paid(?:[ \\t]+out)?)[ \\t]+(?:to|into|as)[ \\t]+(?:the[ \\t]+)?(?:customer'?s?[ \\t]+)?ShopCoin|\\bwe[ \\t]+(?:will[ \\t]+)?refund[ \\t]+(?:\\w+[ \\t]+)?(?:to|into|as)[ \\t]+ShopCoin)",
+            "flags": "im",
+            "match": "not_contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.4191624,
+            "judgeCostUsd": 0,
+            "durationSeconds": 66,
+            "startedAt": "2026-11-12T17:14:22.495Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.4183975999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 65,
+            "startedAt": "2026-11-12T17:14:22.495Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.45076440000000007,
+            "judgeCostUsd": 0,
+            "durationSeconds": 72,
+            "startedAt": "2026-11-12T17:14:22.495Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.4047995999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 63,
+            "startedAt": "2026-11-12T17:14:22.495Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.4325108,
+            "judgeCostUsd": 0,
+            "durationSeconds": 64,
+            "startedAt": "2026-11-12T17:15:25.123Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.2063524,
+            "judgeCostUsd": 0,
+            "durationSeconds": 32,
+            "startedAt": "2026-11-12T17:15:27.521Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.1815004,
+            "judgeCostUsd": 0,
+            "durationSeconds": 28,
+            "startedAt": "2026-11-12T17:15:28.908Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.1844412,
+            "judgeCostUsd": 0,
+            "durationSeconds": 29,
+            "startedAt": "2026-11-12T17:15:34.831Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.1842568,
+            "judgeCostUsd": 0,
+            "durationSeconds": 28,
+            "startedAt": "2026-11-12T17:15:56.643Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.18995320000000002,
+            "judgeCostUsd": 0,
+            "durationSeconds": 30,
+            "startedAt": "2026-11-12T17:16:00.014Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /v2/refunds/\\S*auto-approve",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bSHOP-2141\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag-and-error",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\brefund_auto_approve_enabled\\b)[\\s\\S]*\\bRFD-409\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-threshold-300",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])300(?![\\d,])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-500-threshold",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-monthly-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-shopcoin-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1,
+        "scoreWithout": 1,
+        "passRateWithout": 1,
+        "delta": 0
+      }
+    },
+    {
+      "name": "holdout2-confluence-content-scheduled-s3-export",
+      "dir": "evals/holdout2-confluence-content-scheduled-s3-export",
+      "source": "mixed",
+      "promptMarkdown": "Use the `jira-acli:confluence-content` skill (Skill tool, `skill: \"jira-acli:confluence-content\"`) to draft the Confluence PRD page for scheduled data exports to customer S3 buckets. The files in this directory hold all the facts: a Slack thread export, the design review notes, an error log from the prototype and the PM's first draft. No one can answer questions, so do not ask. Anything the files leave open is marked unknown in the page, never filled in by guessing.\n\nWrite the page in English to `prd.md`; that is the only file to create, and the source files stay unchanged. Do not create, publish or update anything in Jira or Confluence, and do not run `acli` or any Jira or Confluence tool.\n\nYour final message is one line naming the file you wrote, nothing else.\n\nIf the Skill tool reports the skill as unknown or unavailable, do the same task yourself and still end with the final message described above.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "internal-no-blame-name",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "Somchai|สมชาย",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-endpoint-and-flag",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-epic-key",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "\\bDATA-877\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-error-code",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "\\bEXP-4031\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-retention-30",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "(?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?confluence-content\"",
+            "min": 1
+          }
+        },
+        {
+          "name": "trap-no-90-day-retention",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "^(?![^\\n]*\\|)(?:[^\"“”~\\n]|~(?!~)|[\"“][^\"”\\n]*[\"”]|~~[^~\\n]*~~)*?(?:\\b(?:are|is|will be|get|gets)[ \\t]+(?:kept|retained|stored|held)(?:[ \\t]+(?:on|in)[ \\t]+our[ \\t]+\\w+)?[ \\t]+for[ \\t]+90[ \\t]*days|\\bwe[ \\t]+(?:will[ \\t]+)?keep[ \\t]+(?:a[ \\t]+copy|copies|files|them|it|exports?|export[ \\t]+files)(?:[ \\t]+(?:on|in)[ \\t]+our[ \\t]+\\w+)?[ \\t]+for[ \\t]+90[ \\t]*days|\\b(?:are|is|will be|get|gets)[ \\t]+(?:deleted|purged|removed)[ \\t]+after[ \\t]+90[ \\t]*days|\\bexpires?[ \\t]+after[ \\t]+90[ \\t]*days|\\bretention(?:[ \\t]+period)?[ \\t]*(?:is|:|=)[ \\t]*90(?:[ \\t]*|-)days?\\b(?![ \\t]*(?:→|->|=>|to\\b)))",
+            "flags": "im",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "trap-no-invented-schedule-cap",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "\\b(?:up to|max(?:imum)?(?:\\s+of)?|at most|limit(?:ed)?\\s+(?:of|to)|cap(?:ped)?\\s+(?:of|at)|no more than)\\s*\\d+\\s+(?:export\\s+)?schedules|\\b\\d+\\s+(?:export\\s+)?schedules?\\s+(?:per|/|a|each)\\s+workspace|schedules\\s+per\\s+workspace\\s*(?:is|:|=)\\s*\\d",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "trap-no-sftp-plan",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "prd.md"
+            },
+            "pattern": "^(?![^\\n]*\\|)(?:[^\"“”~\\n]|~(?!~)|[\"“][^\"”\\n]*[\"”]|~~[^~\\n]*~~)*?(?:\\b(?:will|shall|we'll)[ \\t]+(?:also[ \\t]+)?(?:support|offer|add|provide|build)[ \\t]+(?:an?[ \\t]+)?SFTP|\\b(?:are|is|will be|can be|get|gets)[ \\t]+(?:also[ \\t]+)?(?:delivered|sent|pushed|uploaded|written)[ \\t]+(?:via|over|through|to)[ \\t]+(?:an?[ \\t]+)?(?:customer[ \\t]+)?SFTP|(?<!not[ \\t])(?<!n't[ \\t])\\b(?:supports|offers)[ \\t]+(?:both[ \\t]+)?(?:S3[ \\t]+(?:and|or|\\+|&)[ \\t]+)?SFTP)",
+            "flags": "im",
+            "match": "not_contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.35176999999999997,
+            "judgeCostUsd": 0,
+            "durationSeconds": 47,
+            "startedAt": "2026-11-12T17:16:03.393Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.3529308,
+            "judgeCostUsd": 0,
+            "durationSeconds": 47,
+            "startedAt": "2026-11-12T17:16:24.365Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.34163039999999995,
+            "judgeCostUsd": 0,
+            "durationSeconds": 46,
+            "startedAt": "2026-11-12T17:16:29.079Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.35563459999999997,
+            "judgeCostUsd": 0,
+            "durationSeconds": 47,
+            "startedAt": "2026-11-12T17:16:29.622Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.3764288,
+            "judgeCostUsd": 0,
+            "durationSeconds": 54,
+            "startedAt": "2026-11-12T17:16:50.350Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.1718818,
+            "judgeCostUsd": 0,
+            "durationSeconds": 25,
+            "startedAt": "2026-11-12T17:17:11.667Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.1927852,
+            "judgeCostUsd": 0,
+            "durationSeconds": 32,
+            "startedAt": "2026-11-12T17:17:14.907Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.875,
+            "passed": false,
+            "turns": 5,
+            "costUsd": 0.1898168,
+            "judgeCostUsd": 0,
+            "durationSeconds": 30,
+            "startedAt": "2026-11-12T17:17:16.788Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.1943462,
+            "judgeCostUsd": 0,
+            "durationSeconds": 31,
+            "startedAt": "2026-11-12T17:17:36.826Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.18605119999999997,
+            "judgeCostUsd": 0,
+            "durationSeconds": 28,
+            "startedAt": "2026-11-12T17:17:44.078Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "internal-no-blame-name",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-endpoint-and-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*/v1/exports/schedules\\b)[\\s\\S]*\\bscheduled_export_s3\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-epic-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bDATA-877\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\bEXP-4031\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retention-30",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?<![\\d,.])30(?:\\s*|-)(?:days?|d)\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-90-day-retention",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-invented-schedule-cap",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "trap-no-sftp-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1,
+        "scoreWithout": 0.975,
+        "passRateWithout": 0.8,
+        "delta": 0.025000000000000022
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 2,
+    "casesPassed": 2,
+    "overallScore": 1,
+    "overallPassRate": 1,
+    "meanDelta": 0.012500000000000011
+  }
+}

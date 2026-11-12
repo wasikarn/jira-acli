@@ -1,0 +1,1236 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.322",
+  "startedAt": "2026-11-12T17:14:26.266Z",
+  "durationSeconds": 259,
+  "costUsd": 7.2541256,
+  "partial": false,
+  "suite": {
+    "root": "<eval-copy>/jira-acli",
+    "ablation": "none",
+    "tagFilters": [
+      "trigger"
+    ],
+    "threshold": 0,
+    "concurrency": 4,
+    "plugins": [
+      {
+        "name": "jira-acli",
+        "version": "0.1.51",
+        "path": "<eval-copy>/jira-acli"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "trigger-confluence-content-points-th",
+      "dir": "evals/trigger-confluence-content-points-th",
+      "source": "mixed",
+      "promptMarkdown": "ช่วยเขียน spec หน้า Confluence ของ feature แจ้งเตือนแต้มใกล้หมดอายุให้หน่อย จาก `older-draft.md`, `meeting-notes-2026-11-05.md` และ `line-chat.txt` หน้านี้จะ share ให้ vendor ด้วย เขียนลง `spec.md` ไว้ก่อน ยังไม่ต้องขึ้น Confluence ข้อมูลมีแค่ในไฟล์ ไม่ต้องถามกลับ อะไรที่ไม่รู้ให้เขียนว่าไม่ทราบ\n\nเสร็จแล้วตอบบรรทัดเดียวว่าเขียนไฟล์ไหน",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-template-business-and-scope",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-gwt-three-ac",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-user-story",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?confluence-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.3985684,
+            "judgeCostUsd": 0,
+            "durationSeconds": 59,
+            "startedAt": "2026-11-12T17:14:26.562Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.4558190000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 75,
+            "startedAt": "2026-11-12T17:14:26.562Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.4012244,
+            "judgeCostUsd": 0,
+            "durationSeconds": 60,
+            "startedAt": "2026-11-12T17:14:26.562Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.4243276,
+            "judgeCostUsd": 0,
+            "durationSeconds": 67,
+            "startedAt": "2026-11-12T17:14:26.562Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.42770719999999995,
+            "judgeCostUsd": 0,
+            "durationSeconds": 65,
+            "startedAt": "2026-11-12T17:15:25.547Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "trigger-confluence-content-ratelimit-en",
+      "dir": "evals/trigger-confluence-content-ratelimit-en",
+      "source": "mixed",
+      "promptMarkdown": "Please write the Confluence spec for partner API rate limiting from `rfc-draft.md` and `slack-thread.txt`. Partners' account managers will read it. Put it in `spec.md`; I'll publish it myself, so don't touch Confluence. Don't ask me anything, mark what the files don't say as unknown.\n\nReply with one line naming the file.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-template-business-and-scope",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-gwt-three-ac",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-user-story",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?confluence-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.401214,
+            "judgeCostUsd": 0,
+            "durationSeconds": 63,
+            "startedAt": "2026-11-12T17:15:26.411Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.4529466000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 77,
+            "startedAt": "2026-11-12T17:15:33.508Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.44328579999999995,
+            "judgeCostUsd": 0,
+            "durationSeconds": 75,
+            "startedAt": "2026-11-12T17:15:41.185Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.40659639999999997,
+            "judgeCostUsd": 0,
+            "durationSeconds": 63,
+            "startedAt": "2026-11-12T17:16:29.802Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.4375558,
+            "judgeCostUsd": 0,
+            "durationSeconds": 72,
+            "startedAt": "2026-11-12T17:16:30.803Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-business-and-scope",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:เหตุผลทางธุรกิจ|Business reason|Background|Problem|ปัญหา))(?=[\\s\\S]*(?:ไม่อยู่ในขอบเขต|Out of scope|Non-goals?))",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-three-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-user-story",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ในฐานะ[\\s\\S]{0,160}ฉันต้องการ|\\bAs an? [^\\n]{0,100}\\bI (?:want|need)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "trigger-jira-content-bug-th",
+      "dir": "evals/trigger-jira-content-bug-th",
+      "source": "mixed",
+      "promptMarkdown": "ช่วยร่าง bug ให้ทีม payment หน่อย จาก `slack-thread.txt` กับ `error-log.txt` เขียนลง `ticket.md` ไว้ก่อน ยังไม่ต้องสร้างใน Jira เดี๋ยวผมเปิดเอง ข้อมูลมีแค่ในไฟล์ ไม่ต้องถามกลับนะ อะไรที่ไฟล์ไม่ได้บอกให้เขียนว่าไม่ทราบ\n\nเสร็จแล้วตอบบรรทัดเดียวว่าเขียนไฟล์ไหน",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-template-actual-expected",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "(?:อาการที่พบ|สิ่งที่เกิดขึ้นจริง|Actual)[\\s\\S]*(?:สิ่งที่ควรเป็น|ผลลัพธ์ที่ถูกต้อง|Expected)",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-gwt-two-ac",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-numbered-repro",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "^\\s*1[.)]\\s",
+            "flags": "m",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-regression-ac",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "Regression|ทำงานแบบเดิม|ไม่ได้รับผลกระทบ",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?jira-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.3357252,
+            "judgeCostUsd": 0,
+            "durationSeconds": 41,
+            "startedAt": "2026-11-12T17:16:50.601Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-actual-expected",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:อาการที่พบ|สิ่งที่เกิดขึ้นจริง|Actual)[\\s\\S]*(?:สิ่งที่ควรเป็น|ผลลัพธ์ที่ถูกต้อง|Expected)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-two-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-numbered-repro",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*1[.)]\\s",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-regression-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Regression|ทำงานแบบเดิม|ไม่ได้รับผลกระทบ",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.37115339999999997,
+            "judgeCostUsd": 0,
+            "durationSeconds": 45,
+            "startedAt": "2026-11-12T17:16:56.129Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-actual-expected",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:อาการที่พบ|สิ่งที่เกิดขึ้นจริง|Actual)[\\s\\S]*(?:สิ่งที่ควรเป็น|ผลลัพธ์ที่ถูกต้อง|Expected)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-two-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-numbered-repro",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*1[.)]\\s",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-regression-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Regression|ทำงานแบบเดิม|ไม่ได้รับผลกระทบ",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.34431439999999996,
+            "judgeCostUsd": 0,
+            "durationSeconds": 41,
+            "startedAt": "2026-11-12T17:17:31.599Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-actual-expected",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:อาการที่พบ|สิ่งที่เกิดขึ้นจริง|Actual)[\\s\\S]*(?:สิ่งที่ควรเป็น|ผลลัพธ์ที่ถูกต้อง|Expected)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-two-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-numbered-repro",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*1[.)]\\s",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-regression-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Regression|ทำงานแบบเดิม|ไม่ได้รับผลกระทบ",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.325802,
+            "judgeCostUsd": 0,
+            "durationSeconds": 36,
+            "startedAt": "2026-11-12T17:17:32.913Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-actual-expected",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:อาการที่พบ|สิ่งที่เกิดขึ้นจริง|Actual)[\\s\\S]*(?:สิ่งที่ควรเป็น|ผลลัพธ์ที่ถูกต้อง|Expected)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-two-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-numbered-repro",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*1[.)]\\s",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-regression-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Regression|ทำงานแบบเดิม|ไม่ได้รับผลกระทบ",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.36736240000000003,
+            "judgeCostUsd": 0,
+            "durationSeconds": 45,
+            "startedAt": "2026-11-12T17:17:41.511Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-actual-expected",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:อาการที่พบ|สิ่งที่เกิดขึ้นจริง|Actual)[\\s\\S]*(?:สิ่งที่ควรเป็น|ผลลัพธ์ที่ถูกต้อง|Expected)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-gwt-two-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：][\\s\\S]*?(?:กำหนดให้|Given)\\s*[:：][\\s\\S]*?(?:เมื่อ|When)\\s*[:：][\\s\\S]*?(?:ผลลัพธ์|Then)\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-numbered-repro",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*1[.)]\\s",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-regression-ac",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Regression|ทำงานแบบเดิม|ไม่ได้รับผลกระทบ",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "trigger-jira-content-decision-en",
+      "dir": "evals/trigger-jira-content-decision-en",
+      "source": "mixed",
+      "promptMarkdown": "Can you write up what we decided on RPT-412 as a comment for the ticket? Everything is in `issue.txt`, `meeting-notes.md` and `followup-thread.txt`. Put it in `comment.md` for now, I'll post it myself, so don't post anything to Jira. Don't ask me questions, just mark anything the files don't say as unknown.\n\nReply with one line naming the file.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-template-decider",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "ผู้ตัดสินใจ|Decided by|Decision makers?|Approved by|Owners?\\s*\\**\\s*[:：]",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-template-decision-fields",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "^(?=[\\s\\S]*(?:ประเด็น|Issue|Context|Problem|Question)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:ตัดสินใจ|Decision)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:เหตุผล|Reason|Rationale|Why)\\s*\\**\\s*[:：])",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?jira-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.2615988,
+            "judgeCostUsd": 0,
+            "durationSeconds": 23,
+            "startedAt": "2026-11-12T17:17:42.479Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-decider",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ผู้ตัดสินใจ|Decided by|Decision makers?|Approved by|Owners?\\s*\\**\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-decision-fields",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:ประเด็น|Issue|Context|Problem|Question)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:ตัดสินใจ|Decision)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:เหตุผล|Reason|Rationale|Why)\\s*\\**\\s*[:：])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.2543466,
+            "judgeCostUsd": 0,
+            "durationSeconds": 22,
+            "startedAt": "2026-11-12T17:18:05.082Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-decider",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ผู้ตัดสินใจ|Decided by|Decision makers?|Approved by|Owners?\\s*\\**\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-decision-fields",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:ประเด็น|Issue|Context|Problem|Question)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:ตัดสินใจ|Decision)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:เหตุผล|Reason|Rationale|Why)\\s*\\**\\s*[:：])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.2522624,
+            "judgeCostUsd": 0,
+            "durationSeconds": 22,
+            "startedAt": "2026-11-12T17:18:09.108Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-decider",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ผู้ตัดสินใจ|Decided by|Decision makers?|Approved by|Owners?\\s*\\**\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-decision-fields",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:ประเด็น|Issue|Context|Problem|Question)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:ตัดสินใจ|Decision)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:เหตุผล|Reason|Rationale|Why)\\s*\\**\\s*[:：])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 8,
+            "costUsd": 0.24806420000000004,
+            "judgeCostUsd": 0,
+            "durationSeconds": 21,
+            "startedAt": "2026-11-12T17:18:13.098Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-decider",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ผู้ตัดสินใจ|Decided by|Decision makers?|Approved by|Owners?\\s*\\**\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-decision-fields",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:ประเด็น|Issue|Context|Problem|Question)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:ตัดสินใจ|Decision)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:เหตุผล|Reason|Rationale|Why)\\s*\\**\\s*[:：])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.24425099999999997,
+            "judgeCostUsd": 0,
+            "durationSeconds": 19,
+            "startedAt": "2026-11-12T17:18:26.022Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-template-decider",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ผู้ตัดสินใจ|Decided by|Decision makers?|Approved by|Owners?\\s*\\**\\s*[:：]",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-template-decision-fields",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*(?:ประเด็น|Issue|Context|Problem|Question)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:ตัดสินใจ|Decision)\\s*\\**\\s*[:：])(?=[\\s\\S]*(?:เหตุผล|Reason|Rationale|Why)\\s*\\**\\s*[:：])",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 4,
+    "casesPassed": 4,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}
