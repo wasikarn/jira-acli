@@ -118,9 +118,10 @@ the macro through `updateConfluenceContent(contentFormat="html")` makes Confluen
 "helpfully" restructure a code-block-then-matching-extension-macro pattern into three nodes (a
 broken preview extension, the code wrapped in a collapsible `expand`, then the original extension)
 — the diagram renders TWICE with a stray collapsed accordion between them. Confirmed broken by
-visual screenshot 2026-07-14 (on v1 `updateConfluencePage`; not re-tested on v2). Writing the identical macro as a proper ADF `extension` node via
+visual screenshot 2026-07-14. Writing the identical macro as a proper ADF `extension` node via
 `contentFormat="adf"` does not trigger this — confirmed by both a structural read-back and a
 screenshot, same day, same page: one clean render per diagram, no wrapping, no duplication.
+(Both results are from v1 `updateConfluencePage`; not re-tested on v2.)
 
 ```bash
 # 1. Write/update the page normally first (Step 5, or the edit flow below) with the

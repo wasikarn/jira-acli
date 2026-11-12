@@ -36,7 +36,8 @@ exact same macro as a proper `extension` ADF node via
 `contentFormat="adf"` does NOT trigger that restructuring — confirmed by
 reading the page back after write (structurally identical to what was sent,
 byte for byte) AND by visual screenshot on the same scratch page, same day:
-each diagram renders exactly once, no wrapping, no duplication. Use "adf",
+each diagram renders exactly once, no wrapping, no duplication (both tests
+on Atlassian MCP v1; not re-tested on v2). Use "adf",
 never "html", for this.
 
 Discovered 2026-07-14 (Atlassian MCP v1; not re-tested on v2) against TP-807's spec page (100-stars.atlassian.net,

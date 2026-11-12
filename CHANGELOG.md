@@ -17,8 +17,8 @@ users and scopes `?tools=all` to a self-configured server (which loses the
 TP-884 check covered the v2 route. `confluence-content` no longer says
 `updateConfluenceContent` *always* replaces the whole body: v2 lists "granular edits",
 not verified here, and granular edits stay off until checked (the macro-safety steps assume
-a full-body replace). Tests run on v1 tools (TP-807 html restructure, macro wipe, large-body
-write) now say so. `executeWrite`/`executeDestructive` need the same preview-and-confirm as
+a full-body replace). Tests run on v1 tools (the html-vs-adf write test on a scratch page,
+the TP-807 macro wipe, the large-body write) now say so. `executeWrite`/`executeDestructive` need the same preview-and-confirm as
 acli writes; the v1 cutoff date cites Atlassian's upgrade page; response shapes join the
 "not verified on v2" caveat. The 0.1.31–0.1.33 entries below were reworded where they claimed
 more than the files hold.
