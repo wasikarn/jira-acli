@@ -8,6 +8,17 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.33] — 2026-11-12
+Found by `mh:attack-proposal` on the 0.1.32 dual-name change: on Atlassian's default
+v2 endpoint only `Primary` tools are listed to the agent, and six tools the docs name
+(`listJiraIssueTransitions`, `listJiraProjects`, `listJiraProjectIssueTypesMetadata`,
+`getJiraIssueTypeMetaWithFields`, `lookupJiraAccountId`, `listConfluenceSpaces`) are
+deferred, so an agent told to call them directly would not find them. `skills/acli/SKILL.md`
+now explains the path (discovery tool, then `executeRead`, or the `?tools=all` endpoint)
+and each direct-call site carries a one-clause pointer. Attacker ran on the Claude
+fallback (Codex usage limit), so independence is reduced. Not yet checked: whether
+`executeRead` takes a bare tool name without a prior discovery call.
+
 ## [0.1.32] — 2026-11-12
 Every Atlassian MCP v2 tool name in the skills, agents and `inject-mermaid-macros.py`
 now carries its v1 name beside it (`createConfluenceContent` (v1: `createConfluencePage`)),
