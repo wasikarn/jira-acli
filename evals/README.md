@@ -198,3 +198,21 @@ as the skills' "write the body in Thai" rule says.
 - In round 1, Thai bug tickets without the skill used checkbox lists instead of Given/When/Then blocks. That was
   seen while reading misses and was not graded.
 - Cost: a with-skill run costs 1.4x to 2.4x a plain one across both rounds.
+- No competing skills. A `claude plugin eval` run starts "with only your plugin loaded". User settings, hooks,
+  `CLAUDE.md`, other installed plugins, memory and skills are absent (code.claude.com/docs/en/plugin-evals, "How
+  runs are isolated"). So 10 of 10 is the trigger rate with no other skill to choose. In a real session with dozens
+  of skills it can be lower: mh found one of its own skills fired 0 of 20 times mid-prompt. Part C measures that.
+
+### Part C: trigger in a real session (2026-11-13, before the run)
+
+**Why.** Part B had no competing skills. This part runs the same four `trigger-*` prompts with the operator's normal
+user settings: every installed plugin and skill, hooks and `CLAUDE.md`. jira-acli is added with `--plugin-dir`
+(the `evals/mkcopy.sh` copy), not installed.
+
+**How.** `claude -p` in a scratch directory holding the case's scaffolded fixtures, with `--permission-mode dontAsk`.
+Tools are limited to `Read,Write,Edit,Glob,Grep,Skill,Bash(cat:*),Bash(ls:*)`, so no MCP tool and no acli can run.
+The model is the settings default, recorded from the session's init event. There are 3 runs per prompt, so 6 per
+skill. A run counts as fired when its stream shows a `Skill` call for that skill. Not graded: the template shape.
+
+**Commitment.** This is Part B's 8-of-10 rule at the same rate. A skill that fires in fewer than 5 of its 6 runs goes
+back to the operator with the recommendation to convert it to a plain doc with a `CLAUDE.md` pointer.
