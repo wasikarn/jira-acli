@@ -111,12 +111,19 @@ additional_fields: {
 **Read the ticket back before replying (required for every MCP create).** On v2 a wrong parameter
 name can be dropped with no error (`acli/SKILL.md` § "When acli can't"), so the create succeeds
 on production with fields left empty. The v2 names for `environment` and `versions` are not
-confirmed yet. Run `acli jira workitem view <KEY> --fields '*all' --json` (read-only) and check that
-every field you sent is set: `priority`, `labels`, `environment`, `versions`, `assignee`, `parent`.
-If any is empty, don't report a clean create. Name the missing fields in the reply and stop; don't
-retry with guessed parameter names (the **Fail loud** rule in `acli/SKILL.md`).
+confirmed yet. Read it with `getJiraIssue(cloudId, issueIdOrKey="<KEY>")`: a Primary tool on v2,
+so it works in every case that sends a create here, including acli being down or logged out. Check
+each field you sent: `priority`, `labels`, `environment`, `versions`, `assignee`, `parent`.
+- **Set:** present with the value you sent.
+- **Empty:** present but empty or null. Don't report a clean create. Name the missing fields in the
+  reply and stop; don't retry with guessed parameter names (the **Fail loud** rule in `acli/SKILL.md`).
+- **Absent from the response:** not verified; the v2 response shape is not in Atlassian's examples.
+  If acli is logged in, cross-check with `acli jira workitem view <KEY> --fields '*all' --json`
+  (read-only). For `labels`, don't trust a null there: `acli/ISSUES.md` Issue 3 saw `view --json`
+  show null labels that were set (seen without `--fields`; not re-checked with `*all`). If neither
+  read confirms a field, ask the user to open the ticket and check it. Don't report a clean create.
 
-Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`, plus any field the read-back found empty.
+Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`, plus any field the read-back found empty or couldn't confirm.
 
 ### 5c — Templated comment (on an existing ticket)
 

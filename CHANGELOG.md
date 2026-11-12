@@ -8,6 +8,18 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.37] — 2026-11-12
+Corrects 0.1.36 and finishes 0.1.30, from `mh:deep-audit` on 0.1.30–0.1.36 (checker ran on
+the Claude fallback, Codex usage limit). 0.1.36's read-back used `acli jira workitem view`, but
+Step 5b also runs when acli is unavailable or logged out, so in two of its three trigger cases
+the required check could not run. It now reads with MCP `getJiraIssue` (Primary on v2) and
+sorts each field into set / empty / absent from the response. Only "set" counts as a clean
+create, and an absent field is cross-checked with acli when logged in, else the user is asked
+to check the ticket. acli's view is not trusted for `labels` (`acli/ISSUES.md` Issue 3). The
+0.1.30 fix for `--ignore-errors` missed `skills/acli/SKILL.md:57` (also still said
+`1.3.22-stable`) and `skills/acli/ISSUES.md:187`; both now say an invalid transition fails
+loud unless you pass `--ignore-errors`.
+
 ## [0.1.36] — 2026-11-12
 `jira-content` Step 5b now requires reading the ticket back after every MCP create
 (`acli jira workitem view <KEY> --fields '*all' --json`) and checking each field that was sent.

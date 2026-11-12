@@ -54,7 +54,7 @@ acli jira workitem create-bulk --from-csv issues.csv       # or --from-json; --g
 
 # 4. MUTATE — target by --key | --jql | --filter
 acli jira workitem transition --jql "project = TEAM AND status = 'To Do'" --status "In Progress" --yes
-# ⚠️ no acli-native way to list valid transitions read-only — `--list` was removed (confirmed gone in 1.3.22-stable). See "When acli can't" for the MCP fallback; otherwise an invalid target status fails loud per-item at fire time (no --ignore-errors), it doesn't silently skip.
+# ⚠️ no acli-native way to list valid transitions read-only — `--list` was removed (still gone in 1.3.40-stable). See "When acli can't" for the MCP fallback; otherwise an invalid target status fails loud per-item at fire time (unless you pass --ignore-errors), it doesn't silently skip.
 acli jira workitem edit --key "KEY-1,KEY-2" --summary "..." --labels a,b
 # ⚠️ edit --description REPLACES the whole description. Append safely: bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md
 # ⚠️ Templated comment guard applies here too (see top of file) — no "user specified exact wording" exception, no "jira-content unavailable" exception. Command below is ONLY for a note that is none of the four templated types.
