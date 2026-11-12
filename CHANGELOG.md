@@ -8,6 +8,15 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.36] — 2026-11-12
+`jira-content` Step 5b now requires reading the ticket back after every MCP create
+(`acli jira workitem view <KEY> --fields '*all' --json`) and checking each field that was sent.
+On v2 a wrong parameter name can be dropped with no error, and the v2 names for
+`environment` and `versions` (Affects Version) are not confirmed, so a Bug could land on
+production with those fields empty. If any field is empty, the reply names it and stops; no
+retry with guessed names. A read-only MCP test cannot catch this; only the first real
+create can.
+
 ## [0.1.35] — 2026-11-12
 Corrects 0.1.31–0.1.34. Those releases put v2 tool names on v1 call shapes. Atlassian's v2
 skills show different parameters for create, read and update (plus a required

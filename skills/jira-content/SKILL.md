@@ -108,7 +108,15 @@ additional_fields: {
 # assignee: OMIT by default. Include ONLY if user named an assignee (accountId). v1: assignee_account_id.
 ```
 
-Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`.
+**Read the ticket back before replying (required for every MCP create).** On v2 a wrong parameter
+name can be dropped with no error (`acli/SKILL.md` § "When acli can't"), so the create succeeds
+on production with fields left empty. The v2 names for `environment` and `versions` are not
+confirmed yet. Run `acli jira workitem view <KEY> --fields '*all' --json` (read-only) and check that
+every field you sent is set: `priority`, `labels`, `environment`, `versions`, `assignee`, `parent`.
+If any is empty, don't report a clean create. Name the missing fields in the reply and stop; don't
+retry with guessed parameter names (the **Fail loud** rule in `acli/SKILL.md`).
+
+Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`, plus any field the read-back found empty.
 
 ### 5c — Templated comment (on an existing ticket)
 
