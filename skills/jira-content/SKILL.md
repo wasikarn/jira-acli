@@ -118,7 +118,8 @@ or logged out. Check each field the user stated or you sent: `priority`, `labels
 its stored form can differ from the Markdown you sent, and v2's format parameter is unverified, so
 ask the user to open the ticket page once and confirm headings and lists rendered (not literal
 `##`). A clean create needs every other field **Set** (or confirmed by the cross-check below):
-- **Set:** present with the value you sent.
+- **Set:** present with the value you sent, compared by meaning: the response may wrap it (e.g.
+  `{"name": "High"}` for `priority`) or return `environment` as rich text in another form.
 - **Empty or different:** present but empty, null, or another value. A dropped `priority` or
   `assignee` comes back as the project default, not null. Name each such field in the reply and
   stop; don't retry with guessed parameter names (the **Fail loud** rule in `acli/SKILL.md`).
