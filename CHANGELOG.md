@@ -8,11 +8,18 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.40] — 2026-11-12
+- The read-back also skips a field the user agreed to leave out after a rejected create (the
+  0.1.38 `versions` rule asks for that OK after the preview, which 0.1.39's skip didn't cover).
+- 0.1.39's entry said Step 3 has the ask-first assignee rule; that rule is in Failure Modes, and
+  Step 3 only names the project default. Wording corrected.
+
 ## [0.1.39] — 2026-11-12
 Fixes from a fresh checker on 0.1.37–0.1.38 (Claude fallback, Codex usage limit).
 - Corrects 0.1.38's assignee line: a ticket created without an assignee gets the project's
   default assignee, which can be the project lead, so the preview no longer promises
-  "unassigned". An assignee that can't be resolved is now asked about first. Step 3 says the same.
+  "unassigned". An assignee that can't be resolved is now asked about first. Step 3 now names the
+  project default.
 - The read-back skips a field the user agreed at the preview to leave out (a version or assignee
   dropped with their OK), instead of stopping on a ticket that matches what they approved.
 - A Sub-task rejected for an invalid parent now stops and asks, instead of retrying with a parent

@@ -114,7 +114,7 @@ on production with fields left empty or at the project default. The v2 names for
 `versions` are not confirmed yet. Read it with `getJiraIssue(cloudId, issueIdOrKey="<KEY>")`: a
 Primary tool on v2, so it works in every case that sends a create here, including acli being down
 or logged out. Check each field the user stated or you sent: `priority`, `labels`, `environment`,
-`versions`, `assignee`, `parent`. Skip a field the user agreed at the preview to leave out. For `description`, only check that it is present and not empty:
+`versions`, `assignee`, `parent`. Skip a field the user agreed to leave out, at the preview or when asked after a rejected create. For `description`, only check that it is present and not empty:
 its stored form can differ from the Markdown you sent, and v2's format parameter is unverified, so
 ask the user to open the ticket page once and confirm headings and lists rendered (not literal
 `##`). A clean create needs every other field **Set** (or confirmed by the cross-check below):
