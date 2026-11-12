@@ -8,6 +8,18 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.39] — 2026-11-12
+Fixes from a fresh checker on 0.1.37–0.1.38 (Claude fallback, Codex usage limit).
+- Corrects 0.1.38's assignee line: a ticket created without an assignee gets the project's
+  default assignee, which can be the project lead, so the preview no longer promises
+  "unassigned". An assignee that can't be resolved is now asked about first. Step 3 says the same.
+- The read-back skips a field the user agreed at the preview to leave out (a version or assignee
+  dropped with their OK), instead of stopping on a ticket that matches what they approved.
+- A Sub-task rejected for an invalid parent now stops and asks, instead of retrying with a parent
+  the user never confirmed.
+- 0.1.37's "compare by meaning" rule (commit `ee9d8ab`) was pushed under the same version number
+  without a changelog line; it is recorded under 0.1.37 now.
+
 ## [0.1.38] — 2026-11-12
 - `jira-content` Failure Modes: a Bug create rejected for an unknown `versions` value now stops and
   asks, instead of retrying without the version. The user confirmed a preview that had it, and the
@@ -39,6 +51,8 @@ A whole-picture pass on those fixes found more gaps, also fixed here:
   fields the same way.
 - The acli cross-check must read the same site the MCP create wrote to.
 - Failure Modes: omitting a not-found `versions` now names it in the reply.
+- "Set" compares by meaning, not literal text: the response may wrap a value
+  (`{"name": "High"}` for `priority`) or return `environment` as rich text in another form.
 - `confluence-content` no longer calls the `acli/SKILL.md` section the "full" v2 contract.
   Atlassian's `getConfluenceSpace` space-instructions step is not adopted.
 

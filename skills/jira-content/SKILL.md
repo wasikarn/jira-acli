@@ -50,7 +50,7 @@ Write the body in **Thai** using the matching template. **AC format/register/cov
 - **Environment** *(Bug only)* — Native Jira field. prod/staging/local. Wrap in ADF for MCP fallback.
 - **Affects versions** *(Bug only)* — Only if user gives a valid version; validate or omit.
 - **Parent** *(Sub-task only)* — Required. Sub-tasks can't be created without one.
-- **Assignee** — Leave unassigned by default. Only set if user names one. acli's `--assignee` only resolves `@me`/`default`/email; a raw accountId for anyone *other than yourself* silently unassigns instead (see `jira-acli:acli`'s `REFERENCE.md`). When email is privacy-hidden, resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (deferred on v2: `executeRead(name="lookupJiraAccountId", cloudId=…, inputs={"query": "<name|email>"})`, see `acli/SKILL.md` § "When acli can't"; v1 took `searchString`), then set `assignee` on v2 (v1: `assignee_account_id`).
+- **Assignee** — Don't set one by default (Jira then applies the project's default assignee, which can be the project lead, not unassigned). Only set if user names one. acli's `--assignee` only resolves `@me`/`default`/email; a raw accountId for anyone *other than yourself* silently unassigns instead (see `jira-acli:acli`'s `REFERENCE.md`). When email is privacy-hidden, resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (deferred on v2: `executeRead(name="lookupJiraAccountId", cloudId=…, inputs={"query": "<name|email>"})`, see `acli/SKILL.md` § "When acli can't"; v1 took `searchString`), then set `assignee` on v2 (v1: `assignee_account_id`).
 
 ## Step 4 — Preview and confirm
 
@@ -114,7 +114,7 @@ on production with fields left empty or at the project default. The v2 names for
 `versions` are not confirmed yet. Read it with `getJiraIssue(cloudId, issueIdOrKey="<KEY>")`: a
 Primary tool on v2, so it works in every case that sends a create here, including acli being down
 or logged out. Check each field the user stated or you sent: `priority`, `labels`, `environment`,
-`versions`, `assignee`, `parent`. For `description`, only check that it is present and not empty:
+`versions`, `assignee`, `parent`. Skip a field the user agreed at the preview to leave out. For `description`, only check that it is present and not empty:
 its stored form can differ from the Markdown you sent, and v2's format parameter is unverified, so
 ask the user to open the ticket page once and confirm headings and lists rendered (not literal
 `##`). A clean create needs every other field **Set** (or confirmed by the cross-check below):
@@ -188,8 +188,8 @@ acli jira workitem comment update --key KEY --id <commentId> --body-adf /tmp/not
 - Project key or issue type does not exist on the resolved site.
 - `environment` rejected as plain string (Bug) → retry with ADF wrapper.
 - `versions` value not found (Bug) → stop; don't retry without it, since the user confirmed a preview that had it (the **Fail loud** rule). Put the exact error in the reply and ask for the right version name, or for an OK to create without it.
-- Sub-task create rejected for missing/invalid parent → resolve the parent key and retry.
-- Assignee email cannot be resolved → leave unassigned and say so in the preview (assignee is not on the rendered card).
+- Sub-task create rejected for missing/invalid parent → stop and ask for the right parent key; don't retry with a parent the user didn't confirm at the preview.
+- Assignee email cannot be resolved → ask the user for another email or name. If they'd rather go without, say in the preview that Jira will apply the project's default assignee, which may be a person (assignee is not on the rendered card).
 - User does not confirm at preview gate → creation/edit is skipped.
 
 ## Related
