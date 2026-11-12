@@ -39,9 +39,9 @@ Both are **preview-then-stop**: neither holds MCP tools, and each is instructed 
 fire a mutating acli command itself. Each drafts and renders the payload, then returns the
 exact command/call for you to run after review — this plugin's acli and MCP calls hit real
 production Jira/Confluence. Both keep `Bash` for read-only acli, so the plugin enforces the
-acli rule with a hook: `hooks/acli-guard.py` denies any acli call inside a subagent (these two
-or any other) unless it is provably a read, and makes a main-thread acli write prompt, which
-blocks it in an unattended run. The hook runs only while the plugin is enabled; to cover
+acli rule with a hook: inside a subagent (these two or any other), `hooks/acli-guard.py` denies
+a Bash or Monitor acli command unless it is provably a read, and any acli mention in a
+context-mode call; a main-thread acli write prompts, which blocks it in an unattended run. The hook runs only while the plugin is enabled; to cover
 sessions where it isn't, register the same script as a user-level PreToolUse hook (matcher and
 settings in `hooks/hooks.json`).
 

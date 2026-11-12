@@ -75,6 +75,14 @@ def test_a_mention_only_in_the_description_never_blocks_the_main_thread():
     assert call(None, agent_id=MAIN, tool_input=ti) == "allow"
 
 
+def test_a_write_word_only_in_the_description_does_not_make_a_main_thread_read_ask():
+    ti = {"command": 'acli jira workitem search --jql "project = TP" --json > /tmp/o.json',
+          "description": "Search issues to update later"}
+    assert call(None, agent_id=MAIN, tool_input=ti) == "allow"
+    ti["command"] = "acli jira workitem edit --key TP-1 --summary x --yes > /tmp/o.json"
+    assert call(None, agent_id=MAIN, tool_input=ti) == "ask"
+
+
 def test_an_internal_error_fails_closed_on_acli_mentions():
     real = guard._read_safe
     setattr(guard, "_read_safe", lambda _c: 1 / 0)  # fault injection: any crash inside the read check
@@ -110,6 +118,7 @@ def test_hook_prints_deny_json_with_a_reason():
     assert p.returncode == 0, p.stderr
     out = json.loads(p.stdout)["hookSpecificOutput"]
     assert out["permissionDecision"] == "deny" and "main thread" in out["permissionDecisionReason"]
+    assert "script" in out["permissionDecisionReason"]  # steers away from the Write-a-script detour
 
 
 def test_hook_prints_nothing_on_allow():

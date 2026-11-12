@@ -135,7 +135,7 @@
   "want": "allow",
   "tool_name": "Monitor",
   "tool_input": {
-   "command": "tail -f /tmp/x.log | grep --line-buffered ERR",
+   "command": "tail -f /tmp/x.log 2>&1 | grep --line-buffered ERR",
    "description": "Watch the acli log"
   }
  },

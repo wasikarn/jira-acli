@@ -8,6 +8,28 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.44] — 2026-11-12
+Fixes from the second `mh:deep-audit` pass on the guard: a recheck of 0.1.43 and a
+whole-picture challenge (`mh:blind-spot-hunter`), both on Claude.
+- **The main-thread write check now reads only `command`.** A read whose description held a
+  WRITE word ("Search issues to update later") asked, so `claude -p` could not run it. Any write
+  verb is still in `command`, so this never lets a write past.
+- **The deny reason warns against the script detour:** moving acli into a script file or
+  building the word from pieces is the same write path. The hook still can't see inside a script
+  the Write tool made (0.1.42 residual risk); the message lowers the odds that an honest agent
+  tries it.
+- **Test fix:** the Monitor description row never exercised 0.1.43's fix (its command passed
+  before it). It now carries `2>&1`. 27 of 29 mutants fail the suite (one new mutant for the
+  main-thread change); the same two equivalent survivors as 0.1.43.
+- **Checked, no change needed:** all 95 leaf commands of acli 1.3.40-stable, walked through
+  `--help` (local, no API call) and run through the guard. The 30 allowed in a subagent are all
+  reads; every write leaf is denied in a subagent and asks in the main thread, except
+  `config gov-cloud` (known residual). With one PreToolUse hook answering `allow` and another
+  `ask`, Claude Code blocked the call in `claude -p` (probe), so another tool's hook can't
+  cancel the guard's `ask`.
+- README, `jira-expert` and the script's docstring now state the narrower rule: Bash/Monitor
+  reads in the plain shapes pass, ctx tools that mention acli are denied.
+
 ## [0.1.43] — 2026-11-12
 Fixes from `mh:deep-audit` on the 0.1.42 guard. Its checker ran on Claude (Codex was over quota),
 so independence was reduced.

@@ -5,10 +5,11 @@ acli on the operator's machine is logged in to a production Atlassian site. A su
 `acli jira workitem assign` on a real ticket (TP-558) although its prompt said "audit only".
 This hook makes the plugin's preview-then-stop rule real:
 
-- Inside a subagent (hook input has `agent_id`): any call that mentions acli is denied unless it
-  is provably a read (`acli jira|confluence ... view|search|status|list*|get*`, optionally piped).
-- In the main thread: such a call prompts (`ask`) when it shows a write signal, so an unattended
-  run (`claude -p`, where nobody can answer) cannot write. Not a boundary, a safety net.
+- Inside a subagent (hook input has `agent_id`): a Bash/Monitor call whose `command` mentions
+  acli is denied unless it is provably a read (`acli jira|confluence ... view|search|status|
+  list*|get*`, optionally piped); a context-mode call that mentions acli anywhere is denied.
+- In the main thread: such a call prompts (`ask`) when what runs shows a write signal, so an
+  unattended run (`claude -p`, where nobody can answer) cannot write. Not a boundary, a safety net.
 
 It never parses shell to find where acli starts (that leaked about 20 ways in review). It allows
 only a narrow grammar it can read exactly and treats everything else that mentions acli as a
@@ -45,7 +46,8 @@ DENY_REASON = (
     "acli-guard: this call may write to the production Atlassian site, and subagents may only "
     "read with acli (`acli jira|confluence ... view|search|status|list*|get*`, optionally piped). "
     "Draft the command and hand it to the main thread to run after review. To read files that "
-    "mention acli, use the Read or Grep tool instead of Bash."
+    "mention acli, use the Read or Grep tool instead of Bash. Don't move acli into a script "
+    "file or build the word from pieces to get past this: that is the same write path."
 )
 ASK_REASON = "acli-guard: this acli call may write to the production Atlassian site. Approve only if you reviewed it."
 
@@ -137,6 +139,7 @@ def decide(d):
             # Only `command` runs; a mention only in free text (`description`) is no call to acli.
             if not CAND.search(c) and not WRAP.search(c) or _read_safe(c):
                 return "allow"
+            text = c  # judge the write signal on what runs, not on the description
         if sub:
             return "deny"
         return "ask" if _write_signal(text) else "allow"
