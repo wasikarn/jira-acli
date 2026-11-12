@@ -8,6 +8,38 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.42] — 2026-11-12
+**New: `hooks/acli-guard.py`, a PreToolUse hook that blocks acli writes from subagents.** 0.1.41
+only reworded the README: `jira-expert` and `confluence-expert` keep `Bash` for read-only acli,
+so nothing stopped a write, and a dispatched subagent once left TP-558 unassigned this way.
+Designed with `mh:attack-proposal` (2 attack lanes, 24 breaks; validator passed in round 3 of 3;
+both lanes and the validator ran on Claude, Codex was over quota, so independence was reduced).
+- **Subagents** (hook input has `agent_id`): any Bash, Monitor or context-mode `ctx_execute`/
+  `ctx_batch` call that mentions acli is denied unless it is provably a read:
+  `acli jira|confluence ... view|search|status|list*|get*`, optionally piped, with no `$`,
+  backtick, newline, `;`, `&`, `( ) < > { } #` or `\` outside quotes, and none of the four write
+  wrappers (`acli-edit.sh`, `acli-new.sh`, `acli-set-desc.sh`, `acli-assign.sh`).
+- **Main thread**: a call that mentions acli and shows a write signal (a WRITE verb word, a
+  wrapper `.sh`, `acli feedback|rovodev`) gets `ask`. Verified: an `ask` blocks the call in an
+  unattended `claude -p` run under `bypassPermissions`. A safety net, not a boundary.
+- It does not parse shell to find where acli starts; a parser leaked about 20 ways in review.
+  Accepted over-blocks in subagents: `acli ... --help` and `--generate-json`, redirects,
+  `cd x && acli ...`, `$VAR`, heredocs and multi-line commands that mention acli, `git`/`grep`
+  on a wrapper `.sh` path, commit messages with the word acli. The deny reason points the agent
+  to the main thread, or to Read/Grep for files.
+- Residual risks: obfuscated forms that never spell `acli` (`ac''li`, `${A}i`, a script written
+  with the Write tool), Codex/Orca workers whose shells skip Claude Code hooks, and main-thread
+  acli calls with no write word (`acli config gov-cloud`).
+- The hook runs only while the plugin is enabled (`defaultEnabled: false` keeps it off until
+  then, verified with `--plugin-dir`). Register the same script as a user-level PreToolUse hook
+  to cover every session.
+- Tests: `hooks/test_acli_guard.py` runs the validated corpus (88 single-line rows, 7 multi-line
+  inputs, 11 tool calls) plus main-thread cases. 11 of 11 mutations of the guard's rules fail it.
+  End to end through a real Claude Code session with a stub acli: a subagent's `view` ran, its
+  `assign` was denied; a main-thread `assign` was blocked by the `ask`; `jira-expert` on a read
+  task ran 3 acli reads with no denial and got `${CLAUDE_SKILL_DIR}` already filled in.
+- README, CLAUDE.md and both agents now describe the hook.
+
 ## [0.1.41] — 2026-11-12
 Fixes from a whole-project `mattpocock-skills:code-review` (Standards and Spec axes).
 - **`acli-edit.py` could wipe a description.** A view payload for another issue, or a dict with

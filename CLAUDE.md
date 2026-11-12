@@ -11,7 +11,7 @@ check. Local checks:
 ```bash
 python3 -m py_compile skills/*/scripts/*.py
 for f in skills/*/scripts/*.sh; do bash -n "$f"; done
-for t in skills/*/scripts/test_*.py; do python3 "$t" || echo "FAILED: $t"; done
+for t in skills/*/scripts/test_*.py hooks/test_*.py; do python3 "$t" || echo "FAILED: $t"; done
 python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/adf2md.py -   # round-trip
 ```
 
@@ -21,9 +21,12 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
   ADF↔Markdown). `skills/jira-content` — Jira templates (Bug/Story/Task/Epic/Sub-task, comments).
   `skills/confluence-content` — Spec/PRD template plus `scripts/inject-mermaid-macros.py`.
 - `agents/jira-expert.md`, `agents/confluence-expert.md` — preview-then-stop subagents: they hold
-  no MCP tools and are instructed never to fire a mutating acli command (they keep `Bash` for
-  read-only acli, so nothing blocks it); they return the exact command for the main thread to
-  run. Each defers the other product's work to its sibling.
+  no MCP tools and never fire a mutating acli command; they return the exact command for the main
+  thread to run. Each defers the other product's work to its sibling.
+- `hooks/acli-guard.py` (+ `hooks.json`, `test_acli_guard.py`, `testdata/`) — PreToolUse guard
+  that enforces that rule for every subagent while the plugin is enabled: deny unless provably a
+  read; main-thread writes prompt. Its corpus is the attack-proposal set from 0.1.42; a new
+  bypass or over-block becomes a row there first.
 - `templates/acceptance-criteria.md` — the one rule both content skills share; referenced, never
   copied (copies drifted across 5+ files before).
 - Scripts: `md2adf.py` (Markdown subset → ADF; nested lists flattened by design, see

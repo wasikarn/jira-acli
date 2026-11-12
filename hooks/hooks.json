@@ -1,0 +1,18 @@
+{
+  "description": "acli-guard: no acli write from a subagent; main-thread acli writes prompt (blocks unattended runs). See hooks/acli-guard.py.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Monitor|mcp__.*__ctx_(execute|execute_file|batch|batch_execute)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/acli-guard.py\"",
+            "timeout": 5,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ]
+  }
+}
