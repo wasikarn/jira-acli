@@ -110,20 +110,24 @@ additional_fields: {
 
 **Read the ticket back before replying (required for every MCP create).** On v2 a wrong parameter
 name can be dropped with no error (`acli/SKILL.md` § "When acli can't"), so the create succeeds
-on production with fields left empty. The v2 names for `environment` and `versions` are not
-confirmed yet. Read it with `getJiraIssue(cloudId, issueIdOrKey="<KEY>")`: a Primary tool on v2,
-so it works in every case that sends a create here, including acli being down or logged out. Check
-each field you sent: `priority`, `labels`, `environment`, `versions`, `assignee`, `parent`.
+on production with fields left empty or at the project default. The v2 names for `environment` and
+`versions` are not confirmed yet. Read it with `getJiraIssue(cloudId, issueIdOrKey="<KEY>")`: a
+Primary tool on v2, so it works in every case that sends a create here, including acli being down
+or logged out. Check each field the user stated or you sent: `priority`, `labels`, `environment`,
+`versions`, `assignee`, `parent`, `description`. A clean create needs every field **Set** (or
+confirmed by the cross-check below):
 - **Set:** present with the value you sent.
-- **Empty:** present but empty or null. Don't report a clean create. Name the missing fields in the
-  reply and stop; don't retry with guessed parameter names (the **Fail loud** rule in `acli/SKILL.md`).
+- **Empty or different:** present but empty, null, or another value. A dropped `priority` or
+  `assignee` comes back as the project default, not null. Name each such field in the reply and
+  stop; don't retry with guessed parameter names (the **Fail loud** rule in `acli/SKILL.md`).
 - **Absent from the response:** not verified; the v2 response shape is not in Atlassian's examples.
-  If acli is logged in, cross-check with `acli jira workitem view <KEY> --fields '*all' --json`
-  (read-only). For `labels`, don't trust a null there: `acli/ISSUES.md` Issue 3 saw `view --json`
-  show null labels that were set (seen without `--fields`; not re-checked with `*all`). If neither
-  read confirms a field, ask the user to open the ticket and check it. Don't report a clean create.
+  If acli is logged in to the same site you created on (`acli jira auth status`), cross-check with
+  `acli jira workitem view <KEY> --fields '*all' --json` (read-only). For `labels`, don't trust a
+  null there: `acli/ISSUES.md` Issue 3 saw `view --json` show null labels that were set (seen
+  without `--fields`; not re-checked with `*all`). If neither read confirms a field, ask the user
+  to open the ticket and check it.
 
-Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`, plus any field the read-back found empty or couldn't confirm.
+Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`, plus any field the read-back found empty, different, or couldn't confirm.
 
 ### 5c — Templated comment (on an existing ticket)
 
@@ -180,7 +184,7 @@ acli jira workitem comment update --key KEY --id <commentId> --body-adf /tmp/not
 - `acli` not installed or not authed → prompt to auth or fall back to MCP.
 - Project key or issue type does not exist on the resolved site.
 - `environment` rejected as plain string (Bug) → retry with ADF wrapper.
-- `versions` value not found (Bug) → omit and retry.
+- `versions` value not found (Bug) → omit and retry, and name the dropped version and the exact error in the reply (the Step 5b read-back can't see a field you stopped sending).
 - Sub-task create rejected for missing/invalid parent → resolve the parent key and retry.
 - Assignee email cannot be resolved → leave unassigned.
 - User does not confirm at preview gate → creation/edit is skipped.

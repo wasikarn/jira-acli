@@ -18,7 +18,7 @@ no acli path here, unlike Jira. Template lives at
 **v2 call shapes:** the prose below says `contentFormat: "markdown"|"adf"|"html"`, which is v1's
 parameter. On v2 the same choice is `body.format` in `body={"format": ..., "value": ...}`. Reads
 need `detail="full"` (without it you get a summary and no body), and an update needs the
-`snapshotToken` from that read. The call blocks below show v2 first; the full contract is in
+`snapshotToken` from that read. The call blocks below show v2 first; the parts of the v2 contract this plugin uses are in
 `acli/SKILL.md` § "When acli can't".
 
 ## When to use this skill vs acli vs jira-content

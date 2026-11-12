@@ -20,6 +20,20 @@ to check the ticket. acli's view is not trusted for `labels` (`acli/ISSUES.md` I
 `1.3.22-stable`) and `skills/acli/ISSUES.md:187`; both now say an invalid transition fails
 loud unless you pass `--ignore-errors`.
 
+A whole-picture pass on those fixes found more gaps, also fixed here:
+- A dropped `priority` or `assignee` comes back as the project default, not empty, so the
+  read-back now treats "present but a different value" like empty. It also checks
+  `description`, and covers fields the user stated, not only the ones sent.
+- `jira-expert` holds no MCP tools, so its handoff of an MCP create or edit must list the
+  `getJiraIssue` read-back as the step after the fire. Otherwise the main thread may fire
+  without `jira-content` loaded.
+- `skills/acli/SKILL.md` now asks for the same read-back after `editJiraIssue`, which can drop
+  fields the same way.
+- The acli cross-check must read the same site the MCP create wrote to.
+- Failure Modes: omitting a not-found `versions` now names it in the reply.
+- `confluence-content` no longer calls the `acli/SKILL.md` section the "full" v2 contract.
+  Atlassian's `getConfluenceSpace` space-instructions step is not adopted.
+
 ## [0.1.36] — 2026-11-12
 `jira-content` Step 5b now requires reading the ticket back after every MCP create
 (`acli jira workitem view <KEY> --fields '*all' --json`) and checking each field that was sent.
