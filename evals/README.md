@@ -71,3 +71,35 @@ there, not that the template helps.
   own flag) fail a correct draft that explains the rejection further away.
 
 When a case misses, read the draft before trusting the grader.
+
+### Result (2026-11-12, plugin 0.1.51, graders frozen at `d6042016da1909d6`, commit 4583826)
+
+5 runs per arm, $10.68, 381 s, no run errors, `claude-opus-5-5`, CLI 2.1.322. The skill fired in 20 of 20
+with-arm runs. Full result: `results/2026-11-12-round1.json`.
+
+| case | with / without / Δ | cost per run with / without | turns with / without |
+|---|---|---|---|
+| `holdout-jira-content-checkout-timeout-bug` | 0.911 / 0.822 / +0.089 | $0.377 / $0.197 | 7.4 / 4.0 |
+| `holdout-jira-content-export-decision-record` | 1.000 / 1.000 / 0.000 | $0.230 / $0.125 | 5.6 / 4.4 |
+| `holdout-confluence-content-partner-rate-limit` | 0.867 / 0.933 / −0.067 | $0.340 / $0.170 | 6.0 / 4.4 |
+| `holdout-confluence-content-points-expiry` | 0.822 / 0.844 / −0.022 | $0.492 / $0.205 | 6.4 / 4.0 |
+
+**By the frozen rule:** `jira-content` passes (with-skill mean 0.956, worst Δ 0.000). `confluence-content` fails
+(mean 0.844, and partner-rate-limit loses by 0.067).
+
+**Reading the drafts.** All 36 scored misses (18 per arm) are false fails. Every flagged draft was correct:
+- the superseded value or rejected option appears only labelled as old, in a history table, a sources line or a
+  before/after table (`no-per-ip-key`, `no-1000-limit`, `no-24-months`, `no-superseded-rate`);
+- SMS appears under "Out of scope" (`no-sms-channel`);
+- iOS appears under an "unknown" heading, or in an acceptance criterion to check it, with the word "unknown" on
+  another line (`ios-unknown`);
+- "burst behaviour (R1" trips the digit rule (`burst-unknown`).
+
+The with-skill pages are longer (150 to 180 lines against about 90) and carry more history and source sections, so
+they trip these graders more. Read this way, neither arm made a real error on any trap: both are at 1.00, and the
+skills show neither gain nor harm on these checks, at 1.7x to 2.4x the cost per run. `jira-content`'s +0.089 is
+grader noise too: the no-skill arm tripped `no-superseded-rate` three times with a correct "12% was the wrong number" note.
+
+**Decision pending (operator).** The rule says `confluence-content` becomes a plain doc. The failure comes from the
+loose graders named above before the run, not from a wrong page. A fresh blind pair whose trap graders accept a
+labelled superseded value would settle it. No grader or skill was edited after the run.

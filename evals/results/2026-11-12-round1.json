@@ -1,0 +1,4273 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.322",
+  "startedAt": "2026-11-12T16:53:04.370Z",
+  "durationSeconds": 381,
+  "costUsd": 10.680283399999999,
+  "partial": false,
+  "suite": {
+    "root": "<eval-copy>/jira-acli",
+    "ablation": "with-without",
+    "tagFilters": [
+      "holdout"
+    ],
+    "threshold": 0,
+    "concurrency": 4,
+    "plugins": [
+      {
+        "name": "jira-acli",
+        "version": "0.1.51",
+        "path": "<eval-copy>/jira-acli"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "holdout-confluence-content-partner-rate-limit",
+      "dir": "evals/holdout-confluence-content-partner-rate-limit",
+      "source": "mixed",
+      "promptMarkdown": "Use the `jira-acli:confluence-content` skill (Skill tool, `skill: \"jira-acli:confluence-content\"`) to draft a Confluence spec/PRD page for rate limiting the partner API, from `rfc-draft.md` and `slack-thread.txt`. Partners' account managers will read the page. Write it in English. All facts are in the files in the working directory. Nobody will answer questions, so do not ask any. Anything the files do not say is marked unknown in the draft, never invented. Write the draft to `spec.md`; it is the only file you create. Do not create, publish or update anything in Jira or Confluence, and do not run acli or any Jira or Confluence tool.\n\nYour final message is one line naming the file, nothing else.\n\nIf the Skill tool reports the skill as unknown or unavailable, do the same task yourself and still end with the final message described above.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-429",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "\\b429\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-burst-unknown",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "burst[^\\n\\d/]{0,30}(?!600\\b|20\\d\\d\\b)\\d",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-flag",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "partner_rate_limit_enforce",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-limit-600",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "\\b600\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-no-1000-limit",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?![^\\n]*\\b600\\b)[^\\n]*\\b1,?000\\s*(?:req|requests|rpm|calls|/\\s?min|per)",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-partner-blame",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "Zentra",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-per-ip-key",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?![^\\n]*(?:reject|\\bnot\\b|\\bno\\b|instead|rather|out of scope|non-goal|drop|because|NAT|alternative|considered|won|exclud)|[^\\n]*\\n[^\\n]*(?:reject|\\bnot\\b|\\bno\\b|instead|rather|out of scope|non-goal|drop|because|NAT|alternative|considered|won|exclud))[^\\n]*(?:per[- ]IP|source IP|IP[- ]based|by IP|client IP)",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-retry-after",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "Retry-After",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-shadow-then-enforce",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "(?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?confluence-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.3342234,
+            "judgeCostUsd": 0,
+            "durationSeconds": 46,
+            "startedAt": "2026-11-12T16:53:04.415Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.36446180000000006,
+            "judgeCostUsd": 0,
+            "durationSeconds": 55,
+            "startedAt": "2026-11-12T16:53:04.416Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.3368116,
+            "judgeCostUsd": 0,
+            "durationSeconds": 47,
+            "startedAt": "2026-11-12T16:53:04.416Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.3475316,
+            "judgeCostUsd": 0,
+            "durationSeconds": 50,
+            "startedAt": "2026-11-12T16:53:04.416Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.31854460000000007,
+            "judgeCostUsd": 0,
+            "durationSeconds": 40,
+            "startedAt": "2026-11-12T16:53:50.331Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 5,
+            "costUsd": 0.1720378,
+            "judgeCostUsd": 0,
+            "durationSeconds": 28,
+            "startedAt": "2026-11-12T16:53:51.818Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.1791278,
+            "judgeCostUsd": 0,
+            "durationSeconds": 30,
+            "startedAt": "2026-11-12T16:53:53.916Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.1675604,
+            "judgeCostUsd": 0,
+            "durationSeconds": 26,
+            "startedAt": "2026-11-12T16:53:59.563Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.1633928,
+            "judgeCostUsd": 0,
+            "durationSeconds": 27,
+            "startedAt": "2026-11-12T16:54:19.707Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.166179,
+            "judgeCostUsd": 0,
+            "durationSeconds": 28,
+            "startedAt": "2026-11-12T16:54:24.281Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-429",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b429\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-burst-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched partner_rate_limit_enforce",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-limit-600",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b600\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-1000-limit",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-partner-blame",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-per-ip-key",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-retry-after",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched Retry-After",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-shadow-then-enforce",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched (?:2026-12-01|\\b1 Dec(?:ember)? 2026|Dec(?:ember)? 1,? 2026)[\\s\\S]*(?:2026-12-15|15 Dec(?:ember)? 2026|Dec(?:ember)? 15,? 2026)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 0.8666666666666666,
+        "passRate": 0,
+        "scoreWithout": 0.9333333333333332,
+        "passRateWithout": 0.4,
+        "delta": -0.06666666666666665
+      }
+    },
+    {
+      "name": "holdout-confluence-content-points-expiry",
+      "dir": "evals/holdout-confluence-content-points-expiry",
+      "source": "mixed",
+      "promptMarkdown": "Use the `jira-acli:confluence-content` skill (Skill tool, `skill: \"jira-acli:confluence-content\"`) to draft a Confluence spec/PRD page for the points-expiry notification feature, from `older-draft.md`, `meeting-notes-2026-11-05.md` and `line-chat.txt`. The page is shared with the mobile, backend and vendor teams. Write it in Thai, keeping technical terms, endpoint and flag names in English. All facts are in the files in the working directory. Nobody will answer questions, so do not ask any. Anything the files do not say is marked unknown in the draft, never invented. Write the draft to `spec.md`; it is the only file you create. Do not create, publish or update anything in Jira or Confluence, and do not run acli or any Jira or Confluence tool.\n\nYour final message is one line naming the file, nothing else.\n\nIf the Skill tool reports the skill as unknown or unavailable, do the same task yourself and still end with the final message described above.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-endpoint",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "members/[^\\s/]+/points/expiring",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-expiry-12-months",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "\\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-flag",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "loyalty_expiry_notify",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-launch-date",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-no-24-months",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?![^\\n]*\\b12\\s?(?:เดือน|months?))[^\\n]*\\b24\\s?(?:เดือน|months?)",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-invented-run-time",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "points-expiry-notifier[^\\n]{0,60}(?:\\d{1,2}[:.]\\d{2}|\\d\\s?(?:โมง|am\\b|pm\\b|น\\.)|ตี\\s?\\d)|\\b[0-5]?\\d\\s+(?:[01]?\\d|2[0-3])\\s+\\*\\s+\\*\\s+\\*",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-sms-budget",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "40,?000|\\b40k\\b",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-sms-channel",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?![^\\n]*(?:ไม่|ตัด|ยกเลิก|นอก scope|out of scope|non-goal|reject|exclud|drop|\\bnot\\b|\\bno\\b|without|แพง|budget|งบ|cost|❌|✗|✘)|[^\\n]*\\n[^\\n]*(?:ไม่|ตัด|ยกเลิก|นอก scope|out of scope|non-goal|reject|exclud|drop|\\bnot\\b|\\bno\\b|without|แพง|budget|งบ|cost|❌|✗|✘))[^\\n]*\\bSMS\\b",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-two-reminders",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "spec.md"
+            },
+            "pattern": "^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?confluence-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 7,
+            "costUsd": 0.5073176,
+            "judgeCostUsd": 0,
+            "durationSeconds": 91,
+            "startedAt": "2026-11-12T16:54:25.841Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.4652878,
+            "judgeCostUsd": 0,
+            "durationSeconds": 77,
+            "startedAt": "2026-11-12T16:54:30.651Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 7,
+            "costUsd": 0.5341082,
+            "judgeCostUsd": 0,
+            "durationSeconds": 95,
+            "startedAt": "2026-11-12T16:54:46.225Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.4788766,
+            "judgeCostUsd": 0,
+            "durationSeconds": 81,
+            "startedAt": "2026-11-12T16:54:51.836Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 6,
+            "costUsd": 0.47256580000000004,
+            "judgeCostUsd": 0,
+            "durationSeconds": 79,
+            "startedAt": "2026-11-12T16:55:47.649Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.212529,
+            "judgeCostUsd": 0,
+            "durationSeconds": 36,
+            "startedAt": "2026-11-12T16:55:57.209Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.19862419999999997,
+            "judgeCostUsd": 0,
+            "durationSeconds": 33,
+            "startedAt": "2026-11-12T16:56:12.559Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.210501,
+            "judgeCostUsd": 0,
+            "durationSeconds": 36,
+            "startedAt": "2026-11-12T16:56:21.138Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.1957202,
+            "judgeCostUsd": 0,
+            "durationSeconds": 33,
+            "startedAt": "2026-11-12T16:56:33.239Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.20733019999999996,
+            "judgeCostUsd": 0,
+            "durationSeconds": 35,
+            "startedAt": "2026-11-12T16:56:45.602Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched members/[^\\s/]+/points/expiring",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-expiry-12-months",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b12\\s?(?:เดือน|months?)|(?:\\b1|หนึ่ง)\\s?ปี|one year|\\b1[- ]year",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched loyalty_expiry_notify",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-launch-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-12-15|15\\s?(?:ธ\\.ค\\.|ธันวาคม|Dec)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24-months",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-invented-run-time",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-budget",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-sms-channel",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-two-reminders",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^(?=[\\s\\S]*\\b30\\s?(?:วัน|days?|-day))[\\s\\S]*\\b7\\s?(?:วัน|days?|-day)",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 0.8222222222222222,
+        "passRate": 0,
+        "scoreWithout": 0.8444444444444444,
+        "passRateWithout": 0,
+        "delta": -0.022222222222222254
+      }
+    },
+    {
+      "name": "holdout-jira-content-checkout-timeout-bug",
+      "dir": "evals/holdout-jira-content-checkout-timeout-bug",
+      "source": "mixed",
+      "promptMarkdown": "Use the `jira-acli:jira-content` skill (Skill tool, `skill: \"jira-acli:jira-content\"`) to draft a Jira Bug ticket for the payment team about the checkout failures described in `slack-thread.txt` and `error-log.txt`. Write the ticket in Thai, keeping technical terms, codes, versions and names of systems in English. All facts are in the files in the working directory. Nobody will answer questions, so do not ask any. Anything the files do not say is marked unknown in the draft, never invented. Write the draft to `ticket.md`; it is the only file you create. Do not create, publish or update anything in Jira or Confluence, and do not run acli or any Jira or Confluence tool.\n\nYour final message is one line naming the file, nothing else.\n\nIf the Skill tool reports the skill as unknown or unavailable, do the same task yourself and still end with the final message described above.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-endpoint",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "orders/[^\\s/]+/checkout",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-error-code",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "ERR_PAYMENT_TIMEOUT",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-failure-rate",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "\\b3\\.4\\s?%",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-ios-unknown",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "^(?![^\\n]*(?:unknown|ไม่ทราบ|ยังไม่|ไม่ระบุ|ไม่ได้ระบุ|ไม่มีข้อมูล|ไม่มีรายงาน|ไม่ชัด|TBD|unconfirmed|not (?:yet )?(?:confirmed|known|verified|tested|checked|reported)|\\?))[^\\n]*\\biOS\\b",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-customer-pii",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "081[-\\s]?234[-\\s]?5678|สมชาย|Somchai",
+            "flags": "",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-redis-cause",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "^(?![^\\n]*(?:ไม่|ตัด|rule|\\bnot\\b|exclud|eliminat|normal|ปกติ))[^\\n]*\\bRedis\\b",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-superseded-rate",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "^(?![^\\n]*3\\.4)[^\\n]*\\b12\\s?%",
+            "flags": "m",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-regression-version",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "\\b3\\.7\\.0\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-workaround-flag",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "ticket.md"
+            },
+            "pattern": "checkout\\.async_capture",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?jira-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 8,
+            "costUsd": 0.39260799999999996,
+            "judgeCostUsd": 0,
+            "durationSeconds": 51,
+            "startedAt": "2026-11-12T16:56:56.891Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 8,
+            "costUsd": 0.3898714,
+            "judgeCostUsd": 0,
+            "durationSeconds": 49,
+            "startedAt": "2026-11-12T16:57:06.533Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 7,
+            "costUsd": 0.37244720000000003,
+            "judgeCostUsd": 0,
+            "durationSeconds": 47,
+            "startedAt": "2026-11-12T16:57:06.838Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 7,
+            "costUsd": 0.35803139999999994,
+            "judgeCostUsd": 0,
+            "durationSeconds": 41,
+            "startedAt": "2026-11-12T16:57:20.915Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 7,
+            "costUsd": 0.3743892,
+            "judgeCostUsd": 0,
+            "durationSeconds": 46,
+            "startedAt": "2026-11-12T16:57:48.155Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.190235,
+            "judgeCostUsd": 0,
+            "durationSeconds": 30,
+            "startedAt": "2026-11-12T16:57:54.266Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.1956056,
+            "judgeCostUsd": 0,
+            "durationSeconds": 32,
+            "startedAt": "2026-11-12T16:57:55.791Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.8888888888888888,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.20374219999999998,
+            "judgeCostUsd": 0,
+            "durationSeconds": 34,
+            "startedAt": "2026-11-12T16:58:02.081Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.197465,
+            "judgeCostUsd": 0,
+            "durationSeconds": 31,
+            "startedAt": "2026-11-12T16:58:24.366Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 0.7777777777777778,
+            "passed": false,
+            "turns": 4,
+            "costUsd": 0.2000462,
+            "judgeCostUsd": 0,
+            "durationSeconds": 32,
+            "startedAt": "2026-11-12T16:58:27.810Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched orders/[^\\s/]+/checkout",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-error-code",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ERR_PAYMENT_TIMEOUT",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-failure-rate",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.4\\s?%",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-ios-unknown",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-customer-pii",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-redis-cause",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-superseded-rate",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern found (expected absent)",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-regression-version",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b3\\.7\\.0\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-workaround-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched checkout\\.async_capture",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 0.9111111111111111,
+        "passRate": 0.2,
+        "scoreWithout": 0.8222222222222222,
+        "passRateWithout": 0,
+        "delta": 0.0888888888888889
+      }
+    },
+    {
+      "name": "holdout-jira-content-export-decision-record",
+      "dir": "evals/holdout-jira-content-export-decision-record",
+      "source": "mixed",
+      "promptMarkdown": "Use the `jira-acli:jira-content` skill (Skill tool, `skill: \"jira-acli:jira-content\"`) to draft a decision-record comment for Jira issue RPT-412, recording what the team decided about the export timeouts and why. Use `issue.txt`, `meeting-notes.md` and `followup-thread.txt`. Write the comment in English. All facts are in the files in the working directory. Nobody will answer questions, so do not ask any. Anything the files do not say is marked unknown in the draft, never invented. Write the draft to `comment.md`; it is the only file you create. Do not create, publish or update anything in Jira or Confluence, and do not run acli or any Jira or Confluence tool.\n\nYour final message is one line naming the file, nothing else.\n\nIf the Skill tool reports the skill as unknown or unavailable, do the same task yourself and still end with the final message described above.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 600,
+      "maxTurns": 25,
+      "graders": [
+        {
+          "name": "outcome-async-endpoint",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "/exports\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-decision-date",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-link-expiry-72",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "\\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+            "flags": "i",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-max-rows-unknown",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "EXPORT_MAX_ROWS[^\\n\\d]{0,25}\\d{1,3}(?:[,._]?\\d{3})*(?:\\s?k)?\\b",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-120s-plan",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "^(?![^\\n]*(?:reject|\\bnot\\b|\\bno\\b|declin|drop|instead|rather|considered|alternative|option|stays|remain|won)|[^\\n]*\\n[^\\n]*(?:reject|\\bnot\\b|\\bno\\b|declin|drop|instead|rather|considered|alternative|option|stays|remain|won))[^\\n]*\\b120\\s?(?:s\\b|sec|seconds?)",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-24h-expiry",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "^(?![^\\n]*\\b72)[^\\n]*\\b24\\s?(?:h\\b|hours?|-hour)",
+            "flags": "mi",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-no-escalating-merchant",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "Siam\\s?Freight|churn",
+            "flags": "i",
+            "match": "not_contains"
+          }
+        },
+        {
+          "name": "outcome-queue",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "report-export\\b",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "outcome-sync-flag",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": {
+              "source": "file",
+              "path": "comment.md"
+            },
+            "pattern": "reports\\.sync_export_enabled",
+            "flags": "",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "process-skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:jira-acli:)?jira-content\"",
+            "min": 1
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.2297898,
+            "judgeCostUsd": 0,
+            "durationSeconds": 16,
+            "startedAt": "2026-11-12T16:58:34.331Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.233968,
+            "judgeCostUsd": 0,
+            "durationSeconds": 17,
+            "startedAt": "2026-11-12T16:58:35.967Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.230374,
+            "judgeCostUsd": 0,
+            "durationSeconds": 16,
+            "startedAt": "2026-11-12T16:58:49.840Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.22632020000000003,
+            "judgeCostUsd": 0,
+            "durationSeconds": 15,
+            "startedAt": "2026-11-12T16:58:53.242Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 5,
+            "costUsd": 0.2283804,
+            "judgeCostUsd": 0,
+            "durationSeconds": 16,
+            "startedAt": "2026-11-12T16:58:55.844Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "process-skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.12177560000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 13,
+            "startedAt": "2026-11-12T16:58:59.746Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.1247148,
+            "judgeCostUsd": 0,
+            "durationSeconds": 12,
+            "startedAt": "2026-11-12T16:59:05.758Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.1265952,
+            "judgeCostUsd": 0,
+            "durationSeconds": 12,
+            "startedAt": "2026-11-12T16:59:07.993Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 6,
+            "costUsd": 0.1237626,
+            "judgeCostUsd": 0,
+            "durationSeconds": 12,
+            "startedAt": "2026-11-12T16:59:11.844Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 4,
+            "costUsd": 0.1274302,
+            "judgeCostUsd": 0,
+            "durationSeconds": 13,
+            "startedAt": "2026-11-12T16:59:12.301Z",
+            "error": null,
+            "tracePath": "<run-dir>/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "outcome-async-endpoint",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched /exports\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-decision-date",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched 2026-11-11|11 Nov(?:ember)?,? 2026|Nov(?:ember)? 11,? 2026",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-link-expiry-72",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched \\b72\\s?(?:h\\b|hours?|-hour)|\\b(?:3|three)[- ]days?\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-max-rows-unknown",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-120s-plan",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-24h-expiry",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-no-escalating-merchant",
+                "passed": true,
+                "weight": 1,
+                "explanation": "pattern absent as expected",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-queue",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched report-export\\b",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "outcome-sync-flag",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched reports\\.sync_export_enabled",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1,
+        "scoreWithout": 1,
+        "passRateWithout": 1,
+        "delta": 0
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 4,
+    "casesPassed": 4,
+    "overallScore": 0.8999999999999999,
+    "overallPassRate": 0.3,
+    "meanDelta": 0
+  }
+}
