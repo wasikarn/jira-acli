@@ -39,7 +39,7 @@ byte for byte) AND by visual screenshot on the same scratch page, same day:
 each diagram renders exactly once, no wrapping, no duplication. Use "adf",
 never "html", for this.
 
-Discovered 2026-07-14 against TP-807's spec page (100-stars.atlassian.net,
+Discovered 2026-07-14 (Atlassian MCP v1; not re-tested on v2) against TP-807's spec page (100-stars.atlassian.net,
 space BEP) by inserting the macro once by hand via the Confluence editor's
 `/mermaid` slash command, then reading the page back with
 `getConfluenceContent(contentFormat="adf")` (v1: getConfluencePage) to see the real extension node shape

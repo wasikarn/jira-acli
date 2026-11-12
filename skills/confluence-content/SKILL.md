@@ -118,7 +118,7 @@ the macro through `updateConfluenceContent(contentFormat="html")` makes Confluen
 "helpfully" restructure a code-block-then-matching-extension-macro pattern into three nodes (a
 broken preview extension, the code wrapped in a collapsible `expand`, then the original extension)
 — the diagram renders TWICE with a stray collapsed accordion between them. Confirmed broken by
-visual screenshot 2026-07-14. Writing the identical macro as a proper ADF `extension` node via
+visual screenshot 2026-07-14 (on v1 `updateConfluencePage`; not re-tested on v2). Writing the identical macro as a proper ADF `extension` node via
 `contentFormat="adf"` does not trigger this — confirmed by both a structural read-back and a
 screenshot, same day, same page: one clean render per diagram, no wrapping, no duplication.
 
@@ -152,13 +152,14 @@ step as required.
 There's no verified append/patch mechanism for Confluence (unlike `jira-content`'s `acli-edit.sh` for Jira)
 — treat `updateConfluenceContent` as replacing the **entire** body, so the flow is a manual
 read-modify-write, not a script. (Atlassian's v2 tool list says it also does "granular edits";
-that path and its parameters are not verified here, so check the live tool schema before relying on it.)
+that path and its parameters are not verified here. Until they are, don't use granular edits: the
+macro check, step 2.5 and the verify step below all assume a full-body replace.)
 
 ⚠️ **Check for macros BEFORE picking a write format — `contentFormat: "markdown"` silently
 deletes them.** Plain Markdown has no syntax for a Forge macro (`extension` node) or a collapsible
 `expand` wrapper, so a markdown-format `updateConfluenceContent` full-body-replace drops every macro
 on the page without warning or error — the write succeeds, the page just loses them. Confirmed
-2026-07-14 on TP-807: a prose-only edit (fixing word choice, no diagram changes intended) wiped all
+2026-07-14 on TP-807 (v1 tools; not re-tested on v2): a prose-only edit (fixing word choice, no diagram changes intended) wiped all
 7 native "Mermaid diagram" render macros the page had; only caught because the user noticed the
 diagrams had vanished on the live page. Fetch the page as ADF first and check for `extension`/
 `expand` nodes — if any exist, the edit **must** go out as `contentFormat: "adf"` (fetch → apply
@@ -227,7 +228,7 @@ version, update only on the user's explicit go-ahead.
   file. Any script that produces a full-page body (e.g. `scripts/inject-mermaid-macros.py`) still
   needs its output file copied into the tool call by hand, however large the page — the MCP layer
   has no file-reference mechanism. Confirmed working this way on TP-807 (115K+ characters, 106
-  top-level ADF nodes) 2026-07-14, but only because the write was verified afterward: fetch the live
+  top-level ADF nodes) 2026-07-14 (v1 tools; v2 not re-tested), but only because the write was verified afterward: fetch the live
   page back and diff its content against the script's own output file (see the diff pattern in
   `scripts/inject-mermaid-macros.py`'s usage). Treat that verification step as required, not
   optional, for any hand-copied write past a few KB — a silent transcription slip is otherwise

@@ -16,8 +16,12 @@ users and scopes `?tools=all` to a self-configured server (which loses the
 `mcp__plugin_atlassian_atlassian__` prefix). `skills/acli/ISSUES.md` no longer implies the
 TP-884 check covered the v2 route. `confluence-content` no longer says
 `updateConfluenceContent` *always* replaces the whole body: v2 lists "granular edits",
-not verified here. The 0.1.31–0.1.33 entries below were reworded where they claimed more
-than the files hold.
+not verified here, and granular edits stay off until checked (the macro-safety steps assume
+a full-body replace). Tests run on v1 tools (TP-807 html restructure, macro wipe, large-body
+write) now say so. `executeWrite`/`executeDestructive` need the same preview-and-confirm as
+acli writes; the v1 cutoff date cites Atlassian's upgrade page; response shapes join the
+"not verified on v2" caveat. The 0.1.31–0.1.33 entries below were reworded where they claimed
+more than the files hold.
 
 ## [0.1.33] — 2026-11-12
 Found by `mh:attack-proposal` on the 0.1.32 dual-name change: on Atlassian's default
@@ -34,7 +38,7 @@ fallback (Codex usage limit), so independence is reduced. Not yet checked: wheth
 The first mention of each renamed v2 tool in each skill, agent and `inject-mermaid-macros.py`
 file, plus every `mcp__plugin_atlassian_atlassian__`-prefixed call, carries its v1 name beside
 it (`createConfluenceContent` (v1: `createConfluencePage`)); later mentions in the same file
-use the v2 name alone. `skills/acli/SKILL.md` holds the full v1→v2 list.
+may use the v2 name alone. `skills/acli/SKILL.md` holds the full v1→v2 list.
 Also renamed the `mcp__plugin_atlassian_atlassian__`-prefixed v1 names that 0.1.31 missed
 (`createConfluencePage`, `updateConfluencePage`, `getConfluencePage`, `getVisibleJiraProjects`,
 `getJiraProjectIssueTypesMetadata`, `getConfluenceSpaces`). v2 parameter shapes still unverified.
