@@ -8,6 +8,16 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.51] — 2026-11-12
+**The install test now fails on half an install.** 0.1.50 checked each part only when it was
+there, so a dangling `~/.claude/hooks/acli-guard.py` link, or a linked script whose settings
+entry was missing, still passed. Both leave live sessions unguarded. The test now skips only
+when neither the script nor an acli-guard entry is installed. Otherwise it requires both, and
+both must match this repo. The test fails on scratch homes with no entry and with a dangling
+link, under `python3` and `/usr/bin/python3`; before this change it passed on both. Found by
+a Codex (gpt-6.1-sol) review of 0.1.49 and 0.1.50. That review found no tool the guard blocks
+that the matcher misses, and no common non-Atlassian MCP tool that the matcher reaches.
+
 ## [0.1.50] — 2026-11-12
 **The suite now fails when the user-level install drifts from this repo.** The operator's
 dotfiles run their own copy of the guard, registered in their own settings. Until now nothing

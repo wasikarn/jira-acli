@@ -191,17 +191,19 @@ def test_hooks_json_reaches_every_guarded_tool_and_fails_closed():
 
 def test_the_user_level_install_matches_this_repo():
     # The operator's dotfiles run a copy of this guard user-level. A word added here but not there leaves live sessions
-    # unchecked, so the suite fails until both are synced. Skipped where no user-level install exists.
+    # unchecked, so the suite fails until both are synced. Skipped where neither the script nor its entry is installed;
+    # half an install (a dangling link, or a script with no settings entry) fails, since live sessions are unguarded.
     import re
     settings, copy = Path.home() / ".claude" / "settings.json", Path.home() / ".claude" / "hooks" / "acli-guard.py"
-    if copy.exists():
-        note = re.compile(r"\nCopy of wasikarn/jira-acli hooks/acli-guard\.py \([^)]*\), kept here.*?hooks/testdata/\)\.\n", re.S)
-        assert note.sub("", copy.read_text(), count=1) == (HERE / "acli-guard.py").read_text(), f"{copy} drifted"
-    if settings.exists():
-        entries = json.loads(settings.read_text()).get("hooks", {}).get("PreToolUse", [])
-        live = [e["matcher"] for e in entries if any("acli-guard" in h.get("command", "") for h in e.get("hooks", []))]
-        (mine,) = json.loads((HERE / "hooks.json").read_text())["hooks"]["PreToolUse"]
-        assert live in ([], [mine["matcher"]]), f"{settings} acli-guard matcher differs from hooks/hooks.json"
+    entries = json.loads(settings.read_text()).get("hooks", {}).get("PreToolUse", []) if settings.exists() else []
+    live = [e["matcher"] for e in entries if any("acli-guard" in h.get("command", "") for h in e.get("hooks", []))]
+    if not live and not copy.is_symlink() and not copy.exists():
+        return
+    assert copy.exists(), f"{settings} runs acli-guard but {copy} is missing or a dangling link"
+    note = re.compile(r"\nCopy of wasikarn/jira-acli hooks/acli-guard\.py \([^)]*\), kept here.*?hooks/testdata/\)\.\n", re.S)
+    assert note.sub("", copy.read_text(), count=1) == (HERE / "acli-guard.py").read_text(), f"{copy} drifted"
+    (mine,) = json.loads((HERE / "hooks.json").read_text())["hooks"]["PreToolUse"]
+    assert live == [mine["matcher"]], f"{settings} acli-guard entry is missing or its matcher differs from hooks/hooks.json"
 
 
 def test_deeply_nested_input_never_crashes_the_hook():
