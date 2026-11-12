@@ -28,7 +28,8 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
   Atlassian MCP tools: deny unless provably a read; main-thread writes prompt. Its corpora are
   the attack-proposal sets from 0.1.42 (`corpus.tsv`, `multi/`, `tools.json`) and 0.1.45
   (`mcp.json`); a new bypass or over-block becomes a row there first. A live copy runs
-  user-level from the operator's dotfiles; change both.
+  user-level from the operator's dotfiles; change both (script and matcher). The test suite
+  fails until `~/.claude/hooks/acli-guard.py` and the `~/.claude/settings.json` matcher match.
 - `templates/acceptance-criteria.md` — the one rule both content skills share; referenced, never
   copied (copies drifted across 5+ files before).
 - Scripts: `md2adf.py` (Markdown subset → ADF; nested lists flattened by design, see

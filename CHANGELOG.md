@@ -8,6 +8,15 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.50] — 2026-11-12
+**The suite now fails when the user-level install drifts from this repo.** The operator's
+dotfiles run their own copy of the guard, registered in their own settings. Until now nothing
+checked that copy or its matcher. A word added to `_PRODUCT` and `hooks.json` here but not
+there would have left live sessions unchecked while every test passed. The new test compares
+`~/.claude/hooks/acli-guard.py` (without its copy note) with `hooks/acli-guard.py`, and the
+acli-guard matcher in `~/.claude/settings.json` with `hooks/hooks.json`. It skips where neither
+exists. It fails on a scratch home with an unsynced matcher and on one with a drifted copy.
+
 ## [0.1.49] — 2026-11-12
 **The hook no longer runs on every MCP tool.** 0.1.45's `^(Bash|Monitor|mcp__.*)$` put every MCP
 tool behind a fail-closed hook. A broken or missing guard script (a crash, a timeout, a machine

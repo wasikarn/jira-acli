@@ -189,6 +189,21 @@ def test_hooks_json_reaches_every_guarded_tool_and_fails_closed():
         assert not m.search(t), t
 
 
+def test_the_user_level_install_matches_this_repo():
+    # The operator's dotfiles run a copy of this guard user-level. A word added here but not there leaves live sessions
+    # unchecked, so the suite fails until both are synced. Skipped where no user-level install exists.
+    import re
+    settings, copy = Path.home() / ".claude" / "settings.json", Path.home() / ".claude" / "hooks" / "acli-guard.py"
+    if copy.exists():
+        note = re.compile(r"\nCopy of wasikarn/jira-acli hooks/acli-guard\.py \([^)]*\), kept here.*?hooks/testdata/\)\.\n", re.S)
+        assert note.sub("", copy.read_text(), count=1) == (HERE / "acli-guard.py").read_text(), f"{copy} drifted"
+    if settings.exists():
+        entries = json.loads(settings.read_text()).get("hooks", {}).get("PreToolUse", [])
+        live = [e["matcher"] for e in entries if any("acli-guard" in h.get("command", "") for h in e.get("hooks", []))]
+        (mine,) = json.loads((HERE / "hooks.json").read_text())["hooks"]["PreToolUse"]
+        assert live in ([], [mine["matcher"]]), f"{settings} acli-guard matcher differs from hooks/hooks.json"
+
+
 def test_deeply_nested_input_never_crashes_the_hook():
     # A crash is a block under onFailure: block. Depth past the recursion limit must decide like unparsable input.
     for code, want in (('"ls"', ""), ('"acli jira workitem assign --key TP-1"', "deny")):
