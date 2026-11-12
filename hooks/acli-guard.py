@@ -44,7 +44,8 @@ WSIG = re.compile(r"(?<![\w-])(" + "|".join(sorted(map(re.escape, WRITE), key=le
 PSIG = re.compile(r"(?<![\w.-])acli\s+(feedback|rovodev)(?![\w-])")
 SHELL_TOOLS = ("Bash", "Monitor")
 # The acli-text checks run only on tools that execute shell text; other MCP tools see branch B only.
-# hooks.json matches `^(Bash|Monitor|mcp__.*)$`; any other tool that reaches decide() is allowed.
+# hooks.json matches only Bash, Monitor, these ctx tools, execute* tools and MCP names holding a
+# _PRODUCT word in any case (a test pins that it skips only tools decide() allows); others are allowed.
 TEXT_TOOLS = re.compile(r"^(Bash|Monitor|mcp__.*__ctx_(execute|execute_file|batch|batch_execute))$")
 
 # Branch B: Atlassian MCP tools. Atlassian = a product word in the server part or the tool name, or

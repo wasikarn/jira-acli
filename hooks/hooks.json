@@ -3,7 +3,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "^(Bash|Monitor|mcp__.*)$",
+        "matcher": "^(Bash|Monitor|mcp__.*__ctx_(execute|execute_file|batch|batch_execute)|mcp__.*__execute(Read|Write|Destructive)?|mcp__.*([Aa][Tt][Ll][Aa][Ss][Ss][Ii][Aa][Nn]|[Jj][Ii][Rr][Aa]|[Cc][Oo][Nn][Ff][Ll][Uu][Ee][Nn][Cc][Ee]|[Bb][Ii][Tt][Bb][Uu][Cc][Kk][Ee][Tt]|[Jj][Ss][Mm]).*)$",
         "hooks": [
           {
             "type": "command",

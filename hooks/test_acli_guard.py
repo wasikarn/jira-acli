@@ -173,7 +173,20 @@ def test_hooks_json_reaches_every_guarded_tool_and_fails_closed():
     guarded = {r["tool_name"] for r in rows if r["want"] != "allow"} | {"Bash", "Monitor"}
     guarded |= {"mcp__plugin_context-mode_context-mode__ctx_" + t for t in ("execute", "execute_file", "batch", "batch_execute")}
     assert [t for t in sorted(guarded) if not m.search(t)] == []
-    assert not m.search("TodoWrite") and not m.search("Read")
+    # The matcher may skip a tool only if the guard would allow it anyway (no coverage lost) ...
+    rows += json.loads((HERE / "testdata" / "tools.json").read_text())
+    for r in rows:
+        for agent in ({"agent_id": "a"}, {}):
+            d = {"tool_name": r["tool_name"], "tool_input": r["tool_input"], **agent}
+            assert m.search(r["tool_name"]) or guard.decide(d) == "allow", r
+    names = [f"mcp__{s}__{t}" for w in sorted(guard._PRODUCT) for s, t in (
+        (w, "doIt"), ("x", w + "Thing"), ("x", "do" + w.capitalize()), ("x", w.upper() + "_thing"), ("p" + w.upper() + "q", "doIt"))]
+    names += [f"mcp__x__{e}" for e in sorted(guard._EXEC)] + ["mcp__myatlassianproxy__doIt"]
+    assert [n for n in names if guard._atlassian_tool(n, {"name": "x"}) and not m.search(n)] == []
+    # ... and a guard crash blocks only what it guards, not every MCP tool on the machine.
+    for t in ("TodoWrite", "Read", "mcp__plugin_qmd_qmd__query", "mcp__plugin_github_github__create_pull_request",
+              "mcp__claude_ai_Gmail__send_message", "mcp__claude_ai_Notion__notion-search", "mcp__hive__grep_notes"):
+        assert not m.search(t), t
 
 
 def test_deeply_nested_input_never_crashes_the_hook():

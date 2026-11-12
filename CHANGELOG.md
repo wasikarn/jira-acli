@@ -8,6 +8,20 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.49] — 2026-11-12
+**The hook no longer runs on every MCP tool.** 0.1.45's `^(Bash|Monitor|mcp__.*)$` put every MCP
+tool behind a fail-closed hook. A broken or missing guard script (a crash, a timeout, a machine
+that has the settings but not the script) then blocked Gmail, Notion, GitHub, qmd and the rest
+too. The matcher now covers only what the guard can block: Bash, Monitor, the context-mode
+execute/batch tools, `execute*` tools, and MCP names containing atlassian, jira, confluence,
+bitbucket or jsm in any case. No coverage is lost: a tool the guard would flag always contains
+one of those words, or is an `execute*` or ctx tool.
+- **Test:** every `mcp.json` and `tools.json` row the matcher skips must be one `decide()` allows,
+  in a subagent and the main thread. Names built from the guard's own `_PRODUCT` and `_EXEC` sets
+  must match. qmd, Gmail, GitHub, Notion and hive tool names must not. Six matcher mutants fail
+  it, and JavaScript `RegExp` agrees with Python on all 634 known tool names. None of the 422
+  real MCP tool names seen in this machine's transcripts over 120 days match.
+
 ## [0.1.48] — 2026-11-12
 **Fix for a gap 0.1.47 opened.** 0.1.47 sent deeply nested input to the unparsable-input path,
 and that path denied only input that mentions acli. On macOS's `/usr/bin/python3` 3.9,
