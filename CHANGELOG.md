@@ -8,6 +8,20 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.47] — 2026-11-12
+From the `mh:deep-audit` recheck of 0.1.46 and its whole-picture challenge (`mh:blind-spot-hunter`),
+both on Claude.
+- **Deeply nested input no longer crashes the guard.** A tool input nested past Python's
+  recursion limit raised `RecursionError`. Under `onFailure: block` that blocked the call: a
+  context-mode call on any Python, and any MCP call on macOS's `/usr/bin/python3` 3.9. Now it is
+  judged like unparsable input: denied when it mentions acli, allowed otherwise.
+- **Tests:** the MCP reason test now compares each reason exactly. 0.1.46's substring check still
+  passed when a main-thread ask showed the subagent deny text. A new test reads `hooks.json`: the
+  timeout is above 5 s, `onFailure` is block, and the matcher reaches every tool the corpus
+  guards but not `Read` or `TodoWrite`.
+- **Docs:** the context-mode rule covers only the execute and batch tools (`ctx_search` and
+  `ctx_index` are not checked). README and the docstring said "any context-mode call".
+
 ## [0.1.46] — 2026-11-12
 Fixes from `mh:deep-audit` on 0.1.45 (checker on Claude; Codex was over quota). The guard's
 logic is unchanged.

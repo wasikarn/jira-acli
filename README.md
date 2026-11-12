@@ -41,7 +41,7 @@ exact command/call for you to run after review — this plugin's acli and MCP ca
 production Jira/Confluence. Both keep `Bash` for read-only acli, so the plugin enforces the
 acli rule with a hook: inside a subagent (these two or any other), `hooks/acli-guard.py` denies
 a Bash or Monitor acli command unless it is provably a read, any acli mention in a
-context-mode call, and any Atlassian MCP tool that isn't a read (`createJiraIssue`,
+context-mode execute or batch call, and any Atlassian MCP tool that isn't a read (`createJiraIssue`,
 `executeWrite`, ...); a main-thread acli or Atlassian MCP write prompts, which blocks it in an
 unattended run. A script the subagent writes and runs is not checked: the hook is a safety net,
 not a wall. The hook runs only while the plugin is enabled; to cover

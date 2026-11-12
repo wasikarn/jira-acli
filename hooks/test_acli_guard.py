@@ -123,11 +123,12 @@ def test_a_crash_in_the_mcp_check_fails_closed():
 
 
 def test_mcp_decisions_carry_their_own_reason():
-    for agent, want in (({"agent_id": "a"}, "deny"), ({}, "ask")):
+    for agent, want, reason in (({"agent_id": "a"}, "deny", guard.MCP_DENY_REASON), ({}, "ask", guard.MCP_ASK_REASON)):
         p = _run_hook(json.dumps({"tool_name": "mcp__plugin_atlassian_atlassian__createJiraIssue", **agent,
                                   "tool_input": {"cloudId": "x", "projectKey": "TP", "summary": "s"}}))
         out = json.loads(p.stdout)["hookSpecificOutput"]
-        assert out["permissionDecision"] == want and "Atlassian MCP" in out["permissionDecisionReason"], out
+        assert out["permissionDecision"] == want and out["permissionDecisionReason"] == reason, out
+    assert "main thread" in guard.MCP_DENY_REASON and "main thread" not in guard.MCP_ASK_REASON
 
 
 def test_unrelated_tools_and_inputs_are_left_alone():
@@ -160,6 +161,30 @@ def test_unparsable_input_fails_closed_only_when_it_mentions_acli():
     assert json.loads(p.stdout)["hookSpecificOutput"]["permissionDecision"] == "deny"
     p = _run_hook("not json at all")
     assert p.returncode == 0 and p.stdout == ""
+
+
+def test_hooks_json_reaches_every_guarded_tool_and_fails_closed():
+    import re
+    (entry,) = json.loads((HERE / "hooks.json").read_text())["hooks"]["PreToolUse"]
+    (hook,) = entry["hooks"]
+    assert hook["onFailure"] == "block" and 5 < hook["timeout"] <= 120, hook  # dotfiles guard-fail-closed.sh rule
+    m = re.compile(entry["matcher"])
+    rows = json.loads((HERE / "testdata" / "mcp.json").read_text())
+    guarded = {r["tool_name"] for r in rows if r["want"] != "allow"} | {"Bash", "Monitor"}
+    guarded |= {"mcp__plugin_context-mode_context-mode__ctx_" + t for t in ("execute", "execute_file", "batch", "batch_execute")}
+    assert [t for t in sorted(guarded) if not m.search(t)] == []
+    assert not m.search("TodoWrite") and not m.search("Read")
+
+
+def test_deeply_nested_input_never_crashes_the_hook():
+    # A crash is a block under onFailure: block. Depth past the recursion limit must decide like unparsable input.
+    for code, want in (('"ls"', ""), ('"acli jira workitem assign --key TP-1"', "deny")):
+        deep = "[" * 5000 + code + "]" * 5000
+        p = _run_hook('{"tool_name": "mcp__plugin_context-mode_context-mode__ctx_execute", "agent_id": "a", '
+                      '"tool_input": {"language": "shell", "code": ' + deep + "}}")
+        assert p.returncode == 0, p.stderr[-300:]
+        got = json.loads(p.stdout)["hookSpecificOutput"]["permissionDecision"] if p.stdout else ""
+        assert got == want, (code, got)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,8 @@ This hook makes the plugin's preview-then-stop rule real:
 
 - Inside a subagent (hook input has `agent_id`): a Bash/Monitor call whose `command` mentions
   acli is denied unless it is provably a read (`acli jira|confluence ... view|search|status|
-  list*|get*`, optionally piped); a context-mode call that mentions acli anywhere is denied.
+  list*|get*`, optionally piped); a context-mode execute/batch call that mentions acli anywhere
+  is denied (ctx_search, ctx_index and other non-shell context-mode tools are not checked).
 - In the main thread: such a call prompts (`ask`) when what runs shows a write signal, so an
   unattended run (`claude -p`, where nobody can answer) cannot write. Not a boundary, a safety net.
 - Atlassian MCP tools (a product word in the server or tool name, or an execute* tier called with
@@ -227,11 +228,10 @@ def main():
     raw = sys.stdin.read()
     try:
         d = json.loads(raw)
-    except ValueError:
+        decision = decide(d)
+    except (ValueError, RecursionError):  # unparsable, or nested past the recursion limit
         # No way to tell subagent from main thread: deny only what mentions acli.
         d, decision = None, ("deny" if "acli" in raw.lower() else "allow")
-    else:
-        decision = decide(d)
     if decision == "allow":
         return
     tool = str(d.get("tool_name") or "") if isinstance(d, dict) else ""
