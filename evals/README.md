@@ -103,3 +103,60 @@ grader noise too: the no-skill arm tripped `no-superseded-rate` three times with
 **Decision pending (operator).** The rule says `confluence-content` becomes a plain doc. The failure comes from the
 loose graders named above before the run, not from a wrong page. A fresh blind pair whose trap graders accept a
 labelled superseded value would settle it. No grader or skill was edited after the run.
+
+**Operator, 2026-11-13:** run round 2 below. A later review also noted that blind graders cannot see the template,
+which is the reason both skills exist, so round 2 adds a separate trigger and template check.
+
+## Round 2 (2026-11-13, before the run)
+
+Two parts, both fixed before either runs. Plugin 0.1.51; skill text as in round 1.
+
+### Part A: fresh blind pair for `confluence-content` (graders frozen at `21ecf8b671503290`)
+
+**Writer.** A fresh agent with round 1's do-not-read list and a brief that adds one rule. A superseded value, a
+rejected option or an unanswered question may appear anywhere in a good page when the page labels it as old,
+rejected, out of scope or unknown: in a history or before/after table, a sources list, an out-of-scope list, or a
+sentence away from the label. A trap grader fails only a statement of it as the current fact or the plan. No rule
+may depend on distance to a digit or a label. Internal-only remarks stay strict.
+
+**Blindness report.** As in round 1, this repo's `CLAUDE.md` and memory index were injected. The writer also saw
+recent commit subjects saying `confluence-content` failed round 1 on loose graders. It reported no slip.
+
+**Its own limits, left frozen.** Trap graders skip table lines (any line with `|`) and quoted or struck-through
+text, so a bad page that states the old value only inside a table passes them. An unquoted Thai sentence that
+restates the old rule as fact fails them, as intended.
+
+| case | language | output | traps planted |
+|---|---|---|---|
+| `holdout2-confluence-content-refund-auto-approve` | Thai | `spec.md` | 500 baht corrected to 300; ShopCoin refund rejected; monthly cap unknown; 180,000 baht budget internal |
+| `holdout2-confluence-content-scheduled-s3-export` | English | `prd.md` | 90 days corrected to 30; SFTP rejected; max schedules unknown; blame remark internal |
+
+Eight regex graders per case plus the unscored `process-skill-fired`; all 16 pass the node self-test. Hash: as in
+round 1, over `evals/holdout2-*`.
+
+**Rule, fixed before the run.** Round 1's: 5 runs per arm, spend capped at $40, `confluence-content` stays a skill
+if its with-skill mean over these two cases is above 0.90 and neither case loses by more than 0.05. If it fails,
+every miss is read. It becomes a plain doc only if it would still fail with every false fail scored as a pass;
+if false fails alone cause the failure, the round is reported as inconclusive and the operator decides.
+
+### Part B: trigger and template check (not blind; reported, not gated by the A/B rule; graders frozen at `eabee73456197199`)
+
+**Why.** Converting a skill to a plain doc keeps its templates. What the doc loses is the skill loading itself
+when the user asks for a ticket or a spec without naming it. Round 1's prompts named the skill, so that was
+never tested.
+
+**Cases.** Written by the orchestrator, who has read the skills. Four `trigger-*` cases reuse round 1's fixtures.
+Their prompts are plain requests, two Thai and two English, that never name a skill, the Skill tool or acli.
+They run with the plugin loaded only (`--ablation none`), 5 runs each, spend capped at $20.
+
+**Graders.**
+- `process-skill-fired`: the skill loaded without being named.
+- Template shape:
+  - Bug: actual then expected, numbered repro steps, two Given/When/Then acceptance criteria, a regression AC.
+  - Decision comment: labelled issue, decision and reason fields, and who decided.
+  - Spec: business reason and out of scope, user stories, three Given/When/Then acceptance criteria.
+  - Given/When/Then accepts Thai `กำหนดให้`/`เมื่อ`/`ผลลัพธ์` or English.
+
+**Commitment (operator, 2026-11-13).** If a skill fires in fewer than 8 of its 10 trigger runs, the recommendation
+is to convert it to a plain doc with a `CLAUDE.md` pointer, since the skill packaging then adds nothing over the
+doc. Template-shape scores are reported beside it.
