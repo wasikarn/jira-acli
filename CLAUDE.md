@@ -31,6 +31,8 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
   user-level from the operator's dotfiles; change both (script and matcher). Where either is
   installed, the test suite fails until `~/.claude/hooks/acli-guard.py` and the
   `~/.claude/settings.json` acli-guard entry both exist and match.
+- `evals/` — blind A/B cases for the content skills (`claude plugin eval`); its `README.md` holds the
+  rule, the harness notes (the with-arm needs `evals/mkcopy.sh`) and each round's result.
 - `templates/acceptance-criteria.md` — the one rule both content skills share; referenced, never
   copied (copies drifted across 5+ files before).
 - Scripts: `md2adf.py` (Markdown subset → ADF; nested lists flattened by design, see
