@@ -62,6 +62,21 @@ def test_list_item_without_fields_fails_loud():
     assert err and err.startswith("FATAL:")
 
 
+def test_bare_adf_doc_is_used_as_the_description():
+    # jira-content SKILL.md documents a local bare doc as CUR.json for offline testing.
+    payload, err = _run(OLD)
+    assert err is None, err
+    assert _texts(payload) == ["OLD", "NEW"]
+
+
+def test_key_match_ignores_case():
+    payload, err = _run({"key": "X-1", "fields": {"description": OLD}}, key="x-1")
+    assert err is None, err
+    assert _texts(payload) == ["OLD", "NEW"]
+    payload, err = _run([{"key": "X-1", "fields": {"description": OLD}}], key="x-1")
+    assert err is None, err
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failed = 0

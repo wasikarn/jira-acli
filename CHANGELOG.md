@@ -12,8 +12,10 @@ This file starts at `0.1.18` — releases before that predate the changelog. See
 Fixes from a whole-project `mattpocock-skills:code-review` (Standards and Spec axes).
 - **`acli-edit.py` could wipe a description.** A view payload for another issue, or a dict with
   no `fields` object, became an empty doc, so append mode sent only the new text and the edit
-  replaced the whole body. It now fails with `FATAL:` and writes no payload. New
-  `test_acli_edit.py` pins this.
+  replaced the whole body. It now fails with `FATAL:` and writes no payload. Key matching
+  ignores case (`tp-1` matches `TP-1`), and a bare ADF doc is used as the current description,
+  as the offline testing aid in `jira-content` documents (before, append dropped it and kept only
+  the new text). New `test_acli_edit.py` pins all of this.
 - `acli-new.sh` exits non-zero with `FATAL:` when a create returns no key, and says to search
   before retrying, instead of printing `(no key returned)` and exiting 0.
 - `print-edit-result.py` and `inject-mermaid-macros.py` fail with `FATAL:` on bad or unexpected

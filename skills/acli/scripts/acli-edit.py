@@ -38,18 +38,22 @@ def _new_content(path):
 def merge(mode, key, cur_f, out_f, new_f, heading):
     with open(cur_f) as f:
         cur = json.load(f)
+    want = key.upper()  # Jira keys are case-insensitive
     if isinstance(cur, list):
-        matches = [c for c in cur if isinstance(c, dict) and c.get("key") == key]
+        matches = [c for c in cur if isinstance(c, dict) and str(c.get("key") or "").upper() == want]
         if not matches:
             sys.exit(f"FATAL: no item with key '{key}' found in a list of {len(cur)}")
         cur = matches[0]
-    # An unknown shape or another issue's view would become an empty doc here, and the
-    # edit then replaces KEY's whole description with only the new content.
-    if not isinstance(cur, dict) or not isinstance(cur.get("fields"), dict):
-        sys.exit(f"FATAL: unrecognized view payload for '{key}' (no 'fields' object) — nothing written")
-    if cur.get("key") not in (None, key):
-        sys.exit(f"FATAL: view payload is for '{cur.get('key')}', not '{key}' — nothing written")
-    desc = cur["fields"].get("description") or {"type": "doc", "version": 1, "content": []}
+    if isinstance(cur, dict) and cur.get("type") == "doc":
+        desc = cur  # bare ADF doc: the offline testing aid in jira-content SKILL.md
+    else:
+        # An unknown shape or another issue's view would become an empty doc here, and the
+        # edit then replaces KEY's whole description with only the new content.
+        if not isinstance(cur, dict) or not isinstance(cur.get("fields"), dict):
+            sys.exit(f"FATAL: unrecognized view payload for '{key}' (no 'fields' object) — nothing written")
+        if cur.get("key") is not None and str(cur["key"]).upper() != want:
+            sys.exit(f"FATAL: view payload is for '{cur['key']}', not '{key}' — nothing written")
+        desc = cur["fields"].get("description") or {"type": "doc", "version": 1, "content": []}
     nodes = desc.get("content", [])
 
     if mode == "append":

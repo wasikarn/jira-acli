@@ -35,7 +35,9 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
   description), `acli-edit.sh` (runs `acli-edit.py`), `acli-assign.sh` (assign by accountId via
   `edit --from-json`), `acli-ls.sh` (runs `acli-ls.py`). The four write wrappers source
   `_dry-run.sh`, so `--dry-run` works in any position. `adf-node-diff.py` (node counts before a full-body replace),
-  `print-edit-result.py` (prints an `edit --json` result).
+  `print-edit-result.py` (prints an `edit --json` result). `skills/jira-content/scripts/`
+  holds `acli-edit.sh`, `acli-set-desc.sh` and `md2adf.sh`, thin wrappers that `exec` the acli
+  scripts.
 
 ## Rules that came from incidents
 
