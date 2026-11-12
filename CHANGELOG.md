@@ -8,6 +8,25 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.35] — 2026-11-12
+Corrects 0.1.31–0.1.34. Those releases put v2 tool names on v1 call shapes, and v2 drops
+unknown parameters without an error, so the create, edit and mermaid flows would not have
+worked as written on v2. Call shapes now follow Atlassian's own v2 skills in
+`atlassian/atlassian-mcp-server` at `b74220d` (the commit the official plugin pins), with
+v1 shapes kept beside them:
+- deferred tools run as `executeRead(name, cloudId, inputs)`; `discover` only for an
+  unknown name;
+- `lookupJiraAccountId` takes `query` (not `searchString`);
+- `createJiraIssue` takes `issueType`, `assignee` and a top-level `priority`;
+- Confluence reads need `detail="full"`, updates need the read's `snapshotToken`, and
+  create/update take `body={"format", "value"}`, plus `parent` and `contentType` on create.
+
+The mermaid and macro-page ADF flows are marked "not yet run on v2": Atlassian's examples
+show only `"markdown"`, so the docs say to confirm `"adf"` in the live schema first and to
+stop rather than fall back to markdown. Still not shown in those examples:
+`listJiraIssueTransitions` inputs, `editJiraIssue` fields, and the v2 response shapes. No
+live v2 call was made.
+
 ## [0.1.34] — 2026-11-12
 Fixes from `mh:deep-audit` on 0.1.31–0.1.33 (checker ran on the Claude fallback, Codex
 usage limit). The official Atlassian plugin pins `https://mcp.atlassian.com/v2/mcp`, so

@@ -43,14 +43,14 @@ Write the body in **Thai** using the matching template. **AC format/register/cov
 *(Skip for comments.)* Resolve at runtime; never hardcode IDs except the default project key `TP`.
 
 - **Site** — `acli jira auth status`. For MCP, `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several.
-- **Project key** — User request; default `TP` only when the content is plausibly Tathep-platform work. If the ticket is clearly about something else (a different product, a personal project, generic content with no Tathep signal), ask for the real project key instead of silently filing it under `TP` — the default is a convenience for the common case, not a license to guess the project. Validate via `acli jira project view --key <KEY>` before create. Fall back to `mcp__plugin_atlassian_atlassian__listJiraProjects` (v1: `getVisibleJiraProjects`) (deferred on v2: reach it via `executeRead`, see `acli/SKILL.md` § "When acli can't") only if acli is unavailable/unauthed.
+- **Project key** — User request; default `TP` only when the content is plausibly Tathep-platform work. If the ticket is clearly about something else (a different product, a personal project, generic content with no Tathep signal), ask for the real project key instead of silently filing it under `TP` — the default is a convenience for the common case, not a license to guess the project. Validate via `acli jira project view --key <KEY>` before create. Fall back to `mcp__plugin_atlassian_atlassian__listJiraProjects` (v1: `getVisibleJiraProjects`) (deferred on v2: `executeRead(name="listJiraProjects", cloudId=…, inputs={"action": "create"})` lists projects you can create in, see `acli/SKILL.md` § "When acli can't") only if acli is unavailable/unauthed.
 - **Issue type** — Matches Step 1's pick. acli has no issue-type-metadata command; confirm via `mcp__plugin_atlassian_atlassian__listJiraProjectIssueTypesMetadata` (v1: `getJiraProjectIssueTypesMetadata`) (deferred on v2: reach it via `executeRead`, see `acli/SKILL.md` § "When acli can't") if create rejects. If the project key is still unresolved among multiple plausible candidates, check issue-type support on those candidates proactively (same MCP call) before asking the user to pick — narrowing "which of these projects" down to only the ones that actually support the requested type is a more useful question than a blind pick-one-of-N.
 - **Priority** — **Bug:** money/data-loss/blocked-workflow → `High`; functional w/ workaround → `Medium`; cosmetic → `Low`. **Others:** `Medium` unless user says otherwise.
 - **Labels** — `bug` + 1-2 domain tags (Bug); 1-2 domain tags (others). Do NOT auto-add PO/QA labels.
 - **Environment** *(Bug only)* — Native Jira field. prod/staging/local. Wrap in ADF for MCP fallback.
 - **Affects versions** *(Bug only)* — Only if user gives a valid version; validate or omit.
 - **Parent** *(Sub-task only)* — Required. Sub-tasks can't be created without one.
-- **Assignee** — Leave unassigned by default. Only set if user names one. acli's `--assignee` only resolves `@me`/`default`/email; a raw accountId for anyone *other than yourself* silently unassigns instead (see `jira-acli:acli`'s `REFERENCE.md`). When email is privacy-hidden, resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (deferred on v2: reach it via `executeRead`, see `acli/SKILL.md` § "When acli can't") (pass `cloudId` + `searchString`), then set `assignee_account_id`.
+- **Assignee** — Leave unassigned by default. Only set if user names one. acli's `--assignee` only resolves `@me`/`default`/email; a raw accountId for anyone *other than yourself* silently unassigns instead (see `jira-acli:acli`'s `REFERENCE.md`). When email is privacy-hidden, resolve via `mcp__plugin_atlassian_atlassian__lookupJiraAccountId` (deferred on v2: `executeRead(name="lookupJiraAccountId", cloudId=…, inputs={"query": "<name|email>"})`, see `acli/SKILL.md` § "When acli can't"; v1 took `searchString`), then set `assignee` on v2 (v1: `assignee_account_id`).
 
 ## Step 4 — Preview and confirm
 
@@ -85,18 +85,19 @@ Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`. I
 
 ### 5b — Jira issue MCP fallback
 
-Call `mcp__plugin_atlassian_atlassian__createJiraIssue`:
+Call `mcp__plugin_atlassian_atlassian__createJiraIssue` (v2 shape per Atlassian's v2 skills, see `acli/SKILL.md` § "When acli can't"; v1 differences in the comments):
 
 ```
 cloudId:       <resolved>
 projectKey:    <resolved>
-issueTypeName: "Bug" | "Story" | "Task" | "Epic" | "Sub-task"
+issueType:     "Bug" | "Story" | "Task" | "Epic" | "Sub-task"   # v1: issueTypeName
 summary:       <Thai title>
-description:   <formatted Thai content>
-contentFormat: "markdown"
+description:   <formatted Thai content, Markdown>   # v1 also took contentFormat: "markdown"; v2 format param not shown, check the live schema
 parent:        <parentKey>   # Sub-task only — top-level param, plain issue key string, NOT nested in additional_fields
+priority:      <derived>     # v2: top-level string. v1: additional_fields "priority": { "name": <derived> }
 additional_fields: {
-  "priority": { "name": <derived> },
+  // v2 reserves additional_fields for custom fields; whether labels/environment/versions are
+  // top-level on v2 is not shown — check the live schema. On v1 they go here:
   "labels": [<domain tags>],
   // Bug only:
   "environment": { "version": 1, "type": "doc", "content": [
@@ -104,7 +105,7 @@ additional_fields: {
   ]},
   "versions": [{ "name": <version> }]   # Affects Version/s, NOT fixVersions — omit if unvalidated
 }
-# assignee_account_id: OMIT by default. Include ONLY if user named an assignee.
+# assignee: OMIT by default. Include ONLY if user named an assignee (accountId). v1: assignee_account_id.
 ```
 
 Reply: `✅ Created [PROJ-XXX](https://<site>.atlassian.net/browse/PROJ-XXX)`.

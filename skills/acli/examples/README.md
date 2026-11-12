@@ -6,7 +6,7 @@
 
 # acli examples — description & body formats
 
-GOOD/BAD reference for the #1 acli pitfall: **Jira uses ADF, `--from-json` is stricter than the flags, and Confluence's content format depends on which command you're using — `acli confluence blog create` wants storage XHTML, but Confluence *page* create/update (MCP-only — acli's `page` command is view-only) accepts `html`/`markdown`/`adf` via `contentFormat`.** Each pair shows WHY, not just WHAT.
+GOOD/BAD reference for the #1 acli pitfall: **Jira uses ADF, `--from-json` is stricter than the flags, and Confluence's content format depends on which command you're using — `acli confluence blog create` wants storage XHTML, but Confluence *page* create/update (MCP-only — acli's `page` command is view-only) accepts `html`/`markdown`/`adf` (v2: `body={"format": ..., "value": ...}`; v1: `contentFormat`).** Each pair shows WHY, not just WHAT.
 
 Files here:
 
@@ -97,6 +97,6 @@ Why: Confluence's storage format is XHTML, the inverse of Jira. ADF here renders
 | Jira, via flag | plain text (auto-wrapped to ADF) |
 | Jira, via `--from-json` | ADF `{type:"doc",version:1,content:[...]}` object |
 | Confluence, via `acli confluence blog create` | storage format XHTML (`<p>`, `<strong>`, `<a>`) |
-| Confluence page, via MCP `createConfluenceContent`/`updateConfluenceContent` | `contentFormat: "markdown"` + plain Markdown body (or `"html"`/`"adf"` for richer Confluence-specific elements) |
+| Confluence page, via MCP `createConfluenceContent`/`updateConfluenceContent` | `"markdown"` format + plain Markdown body (or `"html"`/`"adf"` for richer Confluence-specific elements); v2 `body.format`, v1 `contentFormat` |
 
 Regenerate the canonical schema any time with `acli jira workitem create --generate-json`.

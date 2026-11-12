@@ -15,6 +15,12 @@ owns Confluence only. Jira issue content is `jira-acli:jira-content`'s job.
 no acli path here, unlike Jira. Template lives at
 [`templates/confluence-spec.md`](templates/confluence-spec.md).
 
+**v2 call shapes:** the prose below says `contentFormat: "markdown"|"adf"|"html"`, which is v1's
+parameter. On v2 the same choice is `body.format` in `body={"format": ..., "value": ...}`. Reads
+need `detail="full"` (without it you get a summary and no body), and an update needs the
+`snapshotToken` from that read. The call blocks below show v2 first; the full contract is in
+`acli/SKILL.md` § "When acli can't".
+
 ## When to use this skill vs acli vs jira-content
 
 - **Use this skill** for creating or editing the content of a Confluence Spec/PRD page.
@@ -81,7 +87,7 @@ Resolve at runtime; never hardcode IDs.
 |---|---|
 | **Site / cloudId** | Re-derive against `acli/REFERENCE.md` + `acli/SKILL.md` § "When acli can't" before naming any `mcp__...` tool here. cloudId is MCP-only — resolve via `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several. **If you're an MCP-less caller (e.g. the `confluence-expert` agent, which holds no MCP tools by design)**, this field can never be resolved locally — name it as an outstanding gap in your handoff instead of guessing or skipping it. |
 | **Space** | `acli confluence space list --json` to resolve — acli has full space CRUD, but inconsistently: `create`/`archive`/`update`/`restore` all take `--key`, `view` alone takes `--id` (`space view --key` fails `✗ unknown flag: --key`, confirmed live 2026-07-24). ⚠️ **`--keys <KEY>` does not filter** — confirmed live 2026-08-04: it returns the same full unfiltered space list whether passed or omitted. Don't grab `.results[0].id` — match the target `key` explicitly instead: `acli confluence space list --json \| python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='<KEY>'][0])"`. Then `space view --id <id> --json` only if you need more than list already returned. Fall back to `mcp__plugin_atlassian_atlassian__listConfluenceSpaces` (v1: `getConfluenceSpaces`) (deferred on v2: reach it via `executeRead`, see `acli/SKILL.md` § "When acli can't") only if acli can't find it. Ask the user if ambiguous. |
-| **Parent page** | Only if the user wants this nested under an existing page; resolve its `pageId`. Omit for a top-level page. |
+| **Parent page** | Only if the user wants this nested under an existing page; resolve its page id (v2: `parent.parentContentId`; v1: `parentId`). Omit for a top-level page. |
 | **Title** | From the spec's subject; confirm with the user. |
 
 ## Step 4 — Preview and confirm
@@ -92,13 +98,14 @@ Show resolved metadata (site, space, parent, title) + rendered Thai content as a
 
 ```
 mcp__plugin_atlassian_atlassian__createConfluenceContent (v1: `createConfluencePage`)
-  cloudId:       <resolved>
-  spaceId:       <resolved>
-  title:         <spec title>
-  body:          <filled-in templates/confluence-spec.md>
-  contentFormat: "markdown"
-  contentType:   "page"
-  parentId:      <resolved, if nesting under an existing page — omit otherwise>
+  cloudId:     <resolved>
+  parent:      {"spaceId": <resolved>, "parentContentId": <page id, only if nesting>}
+  contentType: "page"
+  title:       <spec title>
+  body:        {"format": "markdown", "value": <filled-in templates/confluence-spec.md>}
+
+# v1 shape: spaceId: <id>, parentId: <id>, contentType: "page", title,
+#           body: <markdown string>, contentFormat: "markdown"
 ```
 
 Reply: `✅ Created <title> — <page URL>`
@@ -128,11 +135,20 @@ screenshot, same day, same page: one clean render per diagram, no wrapping, no d
 #    mermaid fences included as plain ```mermaid code blocks in the Markdown body.
 # 2. Fetch the page back as ADF (structured JSON, round-trip-safe) and inject the render
 #    macro after every mermaid code block that doesn't already have one:
-#    mcp__...__getConfluenceContent(cloudId, pageId, contentFormat="adf")  -> save full response to page.json   # v1: getConfluencePage
+#    v2: mcp__...__getConfluenceContent(cloudId, content_id=<id>, content_format="adf", detail="full")
+#        -> save the full response to page.json and keep its snapshotToken
+#    v1: getConfluencePage(cloudId, pageId, contentFormat="adf")
 python3 "${CLAUDE_SKILL_DIR}/scripts/inject-mermaid-macros.py" page.json --page-id <id> > doc.json
 # 3. Write the script's output straight back as the body (it's already a bare {"type":"doc",...}):
-#    mcp__...__updateConfluenceContent(cloudId, pageId, body=<doc.json content>, contentFormat="adf")   # v1: updateConfluencePage
+#    v2: mcp__...__updateConfluenceContent(cloudId, contentId=<id>, snapshotToken=<from step 2>,
+#        body={"format": "adf", "value": <doc.json content>})
+#    v1: updateConfluencePage(cloudId, pageId, body=<doc.json content>, contentFormat="adf")
 ```
+
+**v2 status: not yet run.** This flow was verified on v1 only. On v2, first confirm in the live
+schema that `"adf"` is an accepted `body.format` and that the step 2 response carries the ADF body
+where the script expects it. If either check fails, stop and tell the user. Don't fall back to a
+markdown write: that deletes the macros.
 
 Idempotent — safe to re-run after adding more diagrams to a page that already has some rendered;
 existing macros are left untouched and not double-counted. By default a newly-decorated code block
@@ -186,8 +202,10 @@ never `"markdown"`. Markdown is only safe when the page has zero macro/expand no
    python3 "${CLAUDE_SKILL_DIR}/../acli/scripts/adf2md.py" page.adf.json
    → read the current body as Markdown (for review/editing text — the ADF file is still the
    source of truth for the write). Falls back to mcp__plugin_atlassian_atlassian__getConfluenceContent (v1: `getConfluencePage`)
-   (cloudId, pageId, contentFormat: "markdown") only if acli is unavailable/unauthed — but that
-   fallback can't detect macros either, so still fetch contentFormat: "adf" once to check.
+   only if acli is unavailable/unauthed — v2: (cloudId, content_id, content_format: "markdown",
+   detail: "full"); v1: (cloudId, pageId, contentFormat: "markdown"). Without detail "full" v2
+   returns a summary with no body, and a macro check on that finds nothing. The markdown read
+   can't detect macros either, so still fetch the "adf" format once to check.
 
 2. Apply the edit. If the page has NO macros, edit the Markdown from step 1 directly (fix a
    section, add a missing AC, etc.) — keep the rest of the page unchanged. If the page doesn't
@@ -202,17 +220,23 @@ never `"markdown"`. Markdown is only safe when the page has zero macro/expand no
    write; a full-body replace after that gap will silently clobber any edit someone else made to
    the page in the interval, the same way a stale markdown write clobbers macros. If the version
    changed, stop — re-diff against the new content and re-preview rather than overwriting it.
+   On v2, do this re-fetch with getConfluenceContent(cloudId, content_id, detail: "full") and keep
+   its snapshotToken: step 3 needs it, and an acli read doesn't return one.
 
 3a. No macros — mcp__plugin_atlassian_atlassian__updateConfluenceContent (v1: `updateConfluencePage`)
-     cloudId: <resolved>  pageId: <same id>  title: <keep or update>
-     body: <the full new Markdown — step 1's body with the edit applied>
-     contentFormat: "markdown"
+     v2: cloudId: <resolved>  contentId: <same id>  snapshotToken: <from step 2.5>
+         body: {"format": "markdown", "value": <the full new Markdown — step 1's body with the edit applied>}
+     v1: cloudId, pageId, title, body: <markdown string>, contentFormat: "markdown"
 
 3b. Has macros — mcp__plugin_atlassian_atlassian__updateConfluenceContent (v1: `updateConfluencePage`)
-     cloudId: <resolved>  pageId: <same id>  title: <keep or update>
-     body: <the full edited ADF JSON — step 2's output, a bare {"type":"doc",...} document>
-     contentFormat: "adf"
+     v2: cloudId: <resolved>  contentId: <same id>  snapshotToken: <from step 2.5>
+         body: {"format": "adf", "value": <the full edited ADF JSON — step 2's output, a bare {"type":"doc",...}>}
+     v1: cloudId, pageId, title, body: <ADF JSON>, contentFormat: "adf"
+     v2 ADF writes are not yet verified: confirm "adf" is an accepted body.format in the live
+     schema first. If it isn't, stop and tell the user; never fall back to markdown on a macro page.
    — either way, genuine MCP-only step, acli's confluence page command cannot write.
+   Title: v1 took `title` on update; Atlassian's v2 update example has no `title`, so check the
+   live schema before renaming a page on v2.
 
 4. Verify: fetch the page back as ADF and diff its node count/types against what you sent —
    don't just check the prose rendered correctly. A macro-count check (extension/expand nodes,

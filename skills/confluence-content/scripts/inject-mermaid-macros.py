@@ -87,12 +87,18 @@ and re-running this discovery if the org/site changes.
 
 Usage:
   # 1. Fetch the current page as ADF:
-  #      getConfluenceContent(cloudId, pageId, contentFormat="adf")  -> save the
-  #      full JSON response to a file (this script reads either the full
-  #      page object or a bare {"type":"doc",...} body).
+  #      v2: getConfluenceContent(cloudId, content_id=<id>, content_format="adf",
+  #          detail="full"), keep its snapshotToken
+  #      v1: getConfluencePage(cloudId, pageId, contentFormat="adf")
+  #      -> save the full JSON response to a file (this script reads either
+  #      the full page object or a bare {"type":"doc",...} body).
   # 2. Run this script; it prints the updated doc JSON on stdout.
-  # 3. Feed that JSON straight back as the `body` argument to
-  #      updateConfluenceContent(cloudId, pageId, body=<output>, contentFormat="adf")
+  # 3. Feed that JSON straight back as the body:
+  #      v2: updateConfluenceContent(cloudId, contentId=<id>, snapshotToken=<from 1>,
+  #          body={"format": "adf", "value": <output>})
+  #      v1: updateConfluencePage(cloudId, pageId, body=<output>, contentFormat="adf")
+  # v2 is not yet run: the v2 response shape and "adf" as a body.format are
+  # unverified (see confluence-content SKILL.md "Embedding Mermaid diagrams").
   python3 inject-mermaid-macros.py page.json --page-id 217743376 > doc.json
   python3 inject-mermaid-macros.py - --page-id 217743376 < page.json > doc.json
 
@@ -266,7 +272,11 @@ def inject(content, args):
 
 
 def extract_doc(data):
-    """Accept either a full getConfluenceContent response or a bare ADF doc."""
+    """Accept either a full getConfluenceContent response or a bare ADF doc.
+
+    Built against the v1 getConfluencePage response; the v2 response shape is unverified,
+    so an unexpected shape fails loud here before any write.
+    """
     if data.get("type") == "doc" and "content" in data:
         return data
     body = data.get("body")

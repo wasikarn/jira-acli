@@ -141,7 +141,7 @@ acli jira workitem assign --from-file issues.txt --remove-assignee --json
 ```
 Flags → `references/REFERENCE-detail.md` § assign.
 
-> ⚠️ **`--assignee` resolves `@me` | `default` | EMAIL only.** A raw **accountId silently UNassigns** — acli reports "successfully unassigned" and clears the field (verified) — with one exception: passing **your own** accountId works normally (only *other users'* accountIds trigger the silent unassign). Many users hide their email (privacy), so `reporter/assignee.emailAddress` is null and there's no email to pass. Then assign via the Atlassian MCP: `editJiraIssue cloudId:<id> issueIdOrKey:"<KEY>" fields:{assignee:{accountId:"…"}}` (resolve the id with `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"`; deferred on v2, reach it via `executeRead`, see `SKILL.md` § "When acli can't").
+> ⚠️ **`--assignee` resolves `@me` | `default` | EMAIL only.** A raw **accountId silently UNassigns** — acli reports "successfully unassigned" and clears the field (verified) — with one exception: passing **your own** accountId works normally (only *other users'* accountIds trigger the silent unassign). Many users hide their email (privacy), so `reporter/assignee.emailAddress` is null and there's no email to pass. Then assign via the Atlassian MCP: `editJiraIssue cloudId:<id> issueIdOrKey:"<KEY>" fields:{assignee:{accountId:"…"}}` (v1 shape; check the v2 schema). Resolve the id first: on v2 `executeRead(name="lookupJiraAccountId", cloudId="<id>", inputs={"query": "<name|email>"})`; on v1 `lookupJiraAccountId cloudId:<id> searchString:"<name|email>"` (see `SKILL.md` § "When acli can't").
 
 ### comment
 ```bash
@@ -221,7 +221,7 @@ acli confluence space view --id SPACE_ID            # ⚠️ --id, NOT --key —
 ```
 ⚠️ **`space view` alone takes `--id`, every other `space` subcommand takes `--key`.** `create`/`archive`/`update`/`restore` all resolve by `--key SPACEKEY`; `view` rejects `--key` outright (`✗ unknown flag: --key`, confirmed live on `1.3.22-stable` 2026-07-24; `--key` still rejected on `1.3.40-stable` 2026-11-12) and needs the numeric `--id` instead. ⚠️ **`space list --keys` doesn't filter** (confirmed live 2026-08-04 — `--keys SPACEKEY` returns the identical full space list as omitting it entirely). Resolve the id by matching `key` client-side instead: `space list --json | python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='SPACEKEY'][0])"` — never grab `.results[0]` blindly, it's whatever order the account's spaces happen to list in, not a filtered match. `blog create` body is **storage format (XHTML)**, not Jira's ADF. Flags → `references/REFERENCE-detail.md` § confluence space / confluence blog create.
 
-⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluenceContent`/`updateConfluenceContent` (v1: `createConfluencePage`/`updateConfluencePage`), which take `contentFormat: "html"|"markdown"|"adf"` — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, `contentFormat: "markdown"` with a raw Markdown body is simplest — see `jira-acli:confluence-content` § `templates/confluence-spec.md` for a Spec/PRD template built on this.
+⚠️ **Page create/update is a *different* content model** — acli's `confluence page` is view-only, so creating/updating a page always goes through the MCP `createConfluenceContent`/`updateConfluenceContent` (v1: `createConfluencePage`/`updateConfluencePage`), which take a body format of `"html"|"markdown"|"adf"` (v2: `body={"format": ..., "value": ...}`; v1: `contentFormat` + string `body`) — NOT `blog create`'s storage XHTML. `"html"` there means Confluence's own HTML+ dialect (`data-type` attributes for panels/status/task-lists/etc.), not plain storage format. For a plain document, the `"markdown"` format with a raw Markdown body is simplest — see `jira-acli:confluence-content` § `templates/confluence-spec.md` for a Spec/PRD template built on this.
 
 ## admin / rovodev / config
 
@@ -248,7 +248,7 @@ Jira and Confluence use **different** rich-text formats. Mixing them is the most
 |---|---|---|
 | Jira `description` / comment `body` | **ADF** — Atlassian Document Format (structured JSON) | `workitem create/edit/comment` |
 | Confluence blog `body` (acli) | **storage format** — XHTML (`<p>…</p>`) | `confluence blog create` |
-| Confluence page `body` (MCP only) | `contentFormat`: `html` (Confluence HTML+, not storage XHTML) / `markdown` / `adf` | `createConfluenceContent`, `updateConfluenceContent` |
+| Confluence page `body` (MCP only) | `html` (Confluence HTML+, not storage XHTML) / `markdown` / `adf` — v2 `body.format`, v1 `contentFormat` | `createConfluenceContent`, `updateConfluenceContent` |
 
 ### Jira: plain string vs ADF object — two input paths, two rules
 
