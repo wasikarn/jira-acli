@@ -132,8 +132,11 @@ def decide(d):
         if not CAND.search(text) and not WRAP.search(text):
             return "allow"
         cmd = ti.get("command") if isinstance(ti, dict) else None
-        if d.get("tool_name") in SHELL_TOOLS and isinstance(cmd, str) and _read_safe(cmd.lower()):
-            return "allow"
+        if d.get("tool_name") in SHELL_TOOLS and isinstance(cmd, str):
+            c = cmd.lower()
+            # Only `command` runs; a mention only in free text (`description`) is no call to acli.
+            if not CAND.search(c) and not WRAP.search(c) or _read_safe(c):
+                return "allow"
         if sub:
             return "deny"
         return "ask" if _write_signal(text) else "allow"

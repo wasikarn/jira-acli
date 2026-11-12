@@ -8,6 +8,32 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.43] — 2026-11-12
+Fixes from `mh:deep-audit` on the 0.1.42 guard. Its checker ran on Claude (Codex was over quota),
+so independence was reduced.
+- **An acli mention only in `description` no longer blocks a call.** 0.1.42 counted every string
+  in a Bash or Monitor call, so a subagent's `cd /tmp && ls` described as "List acli plugin
+  files" was denied, against the design's own rule (only `command` runs). The guard now allows
+  a Bash/Monitor call whose `command` names neither acli nor a write wrapper. A write is always in
+  `command`, so no call denied for its command is allowed now.
+- **Correction to 0.1.42:** the context-mode tools (`ctx_execute`, `ctx_execute_file`,
+  `ctx_batch`, `ctx_batch_execute`) have no read grammar. In a subagent any acli mention in them
+  is denied, a plain `view` and the `intent` text included; 0.1.42 wrongly listed them under
+  "denied unless provably a read".
+- **Main thread, accepted and now tested:** acli plus a WRITE word anywhere in one command asks,
+  commit messages included (`git commit -m "fix: acli edit wiped the body"`), so an unattended
+  run can't make that commit. Reword it or commit interactively.
+- **Tests: 0.1.42's "11 of 11 mutations" was too narrow a set.** The checker's 26 mutants left 9
+  alive, one of them a guard with no pipe split that allowed `acli ... view | acli ... assign`.
+  New rows: a read piped into a write, a read piped into `xargs acli ... assign`, a read and a
+  write verb in one command, `||`, `\` inside double quotes, `#`, an absolute-path read and a
+  non-acli program; new tests for a description-only mention and the fail-closed `except` path.
+  26 of 28 mutants now fail the suite. The two left are equivalent: without the unterminated-quote
+  check `shlex` raises and the `except` path denies anyway, and without the Bash/Monitor tool
+  check no ctx tool sends a `command` key. Corpus: 96 single-line rows, 7 multi-line inputs, 16
+  tool calls.
+- A user-level copy of the script (see 0.1.42) must get the same change.
+
 ## [0.1.42] — 2026-11-12
 **New: `hooks/acli-guard.py`, a PreToolUse hook that blocks acli writes from subagents.** 0.1.41
 only reworded the README: `jira-expert` and `confluence-expert` keep `Bash` for read-only acli,

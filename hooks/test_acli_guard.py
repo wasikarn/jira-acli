@@ -58,6 +58,8 @@ MAIN_THREAD = [
     ("allow", "acli jira workitem view TP-1 --json"),
     ("allow", 'git commit -m "chore: refresh acli reference to 1.3.40-stable"'),
     ("allow", 'git commit -m "fix: stop acli-edit wiping a description"'),
+    # Accepted: acli plus a WRITE word in one command asks, even inside a commit message.
+    ("ask", 'git commit -m "fix: acli edit wiped the body"'),
     ("allow", "acli --help"),
     ("allow", "ls -la"),
 ]
@@ -66,6 +68,22 @@ MAIN_THREAD = [
 def test_main_thread_prompts_only_on_write_signals():
     bad = [f"want {w}, got {call(c, agent_id=MAIN)}: {c}" for w, c in MAIN_THREAD if call(c, agent_id=MAIN) != w]
     assert not bad, bad
+
+
+def test_a_mention_only_in_the_description_never_blocks_the_main_thread():
+    ti = {"command": "cd /tmp && ls", "description": "Check files before the acli edit"}
+    assert call(None, agent_id=MAIN, tool_input=ti) == "allow"
+
+
+def test_an_internal_error_fails_closed_on_acli_mentions():
+    real = guard._read_safe
+    setattr(guard, "_read_safe", lambda _c: 1 / 0)  # fault injection: any crash inside the read check
+    try:
+        assert call("acli jira workitem view TP-1 --json") == "deny"
+        assert call("acli jira workitem view TP-1 --json", agent_id=MAIN) == "ask"
+        assert call("ls -la") == "allow"
+    finally:
+        setattr(guard, "_read_safe", real)
 
 
 def test_ctx_batch_write_is_denied_in_subagent_and_asks_in_main():

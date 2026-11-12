@@ -102,5 +102,50 @@
    "command": "acli jira workitem assign --key TP-1 --assignee @me",
    "description": "View TP-1"
   }
+ },
+ {
+  "id": "desc-only-mention-cd-and",
+  "want": "allow",
+  "tool_name": "Bash",
+  "tool_input": {
+   "command": "cd /tmp && ls",
+   "description": "List acli plugin files"
+  }
+ },
+ {
+  "id": "desc-only-mention-redirect",
+  "want": "allow",
+  "tool_name": "Bash",
+  "tool_input": {
+   "command": "python3 hooks/test_x.py 2>&1",
+   "description": "Run acli tests"
+  }
+ },
+ {
+  "id": "desc-only-mention-loop",
+  "want": "allow",
+  "tool_name": "Bash",
+  "tool_input": {
+   "command": "for t in hooks/test_*.py; do python3 \"$t\"; done",
+   "description": "Run acli guard tests"
+  }
+ },
+ {
+  "id": "desc-only-mention-monitor",
+  "want": "allow",
+  "tool_name": "Monitor",
+  "tool_input": {
+   "command": "tail -f /tmp/x.log | grep --line-buffered ERR",
+   "description": "Watch the acli log"
+  }
+ },
+ {
+  "id": "wrapper-in-command-desc-clean",
+  "want": "deny",
+  "tool_name": "Bash",
+  "tool_input": {
+   "command": "bash skills/acli/scripts/acli-edit.sh TP-1 d.md",
+   "description": "Update TP-1"
+  }
  }
 ]

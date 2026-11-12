@@ -86,3 +86,11 @@ deny	ban-amp	acli jira workitem view TP-1 --json & acli jira workitem assign --k
 deny	ban-andand	acli jira workitem view TP-1 --json && acli jira workitem assign --key TP-1 --assignee @me
 deny	ban-dollar	acli jira workitem view "$(acli jira workitem assign --key TP-1 --assignee @me)" --json
 deny	ban-backtick	acli jira workitem view "`acli jira workitem assign --key TP-1 --assignee @me`" --json
+deny	pipe-read-into-write	acli jira workitem view TP-1 --json | acli jira workitem assign --key TP-1 --assignee @me
+deny	pipe-into-xargs-write	acli jira workitem search --jql 'project = TP' --json | xargs -n1 acli jira workitem assign --key
+deny	read-and-write-verb	acli jira workitem list-watchers delete --key TP-1
+deny	ban-oror	acli jira workitem view TP-1 --json || echo none
+deny	ban-backslash-in-dq	acli jira workitem view "TP-1\\" --json
+deny	ban-hash	acli jira workitem view TP-1 --json # note
+allow	abs-path-read	/opt/homebrew/bin/acli jira workitem view TP-1 --json
+deny	not-acli-program	echo jira view acli
