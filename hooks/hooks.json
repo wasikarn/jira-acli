@@ -3,7 +3,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|Monitor|mcp__.*__ctx_(execute|execute_file|batch|batch_execute)",
+        "matcher": "^(Bash|Monitor|mcp__.*)$",
         "hooks": [
           {
             "type": "command",

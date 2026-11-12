@@ -8,6 +8,41 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.45] — 2026-11-12
+**New: the guard covers Atlassian MCP tools.** Once the official Atlassian plugin is installed,
+its MCP tools create and edit issues directly, and `general-purpose` subagents inherit them.
+Designed with `mh:attack-proposal` (3 attack lanes, 28 breaks; validator rounds 3 of 3, all on
+Claude because Codex was over quota). Round 3 still found 2 breaks, so the verdict was NO-GO;
+the operator chose to build rev 4 with the one-word fix below and accept the other as residual.
+- **Which tools:** an MCP tool is Atlassian when a word of its server name or tool name is
+  jira, confluence, atlassian, bitbucket or jsm, or it is `execute`/`executeRead`/
+  `executeWrite`/`executeDestructive` called with a string `name` (the Rovo call shape). This
+  covers the official plugin, a claude.ai connector, a server named `atlassian`, and third-party
+  servers keyed `jira`/`confluence`/`bitbucket`.
+- **Reads pass:** the first verb of the name, after product words such as `jira`, `conf` or
+  `bb`, is get, search, list, lookup, fetch, download, diff, export, query, describe, view, read,
+  find, discover, count or preview; or the tool is atlassianUserInfo,
+  getAccessibleAtlassianResources, discover, search or fetch. `executeRead`/`execute` pass only
+  when the tool named inside is a read.
+- **Everything else** is denied in a subagent and asks in the main thread, with its own reason
+  text. The plugin's documented MCP reads (`getJiraIssue`, `executeRead` lookups) pass; its
+  documented writes (jira-content and confluence-content Step 5) ask once after the chat go-ahead.
+- **Wiring:** `hooks.json` now matches `^(Bash|Monitor|mcp__.*)$` (anchored, so `TodoWrite` and
+  the like never match). Non-Atlassian MCP tools pass untouched; the acli-text checks still run
+  only on Bash, Monitor and the context-mode shell tools.
+- **Residual risks:** a server named without any product word exposes Goals, Projects, Teams,
+  Focus, Talent, capacity-planning, Compass, Teamwork Graph, Loom and Assets writes; an MCP
+  gateway that runs any tool by name (Docker MCP Toolkit's `mcp-exec`) is a generic proxy the
+  guard can't see through. Accepted over-blocks: reads whose first verb isn't on the list
+  (`resolveConfluenceContentMacros`, `scanCodeRepo`), and `executeRead` with no `name`.
+- **Not built: the script detour.** Two designs (checking script files at write time, then the
+  files a command runs) leaked through shell parsing in attack and were dropped. A subagent
+  that writes acli into a script and runs it is still not checked; the deny reason (0.1.44)
+  tells it not to.
+- **Tests:** `hooks/testdata/mcp.json` (412 rows from the validator, sub and main) and a
+  fail-closed test for a crash in the MCP check. 12 of 12 branch mutants fail the suite. Removed
+  as dead code: the script's `MATCHER` gate and a redundant `executeWrite` branch.
+
 ## [0.1.44] — 2026-11-12
 Fixes from the second `mh:deep-audit` pass on the guard: a recheck of 0.1.43 and a
 whole-picture challenge (`mh:blind-spot-hunter`), both on Claude.

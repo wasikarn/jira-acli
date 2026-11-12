@@ -101,6 +101,34 @@ def test_ctx_batch_write_is_denied_in_subagent_and_asks_in_main():
     assert call(None, agent_id=MAIN, tool=tool, tool_input=ti) == "ask"
 
 
+def test_mcp_corpus_decisions():
+    """Atlassian MCP tools: reads pass, anything else is denied in a subagent and asks in the main thread."""
+    bad = []
+    for r in json.loads((HERE / "testdata" / "mcp.json").read_text()):
+        got = call(None, agent_id=SUB if r["agent"] == "sub" else MAIN, tool=r["tool_name"], tool_input=r["tool_input"])
+        if got != r["want"]:
+            bad.append(f"{r['id']} {r['agent']} {r['tool_name']}: want {r['want']}, got {got}")
+    assert not bad, "\n  " + "\n  ".join(bad)
+
+
+def test_a_crash_in_the_mcp_check_fails_closed():
+    real = guard._branch_mcp
+    setattr(guard, "_branch_mcp", lambda _d: 1 / 0)  # fault injection
+    try:
+        tool = "mcp__plugin_atlassian_atlassian__createJiraIssue"
+        assert call(None, tool=tool, tool_input={"summary": "s"}) == "deny"
+        assert call(None, agent_id=MAIN, tool=tool, tool_input={"summary": "s"}) == "ask"
+    finally:
+        setattr(guard, "_branch_mcp", real)
+
+
+def test_mcp_decisions_carry_their_own_reason():
+    p = _run_hook(json.dumps({"tool_name": "mcp__plugin_atlassian_atlassian__createJiraIssue", "agent_id": "a",
+                              "tool_input": {"cloudId": "x", "projectKey": "TP", "summary": "s"}}))
+    out = json.loads(p.stdout)["hookSpecificOutput"]
+    assert out["permissionDecision"] == "deny" and "Atlassian MCP" in out["permissionDecisionReason"]
+
+
 def test_unrelated_tools_and_inputs_are_left_alone():
     assert call(None, tool="Read", tool_input={"file_path": "/x/acli"}) == "allow"
     assert call(None, tool="Monitor", tool_input={"ws": {"url": "wss://x"}}) == "allow"

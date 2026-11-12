@@ -24,9 +24,11 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
   no MCP tools and never fire a mutating acli command; they return the exact command for the main
   thread to run. Each defers the other product's work to its sibling.
 - `hooks/acli-guard.py` (+ `hooks.json`, `test_acli_guard.py`, `testdata/`) — PreToolUse guard
-  that enforces that rule for every subagent while the plugin is enabled: deny unless provably a
-  read; main-thread writes prompt. Its corpus is the attack-proposal set from 0.1.42; a new
-  bypass or over-block becomes a row there first.
+  that enforces that rule for every subagent while the plugin is enabled, for acli commands and
+  Atlassian MCP tools: deny unless provably a read; main-thread writes prompt. Its corpora are
+  the attack-proposal sets from 0.1.42 (`corpus.tsv`, `multi/`, `tools.json`) and 0.1.45
+  (`mcp.json`); a new bypass or over-block becomes a row there first. A live copy runs
+  user-level from the operator's dotfiles; change both.
 - `templates/acceptance-criteria.md` — the one rule both content skills share; referenced, never
   copied (copies drifted across 5+ files before).
 - Scripts: `md2adf.py` (Markdown subset → ADF; nested lists flattened by design, see

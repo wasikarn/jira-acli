@@ -10,6 +10,9 @@ This hook makes the plugin's preview-then-stop rule real:
   list*|get*`, optionally piped); a context-mode call that mentions acli anywhere is denied.
 - In the main thread: such a call prompts (`ask`) when what runs shows a write signal, so an
   unattended run (`claude -p`, where nobody can answer) cannot write. Not a boundary, a safety net.
+- Atlassian MCP tools (a product word in the server or tool name, or an execute* tier called with
+  a `name`): reads pass (get*, search*, list*, lookup*, ...; executeRead/execute with a read
+  tool's name); anything else is denied in a subagent and asks in the main thread.
 
 It never parses shell to find where acli starts (that leaked about 20 ways in review). It allows
 only a narrow grammar it can read exactly and treats everything else that mentions acli as a
@@ -39,8 +42,19 @@ WSIG = re.compile(r"(?<![\w-])(" + "|".join(sorted(map(re.escape, WRITE), key=le
 # Outward-facing verbs with no WRITE word: feedback submits a report, rovodev runs an agent.
 PSIG = re.compile(r"(?<![\w.-])acli\s+(feedback|rovodev)(?![\w-])")
 SHELL_TOOLS = ("Bash", "Monitor")
-# Same pattern as the hooks.json matcher, so a wider matcher elsewhere can't over-block Read etc.
-MATCHER = re.compile(r"Bash|Monitor|mcp__.*__ctx_(execute|execute_file|batch|batch_execute)")
+# The acli-text checks run only on tools that execute shell text; other MCP tools see branch B only.
+# hooks.json matches `^(Bash|Monitor|mcp__.*)$`; any other tool that reaches decide() is allowed.
+TEXT_TOOLS = re.compile(r"^(Bash|Monitor|mcp__.*__ctx_(execute|execute_file|batch|batch_execute))$")
+
+# Branch B: Atlassian MCP tools. Atlassian = a product word in the server part or the tool name, or
+# an execute* tier called with a string `name` (the Rovo shape). Read = first verb after product words.
+_MCP = re.compile(r"^mcp__(.*)__(.+)$")  # server = everything up to the LAST `__`
+_PRODUCT = {"jira", "confluence", "atlassian", "bitbucket", "jsm"}
+_LEAD = {"jira", "confluence", "bitbucket", "compass", "jsm", "atlassian", "conf", "bb"}
+_READ_VERBS = {"get", "search", "list", "lookup", "fetch", "download", "diff", "export", "query",
+               "describe", "view", "read", "find", "discover", "count", "preview"}
+_READ_NAMES = {"atlassianuserinfo", "getaccessibleatlassianresources", "discover", "search", "fetch"}
+_EXEC = {"execute", "executeRead", "executeWrite", "executeDestructive"}
 
 DENY_REASON = (
     "acli-guard: this call may write to the production Atlassian site, and subagents may only "
@@ -50,6 +64,58 @@ DENY_REASON = (
     "file or build the word from pieces to get past this: that is the same write path."
 )
 ASK_REASON = "acli-guard: this acli call may write to the production Atlassian site. Approve only if you reviewed it."
+MCP_DENY_REASON = (
+    "acli-guard: this Atlassian MCP call may write to the production Atlassian site, and subagents "
+    "may only call read tools (get*, search*, list*, lookup*, ... or executeRead/execute with a read "
+    "tool's name). Draft the call (tool name and inputs) and hand it to the main thread."
+)
+MCP_ASK_REASON = "acli-guard: this Atlassian MCP call may write to the production Atlassian site. Approve only if you reviewed it."
+
+
+def _words(s):
+    out = []
+    for part in re.split(r"[_\-]+", s):
+        out += re.findall(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+", part)
+    return [w.lower() for w in out]
+
+
+def _mcp_is_read(name):
+    if not isinstance(name, str):
+        return False
+    if name.lower() in _READ_NAMES:
+        return True
+    w = _words(name)
+    while w and w[0] in _LEAD:
+        w.pop(0)
+    return bool(w) and w[0] in _READ_VERBS
+
+
+def _atlassian_tool(tool, ti):
+    """The tool's short name if it is an Atlassian MCP tool, else None."""
+    m = _MCP.match(tool)
+    if not m:
+        return None
+    server, short = m.groups()
+    if "atlassian" in server.lower() or _PRODUCT & set(_words(server)):
+        return short
+    if short in _EXEC:
+        return short if isinstance(ti, dict) and isinstance(ti.get("name"), str) else None
+    return short if _PRODUCT & set(_words(short)) else None
+
+
+def _branch_mcp(d):
+    """allow/deny/ask for an Atlassian MCP call, or None when the tool isn't one."""
+    ti = d.get("tool_input")
+    short = _atlassian_tool(str(d.get("tool_name") or ""), ti)
+    if short is None:
+        return None
+    if short in ("executeRead", "execute"):
+        read = isinstance(ti, dict) and _mcp_is_read(ti.get("name"))
+    else:  # executeWrite/executeDestructive land here too: "execute" is no read verb
+        read = _mcp_is_read(short)
+    if read:
+        return "allow"
+    return "deny" if d.get("agent_id") else "ask"
 
 
 def _strings(o):
@@ -125,9 +191,17 @@ def _write_signal(text):
 
 def decide(d):
     """Return "allow", "ask" or "deny" for a PreToolUse hook input dict."""
-    if not isinstance(d, dict) or not MATCHER.search(str(d.get("tool_name") or "")):
+    if not isinstance(d, dict):
         return "allow"
     sub = bool(d.get("agent_id"))
+    try:  # Atlassian MCP first: its writes need not mention acli at all
+        mcp = _branch_mcp(d)
+    except Exception:
+        return "deny" if sub else "ask"
+    if mcp is not None:
+        return mcp
+    if not TEXT_TOOLS.search(str(d.get("tool_name") or "")):
+        return "allow"
     ti = d.get("tool_input")
     text = "\n".join(_strings(ti)).lower()
     try:
@@ -160,10 +234,16 @@ def main():
         decision = decide(d)
     if decision == "allow":
         return
+    tool = str(d.get("tool_name") or "") if isinstance(d, dict) else ""
+    mcp = tool.startswith("mcp__") and not TEXT_TOOLS.search(tool)  # only branch B blocks these
+    if decision == "deny":
+        reason = MCP_DENY_REASON if mcp else DENY_REASON
+    else:
+        reason = MCP_ASK_REASON if mcp else ASK_REASON
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": decision,
-        "permissionDecisionReason": DENY_REASON if decision == "deny" else ASK_REASON,
+        "permissionDecisionReason": reason,
     }}))
 
 
