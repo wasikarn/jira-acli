@@ -216,3 +216,23 @@ skill. A run counts as fired when its stream shows a `Skill` call for that skill
 
 **Commitment.** This is Part B's 8-of-10 rule at the same rate. A skill that fires in fewer than 5 of its 6 runs goes
 back to the operator with the recommendation to convert it to a plain doc with a `CLAUDE.md` pointer.
+
+### Result (2026-11-13, commit a2d7529, `claude-sonnet-5-5`, 40 plugins and 138 skills loaded)
+
+12 runs, $5.43, no errors, and every run wrote its draft. The `dontAsk` allowlist held: a smoke run's `echo`
+was refused.
+
+| prompt | fired | skill loaded | turns | cost per run |
+|---|---|---|---|---|
+| `trigger-jira-content-bug-th` | 3/3 | `jira-acli:jira-content` | 11 to 13 | $0.48 |
+| `trigger-jira-content-decision-en` | 3/3 | `jira-acli:jira-content` | 11 to 13 | $0.41 |
+| `trigger-confluence-content-points-th` | 3/3 | `jira-acli:confluence-content` | 11 to 14 | $0.48 |
+| `trigger-confluence-content-ratelimit-en` | 3/3 | `jira-acli:confluence-content` | 9 to 11 | $0.43 |
+
+Both skills fired in 6 of 6 runs with every installed skill competing, and no other skill was loaded first. That
+clears the commitment, so both stay skills.
+
+One difference from Part B, which ran on Opus. With the English rate-limit request, Sonnet wrote the spec in English
+in 2 of 3 runs, with English Given/When/Then and "As a ..." stories. Only 1 of 3 followed the skill's "write the
+body in Thai" rule. The template shape held every time; the output language did not. Whether an English request
+should get a Thai page is the operator's call. Changing the skill text would need a new blind round.
