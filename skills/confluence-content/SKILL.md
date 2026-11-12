@@ -121,7 +121,7 @@ space `BEP`), each code block needs a **separate macro instance immediately afte
 render as a diagram — one macro renders one code block, it does not scan the whole page.
 
 ⚠️ **Use `contentFormat: "adf"` for the fetch-inject-write cycle below — never `"html"`.** Writing
-the macro through `updateConfluenceContent(contentFormat="html")` makes Confluence's html-writer
+the macro through v1 `updateConfluencePage(contentFormat="html")` makes Confluence's html-writer
 "helpfully" restructure a code-block-then-matching-extension-macro pattern into three nodes (a
 broken preview extension, the code wrapped in a collapsible `expand`, then the original extension)
 — the diagram renders TWICE with a stray collapsed accordion between them. Confirmed broken by
@@ -205,7 +205,9 @@ never `"markdown"`. Markdown is only safe when the page has zero macro/expand no
    only if acli is unavailable/unauthed — v2: (cloudId, content_id, content_format: "markdown",
    detail: "full"); v1: (cloudId, pageId, contentFormat: "markdown"). Without detail "full" v2
    returns a summary with no body, and a macro check on that finds nothing. The markdown read
-   can't detect macros either, so still fetch the "adf" format once to check.
+   can't detect macros either, so still fetch the "adf" format once to check (on v2,
+   content_format "adf" is not in Atlassian's examples: if it isn't accepted, stop and tell the
+   user; the acli read above is the verified way to get ADF).
 
 2. Apply the edit. If the page has NO macros, edit the Markdown from step 1 directly (fix a
    section, add a missing AC, etc.) — keep the rest of the page unchanged. If the page doesn't

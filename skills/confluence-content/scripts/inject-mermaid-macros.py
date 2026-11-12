@@ -24,9 +24,10 @@ code blocks.
 Operates on ADF (contentFormat="adf"), not HTML. An earlier version of this
 script transformed the HTML representation instead
 (`<div data-type="extension">`), because that's the syntax
-createConfluenceContent/updateConfluenceContent (v1: createConfluencePage/updateConfluencePage) document for contentFormat="html".
+createConfluencePage/updateConfluencePage (v1; v2: createConfluenceContent/updateConfluenceContent
+with body.format) document for contentFormat="html".
 That path is BROKEN: writing a codeBlock immediately followed by a matching
-extension div through `updateConfluenceContent(contentFormat="html")` makes
+extension div through v1 `updateConfluencePage(contentFormat="html")` makes
 Confluence's html-format writer "helpfully" restructure it into three nodes —
 an incomplete preview extension before the code, the code wrapped in a
 collapsible `expand` macro, and the original extension after — and the
@@ -43,7 +44,7 @@ never "html", for this.
 Discovered 2026-07-14 (Atlassian MCP v1; not re-tested on v2) against TP-807's spec page (100-stars.atlassian.net,
 space BEP) by inserting the macro once by hand via the Confluence editor's
 `/mermaid` slash command, then reading the page back with
-`getConfluenceContent(contentFormat="adf")` (v1: getConfluencePage) to see the real extension node shape
+v1 `getConfluencePage(contentFormat="adf")` (v2: getConfluenceContent with content_format) to see the real extension node shape
 Confluence itself produces — confirmed identical in every field to this
 script's hand-built node before trusting it. Verified present on 7 instances
 on one page (all `codeBlock` -> `extension` pairs, no wrapping, no gaps).

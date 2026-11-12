@@ -9,13 +9,14 @@ This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
 ## [0.1.35] — 2026-11-12
-Corrects 0.1.31–0.1.34. Those releases put v2 tool names on v1 call shapes, and v2 drops
-unknown parameters without an error, so the create, edit and mermaid flows would not have
-worked as written on v2. Call shapes now follow Atlassian's own v2 skills in
+Corrects 0.1.31–0.1.34. Those releases put v2 tool names on v1 call shapes. Atlassian's v2
+skills show different parameters for create, read and update (plus a required
+`snapshotToken`) and say an `execute` call drops unknown parameters without an error, so the
+create, edit and mermaid flows would likely have failed or lost values on v2. Call shapes now follow Atlassian's own v2 skills in
 `atlassian/atlassian-mcp-server` at `b74220d` (the commit the official plugin pins), with
 v1 shapes kept beside them:
-- deferred tools run as `executeRead(name, cloudId, inputs)`; `discover` only for an
-  unknown name;
+- deferred tools run as `executeRead(name, cloudId, inputs)`; `discover` when the name or
+  inputs are unknown;
 - `lookupJiraAccountId` takes `query` (not `searchString`);
 - `createJiraIssue` takes `issueType`, `assignee` and a top-level `priority`;
 - Confluence reads need `detail="full"`, updates need the read's `snapshotToken`, and
