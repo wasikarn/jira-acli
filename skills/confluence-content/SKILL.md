@@ -149,9 +149,10 @@ step as required.
 
 ## Editing an existing page
 
-There's no append/patch mechanism for Confluence (unlike `jira-content`'s `acli-edit.sh` for Jira)
-— `updateConfluenceContent` always replaces the **entire** body, so the flow is a manual
-read-modify-write, not a script:
+There's no verified append/patch mechanism for Confluence (unlike `jira-content`'s `acli-edit.sh` for Jira)
+— treat `updateConfluenceContent` as replacing the **entire** body, so the flow is a manual
+read-modify-write, not a script. (Atlassian's v2 tool list says it also does "granular edits";
+that path and its parameters are not verified here, so check the live tool schema before relying on it.)
 
 ⚠️ **Check for macros BEFORE picking a write format — `contentFormat: "markdown"` silently
 deletes them.** Plain Markdown has no syntax for a Forge macro (`extension` node) or a collapsible

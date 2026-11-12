@@ -8,21 +8,33 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.34] — 2026-11-12
+Fixes from `mh:deep-audit` on 0.1.31–0.1.33 (checker ran on the Claude fallback, Codex
+usage limit). The official Atlassian plugin pins `https://mcp.atlassian.com/v2/mcp`, so
+`skills/acli/SKILL.md` now says `discover` + `executeRead` is the only path for plugin
+users and scopes `?tools=all` to a self-configured server (which loses the
+`mcp__plugin_atlassian_atlassian__` prefix). `skills/acli/ISSUES.md` no longer implies the
+TP-884 check covered the v2 route. `confluence-content` no longer says
+`updateConfluenceContent` *always* replaces the whole body: v2 lists "granular edits",
+not verified here. The 0.1.31–0.1.33 entries below were reworded where they claimed more
+than the files hold.
+
 ## [0.1.33] — 2026-11-12
 Found by `mh:attack-proposal` on the 0.1.32 dual-name change: on Atlassian's default
 v2 endpoint only `Primary` tools are listed to the agent, and six tools the docs name
 (`listJiraIssueTransitions`, `listJiraProjects`, `listJiraProjectIssueTypesMetadata`,
 `getJiraIssueTypeMetaWithFields`, `lookupJiraAccountId`, `listConfluenceSpaces`) are
 deferred, so an agent told to call them directly would not find them. `skills/acli/SKILL.md`
-now explains the path (discovery tool, then `executeRead`, or the `?tools=all` endpoint)
-and each direct-call site carries a one-clause pointer. Attacker ran on the Claude
+now explains the path (discovery tool, then `executeRead`, or the `?tools=all` endpoint);
+call sites outside that section carry a one-clause pointer or link to it. Attacker ran on the Claude
 fallback (Codex usage limit), so independence is reduced. Not yet checked: whether
 `executeRead` takes a bare tool name without a prior discovery call.
 
 ## [0.1.32] — 2026-11-12
-Every Atlassian MCP v2 tool name in the skills, agents and `inject-mermaid-macros.py`
-now carries its v1 name beside it (`createConfluenceContent` (v1: `createConfluencePage`)),
-so a connection still on v1 (live until 2027-03-01) is not sent to a missing tool.
+The first mention of each renamed v2 tool in each skill, agent and `inject-mermaid-macros.py`
+file, plus every `mcp__plugin_atlassian_atlassian__`-prefixed call, carries its v1 name beside
+it (`createConfluenceContent` (v1: `createConfluencePage`)); later mentions in the same file
+use the v2 name alone. `skills/acli/SKILL.md` holds the full v1→v2 list.
 Also renamed the `mcp__plugin_atlassian_atlassian__`-prefixed v1 names that 0.1.31 missed
 (`createConfluencePage`, `updateConfluencePage`, `getConfluencePage`, `getVisibleJiraProjects`,
 `getJiraProjectIssueTypesMetadata`, `getConfluenceSpaces`). v2 parameter shapes still unverified.
@@ -32,7 +44,7 @@ Atlassian MCP tool names moved from v1 to v2 across the skills and agents:
 `createConfluencePage`/`updateConfluencePage`/`getConfluencePage` →
 `createConfluenceContent`/`updateConfluenceContent`/`getConfluenceContent`,
 `getTransitionsForJiraIssue` → `listJiraIssueTransitions`, and three `get*` →
-`list*` renames. `skills/acli/SKILL.md` carries the v1→v2 table. v1 stays live
+`list*` renames. `skills/acli/SKILL.md` carries the v1→v2 list. v1 stays live
 until 2027-03-01. Parameter shapes (`cloudId`, `contentFormat`) are NOT
 verified against v2; names come from Atlassian's supported-tools page only.
 
