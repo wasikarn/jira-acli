@@ -1,5 +1,5 @@
 {
-  "description": "acli-guard: no acli write from a subagent; main-thread acli writes prompt (blocks unattended runs). See hooks/acli-guard.py.",
+  "description": "acli-guard: no acli or Atlassian MCP write from a subagent; main-thread writes prompt (blocks unattended runs). See hooks/acli-guard.py.",
   "hooks": {
     "PreToolUse": [
       {
@@ -8,7 +8,7 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/acli-guard.py\"",
-            "timeout": 5,
+            "timeout": 10,
             "onFailure": "block"
           }
         ]

@@ -8,6 +8,18 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.46] — 2026-11-12
+Fixes from `mh:deep-audit` on 0.1.45 (checker on Claude; Codex was over quota). The guard's
+logic is unchanged.
+- **`hooks.json`:** the description now names Atlassian MCP writes, and the timeout is 10 s, the
+  same as the user-level entry. A verbatim copy of the old 5 s failed the dotfiles fail-closed
+  check, which wants more than 5 s for a guard with no deadline of its own.
+- **Test:** the main-thread MCP `ask` now has its reason checked too. Before, the suite still
+  passed with every `ask` using the acli reason.
+- **Correction to 0.1.45:** the accepted over-blocks also include a non-Atlassian server's
+  `execute`/`executeRead`/`executeWrite`/`executeDestructive` called with a string `name`. The
+  guard treats it as Atlassian, so it is denied in a subagent and asks in the main thread.
+
 ## [0.1.45] — 2026-11-12
 **New: the guard covers Atlassian MCP tools.** Once the official Atlassian plugin is installed,
 its MCP tools create and edit issues directly, and `general-purpose` subagents inherit them.

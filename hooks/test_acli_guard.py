@@ -123,10 +123,11 @@ def test_a_crash_in_the_mcp_check_fails_closed():
 
 
 def test_mcp_decisions_carry_their_own_reason():
-    p = _run_hook(json.dumps({"tool_name": "mcp__plugin_atlassian_atlassian__createJiraIssue", "agent_id": "a",
-                              "tool_input": {"cloudId": "x", "projectKey": "TP", "summary": "s"}}))
-    out = json.loads(p.stdout)["hookSpecificOutput"]
-    assert out["permissionDecision"] == "deny" and "Atlassian MCP" in out["permissionDecisionReason"]
+    for agent, want in (({"agent_id": "a"}, "deny"), ({}, "ask")):
+        p = _run_hook(json.dumps({"tool_name": "mcp__plugin_atlassian_atlassian__createJiraIssue", **agent,
+                                  "tool_input": {"cloudId": "x", "projectKey": "TP", "summary": "s"}}))
+        out = json.loads(p.stdout)["hookSpecificOutput"]
+        assert out["permissionDecision"] == want and "Atlassian MCP" in out["permissionDecisionReason"], out
 
 
 def test_unrelated_tools_and_inputs_are_left_alone():
