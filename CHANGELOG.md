@@ -8,6 +8,13 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.38] — 2026-11-12
+- `jira-content` Failure Modes: a Bug create rejected for an unknown `versions` value now stops and
+  asks, instead of retrying without the version. The user confirmed a preview that had it, and the
+  repo's **Fail loud** rule says never drop and retry.
+- An assignee that can't be resolved is left unassigned and named in the preview, since assignee is
+  not on the rendered card.
+
 ## [0.1.37] — 2026-11-12
 Corrects 0.1.36 and finishes 0.1.30, from `mh:deep-audit` on 0.1.30–0.1.36 (checker ran on
 the Claude fallback, Codex usage limit). 0.1.36's read-back used `acli jira workitem view`, but

@@ -187,9 +187,9 @@ acli jira workitem comment update --key KEY --id <commentId> --body-adf /tmp/not
 - `acli` not installed or not authed → prompt to auth or fall back to MCP.
 - Project key or issue type does not exist on the resolved site.
 - `environment` rejected as plain string (Bug) → retry with ADF wrapper.
-- `versions` value not found (Bug) → omit and retry, and name the dropped version and the exact error in the reply.
+- `versions` value not found (Bug) → stop; don't retry without it, since the user confirmed a preview that had it (the **Fail loud** rule). Put the exact error in the reply and ask for the right version name, or for an OK to create without it.
 - Sub-task create rejected for missing/invalid parent → resolve the parent key and retry.
-- Assignee email cannot be resolved → leave unassigned.
+- Assignee email cannot be resolved → leave unassigned and say so in the preview (assignee is not on the rendered card).
 - User does not confirm at preview gate → creation/edit is skipped.
 
 ## Related
