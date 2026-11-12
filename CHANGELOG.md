@@ -22,8 +22,9 @@ loud unless you pass `--ignore-errors`.
 
 A whole-picture pass on those fixes found more gaps, also fixed here:
 - A dropped `priority` or `assignee` comes back as the project default, not empty, so the
-  read-back now treats "present but a different value" like empty. It also checks
-  `description`, and covers fields the user stated, not only the ones sent.
+  read-back now treats "present but a different value" like empty. It covers fields the
+  user stated, not only the ones sent. `description` is checked for presence only (its stored
+  form can differ from the Markdown sent); the user is asked to look at the rendered ticket once.
 - `jira-expert` holds no MCP tools, so its handoff of an MCP create or edit must list the
   `getJiraIssue` read-back as the step after the fire. Otherwise the main thread may fire
   without `jira-content` loaded.

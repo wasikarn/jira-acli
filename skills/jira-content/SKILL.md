@@ -114,8 +114,10 @@ on production with fields left empty or at the project default. The v2 names for
 `versions` are not confirmed yet. Read it with `getJiraIssue(cloudId, issueIdOrKey="<KEY>")`: a
 Primary tool on v2, so it works in every case that sends a create here, including acli being down
 or logged out. Check each field the user stated or you sent: `priority`, `labels`, `environment`,
-`versions`, `assignee`, `parent`, `description`. A clean create needs every field **Set** (or
-confirmed by the cross-check below):
+`versions`, `assignee`, `parent`. For `description`, only check that it is present and not empty:
+its stored form can differ from the Markdown you sent, and v2's format parameter is unverified, so
+ask the user to open the ticket page once and confirm headings and lists rendered (not literal
+`##`). A clean create needs every other field **Set** (or confirmed by the cross-check below):
 - **Set:** present with the value you sent.
 - **Empty or different:** present but empty, null, or another value. A dropped `priority` or
   `assignee` comes back as the project default, not null. Name each such field in the reply and
@@ -184,7 +186,7 @@ acli jira workitem comment update --key KEY --id <commentId> --body-adf /tmp/not
 - `acli` not installed or not authed → prompt to auth or fall back to MCP.
 - Project key or issue type does not exist on the resolved site.
 - `environment` rejected as plain string (Bug) → retry with ADF wrapper.
-- `versions` value not found (Bug) → omit and retry, and name the dropped version and the exact error in the reply (the Step 5b read-back can't see a field you stopped sending).
+- `versions` value not found (Bug) → omit and retry, and name the dropped version and the exact error in the reply.
 - Sub-task create rejected for missing/invalid parent → resolve the parent key and retry.
 - Assignee email cannot be resolved → leave unassigned.
 - User does not confirm at preview gate → creation/edit is skipped.
