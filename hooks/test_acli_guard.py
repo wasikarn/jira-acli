@@ -185,6 +185,35 @@ def test_deeply_nested_input_never_crashes_the_hook():
         assert p.returncode == 0, p.stderr[-300:]
         got = json.loads(p.stdout)["hookSpecificOutput"]["permissionDecision"] if p.stdout else ""
         assert got == want, (code, got)
+    # On Python 3.9 json.loads itself raises here, before the MCP check: an Atlassian write must still block.
+    deep = "[" * 5000 + '"x"' + "]" * 5000
+    for agent in ('"agent_id": "a", ', ""):
+        p = _run_hook('{"tool_name": "mcp__plugin_atlassian_atlassian__createJiraIssue", ' + agent +
+                      '"tool_input": {"projectKey": "TP", "summary": ' + deep + "}}")
+        assert p.returncode == 0 and p.stdout, (agent, p.returncode, p.stderr[-300:])
+
+
+def test_a_parse_recursion_error_still_blocks_an_atlassian_write():
+    import contextlib
+    import io
+    real, stdin = guard.json.loads, sys.stdin
+
+    def boom(*_a, **_k):
+        raise RecursionError
+
+    out = io.StringIO()
+    for tool, want in (("mcp__plugin_atlassian_atlassian__createJiraIssue", "deny"),
+                       ("mcp__rovo__executeWrite", "deny"), ("mcp__plugin_qmd_qmd__query", "")):
+        out.seek(0)
+        out.truncate()
+        guard.json.loads, sys.stdin = boom, io.StringIO('{"tool_name": "%s", "tool_input": {}}' % tool)
+        try:
+            with contextlib.redirect_stdout(out):
+                guard.main()
+        finally:
+            guard.json.loads, sys.stdin = real, stdin
+        got = json.loads(out.getvalue())["hookSpecificOutput"]["permissionDecision"] if out.getvalue() else ""
+        assert got == want, (tool, got)
 
 
 if __name__ == "__main__":

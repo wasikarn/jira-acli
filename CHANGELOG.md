@@ -8,6 +8,16 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.48] — 2026-11-12
+**Fix for a gap 0.1.47 opened.** 0.1.47 sent deeply nested input to the unparsable-input path,
+and that path denied only input that mentions acli. On macOS's `/usr/bin/python3` 3.9,
+`json.loads` itself fails on that input before the MCP check runs. So a deeply nested Atlassian
+MCP write (`createJiraIssue` with a 5000-deep `summary`) was allowed, in a subagent and in the
+main thread. Before 0.1.47 it crashed the guard, which blocked it. The fallback now denies
+anything whose raw text has acli, atlassian, jira, confluence, bitbucket, jsm or `__execute`.
+Tests: the deep-nesting test also sends that MCP write, and a fault-injection test makes
+`json.loads` raise on any Python. Both failed on 0.1.47.
+
 ## [0.1.47] — 2026-11-12
 From the `mh:deep-audit` recheck of 0.1.46 and its whole-picture challenge (`mh:blind-spot-hunter`),
 both on Claude.

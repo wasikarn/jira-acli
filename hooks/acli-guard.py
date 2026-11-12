@@ -56,6 +56,8 @@ _READ_VERBS = {"get", "search", "list", "lookup", "fetch", "download", "diff", "
                "describe", "view", "read", "find", "discover", "count", "preview"}
 _READ_NAMES = {"atlassianuserinfo", "getaccessibleatlassianresources", "discover", "search", "fetch"}
 _EXEC = {"execute", "executeRead", "executeWrite", "executeDestructive"}
+# Input that can't be parsed or walked: block anything that may be acli or an Atlassian MCP call.
+_RAW_RISK = re.compile(r"acli|atlassian|jira|confluence|bitbucket|jsm|__execute")
 
 DENY_REASON = (
     "acli-guard: this call may write to the production Atlassian site, and subagents may only "
@@ -230,8 +232,8 @@ def main():
         d = json.loads(raw)
         decision = decide(d)
     except (ValueError, RecursionError):  # unparsable, or nested past the recursion limit
-        # No way to tell subagent from main thread: deny only what mentions acli.
-        d, decision = None, ("deny" if "acli" in raw.lower() else "allow")
+        # No way to tell subagent from main thread: deny only what may be acli or Atlassian.
+        d, decision = None, ("deny" if _RAW_RISK.search(raw.lower()) else "allow")
     if decision == "allow":
         return
     tool = str(d.get("tool_name") or "") if isinstance(d, dict) else ""
