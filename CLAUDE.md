@@ -5,12 +5,13 @@ loads with the `acli` skill when invoked; do not import it here.
 
 ## Commands
 
-No build, package manager, or test suite (a comment in `md2adf.py` mentions `run-tests.sh`; it
-does not exist). Local checks:
+No build or package manager. Tests are framework-free `test_*.py` scripts beside the code they
+check. Local checks:
 
 ```bash
 python3 -m py_compile skills/*/scripts/*.py
 for f in skills/*/scripts/*.sh; do bash -n "$f"; done
+for t in skills/*/scripts/test_*.py; do python3 "$t" || echo "FAILED: $t"; done
 python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/adf2md.py -   # round-trip
 ```
 
@@ -20,14 +21,21 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
   ADF↔Markdown). `skills/jira-content` — Jira templates (Bug/Story/Task/Epic/Sub-task, comments).
   `skills/confluence-content` — Spec/PRD template plus `scripts/inject-mermaid-macros.py`.
 - `agents/jira-expert.md`, `agents/confluence-expert.md` — preview-then-stop subagents: they hold
-  no MCP tools and never fire a mutating acli command; they return the exact command for the main
-  thread to run. Each defers the other product's work to its sibling.
+  no MCP tools and are instructed never to fire a mutating acli command (they keep `Bash` for
+  read-only acli, so nothing blocks it); they return the exact command for the main thread to
+  run. Each defers the other product's work to its sibling.
 - `templates/acceptance-criteria.md` — the one rule both content skills share; referenced, never
   copied (copies drifted across 5+ files before).
 - Scripts: `md2adf.py` (Markdown subset → ADF; nested lists flattened by design, see
-  `skills/acli/ISSUES.md` Issue 1), `adf2md.py` (inverse, tolerates acli list-or-dict drift),
-  `acli-edit.py` (section-level read-modify-write, since `acli edit --description` replaces the
-  body), `acli-ls.py` (normalized search table).
+  `skills/acli/ISSUES.md` Issue 1), `adf2md.py` (inverse; takes an ADF doc, a view payload as a
+  dict or a list of them, or a create payload; owns `read_json`), `acli-edit.py` (section-level
+  read-modify-write, since `acli edit --description` replaces the body), `acli-ls.py`
+  (normalized search table, unwraps every search shape acli has emitted).
+  Wrappers: `acli-new.sh` (create from Markdown), `acli-set-desc.sh` (replace the whole
+  description), `acli-edit.sh` (runs `acli-edit.py`), `acli-assign.sh` (assign by accountId via
+  `edit --from-json`), `acli-ls.sh` (runs `acli-ls.py`). The four write wrappers source
+  `_dry-run.sh`, so `--dry-run` works in any position. `adf-node-diff.py` (node counts before a full-body replace),
+  `print-edit-result.py` (prints an `edit --json` result).
 
 ## Rules that came from incidents
 

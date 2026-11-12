@@ -6,5 +6,9 @@ Usage: acli jira workitem edit --from-json ... --json | python3 print-edit-resul
 import json
 import sys
 
-r = json.load(sys.stdin)["results"][0]
-print(r["status"], "-", r["message"])
+raw = sys.stdin.read()
+try:
+    r = json.loads(raw)["results"][0]
+    print(r["status"], "-", r["message"])
+except (ValueError, KeyError, IndexError, TypeError):
+    sys.exit("FATAL: unexpected edit response (no results[0].status/message): " + raw[:500])

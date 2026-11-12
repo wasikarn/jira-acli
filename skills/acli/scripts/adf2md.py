@@ -261,15 +261,20 @@ def render_create_card(data):
     return "\n\n".join(p for p in parts if p and p.strip())
 
 
+def read_json(path, label=""):
+    """Load JSON from a file or '-' (stdin); FATAL on invalid JSON. Also used by adf-node-diff.py."""
+    raw = sys.stdin.read() if path == "-" else open(path, encoding="utf-8").read()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as e:
+        sys.exit(f"FATAL: {label + ': ' if label else ''}invalid JSON: {e}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Render ADF / acli view payload as Markdown")
     ap.add_argument("file", nargs="?", default="-", help="JSON file, or '-'/omitted for stdin")
     args = ap.parse_args()
-    raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError as e:
-        sys.exit(f"FATAL: invalid JSON: {e}")
+    data = read_json(args.file)
 
     if isinstance(data, list):
         if not data:

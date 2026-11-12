@@ -35,10 +35,11 @@ multi-step work you'd rather hand off than drive call-by-call:
 - **`confluence-expert`** — Confluence page reads and Spec/PRD authoring. Backed by
   `acli` + `confluence-content`.
 
-Both are **preview-then-stop**: neither holds MCP tools, and neither fires a mutating
-acli command itself. Each drafts and renders the payload, then returns the exact
-command/call for you to run after review — this plugin's acli and MCP calls hit real
-production Jira/Confluence.
+Both are **preview-then-stop**: neither holds MCP tools, and each is instructed never to
+fire a mutating acli command itself. Each drafts and renders the payload, then returns the
+exact command/call for you to run after review — this plugin's acli and MCP calls hit real
+production Jira/Confluence. Both keep `Bash` for read-only acli, so the acli rule rests on
+their instructions, not on a tool block.
 
 ## Prerequisites
 

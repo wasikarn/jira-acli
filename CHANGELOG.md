@@ -8,6 +8,26 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.41] — 2026-11-12
+Fixes from a whole-project `mattpocock-skills:code-review` (Standards and Spec axes).
+- **`acli-edit.py` could wipe a description.** A view payload for another issue, or a dict with
+  no `fields` object, became an empty doc, so append mode sent only the new text and the edit
+  replaced the whole body. It now fails with `FATAL:` and writes no payload. New
+  `test_acli_edit.py` pins this.
+- `acli-new.sh` exits non-zero with `FATAL:` when a create returns no key, and says to search
+  before retrying, instead of printing `(no key returned)` and exiting 0.
+- `print-edit-result.py` and `inject-mermaid-macros.py` fail with `FATAL:` on bad or unexpected
+  JSON instead of a traceback or an unprefixed message.
+- `--dry-run` now works in any argument position for all four write wrappers, through a shared
+  `_dry-run.sh`. Before, `acli-assign.sh` and `acli-set-desc.sh` read it only as the third
+  argument. `acli-set-desc.sh` and `acli-ls.sh` resolve their directory with `BASH_SOURCE[0]`.
+- `adf-node-diff.py` reuses `adf2md.py`'s new `read_json` instead of its own copy.
+- `confluence-expert`'s stop rule now covers `space update|archive|restore` and any other acli
+  command that changes state, not only `blog create` and `space create`.
+- README and CLAUDE.md no longer claim the agents can't fire acli; they keep `Bash`, so the rule
+  is an instruction. CLAUDE.md lists the `test_*.py` scripts and every shipped script, and
+  describes what `adf2md.py` accepts. A dead `run-tests.sh` pointer in `md2adf.py` is gone.
+
 ## [0.1.40] — 2026-11-12
 - The read-back also skips a field the user agreed to leave out after a rejected create (the
   0.1.38 `versions` rule asks for that OK after the preview, which 0.1.39's skip didn't cover).

@@ -278,12 +278,12 @@ def extract_doc(data):
     Built against the v1 getConfluencePage response; the v2 response shape is unverified,
     so an unexpected shape fails loud here before any write.
     """
-    if data.get("type") == "doc" and "content" in data:
+    if isinstance(data, dict) and data.get("type") == "doc" and "content" in data:
         return data
-    body = data.get("body")
-    if body and body.get("type") == "doc":
+    body = data.get("body") if isinstance(data, dict) else None
+    if isinstance(body, dict) and body.get("type") == "doc":
         return body
-    raise SystemExit("input JSON has no ADF doc (expected {'type':'doc',...} or a page object with .body)")
+    raise SystemExit("FATAL: input JSON has no ADF doc (expected {'type':'doc',...} or a page object with .body)")
 
 
 def main():
@@ -307,7 +307,10 @@ def main():
     args = p.parse_args()
 
     raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
-    data = json.loads(raw)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as e:
+        sys.exit(f"FATAL: invalid JSON: {e}")
     doc = extract_doc(data)
     new_doc = copy.deepcopy(doc)
     new_doc["content"] = inject(doc["content"], args)

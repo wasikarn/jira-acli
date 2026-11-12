@@ -4,17 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# --dry-run support: strip the flag from args, set DRY_RUN=true
-DRY_RUN=false
-new_args=()
-for arg in "$@"; do
-  if [ "$arg" = "--dry-run" ]; then
-    DRY_RUN=true
-  else
-    new_args+=("$arg")
-  fi
-done
-set -- "${new_args[@]}"
+source "$SCRIPT_DIR/_dry-run.sh"  # sets DRY_RUN, strips --dry-run from "$@"
 
 if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
   echo "usage: acli-edit.sh KEY (DESC.md | - | --remove-section \"H\" | --replace-section \"H\" NEW.md) [--dry-run]"

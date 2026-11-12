@@ -20,16 +20,7 @@ if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   exit 0
 fi
 
-DRY_RUN=false
-new_args=()
-for arg in "$@"; do
-  if [ "$arg" = "--dry-run" ]; then
-    DRY_RUN=true
-  else
-    new_args+=("$arg")
-  fi
-done
-set -- "${new_args[@]}"
+source "$SCRIPT_DIR/_dry-run.sh"  # sets DRY_RUN, strips --dry-run from "$@"
 
 tmp=$(mktemp)
 trap 'rm -f "$tmp"' EXIT
@@ -49,5 +40,13 @@ if [ "$DRY_RUN" = "true" ]; then
 fi
 
 # Create and surface the new key. pipefail makes an acli error abort the pipe.
-acli jira workitem create --from-json "$tmp" --json \
-  | python3 -c "import json,sys; print(json.load(sys.stdin).get('key','(no key returned)'))"
+acli jira workitem create --from-json "$tmp" --json | python3 -c "
+import json, sys
+raw = sys.stdin.read()
+try:
+    key = json.loads(raw).get('key')
+except (ValueError, AttributeError):
+    key = None
+if not key:
+    sys.exit('FATAL: create returned no key; the item may still exist, so search before retrying. Response: ' + raw[:500])
+print(key)"

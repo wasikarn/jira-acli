@@ -35,7 +35,7 @@ import uuid
 # + `` `code` `` + `**` so the backticks win). Underscore-italic uses lookarounds to
 # refuse identifiers like `price_per_car` — CommonMark rule: `_` only delimits italic
 # when both sides are non-word chars.
-# Revert any of these and the `run-tests.sh` G3/G4 cases fail.
+# test_md2adf.py pins the bold+link and bold-then-code cases; the `_` rule has no test yet.
 _LINK_URL = r'(?:[^()]|\([^()]*\))*'  # tolerates one level of balanced parens (Foo_(bar))
 # GFM table separator: |---|---| / :---: / --- with no leading/trailing pipe.
 _TABLE_SEP_RE = re.compile(r'^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$')

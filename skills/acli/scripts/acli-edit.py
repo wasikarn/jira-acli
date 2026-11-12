@@ -43,7 +43,13 @@ def merge(mode, key, cur_f, out_f, new_f, heading):
         if not matches:
             sys.exit(f"FATAL: no item with key '{key}' found in a list of {len(cur)}")
         cur = matches[0]
-    desc = (cur.get("fields") or {}).get("description") or {"type": "doc", "version": 1, "content": []}
+    # An unknown shape or another issue's view would become an empty doc here, and the
+    # edit then replaces KEY's whole description with only the new content.
+    if not isinstance(cur, dict) or not isinstance(cur.get("fields"), dict):
+        sys.exit(f"FATAL: unrecognized view payload for '{key}' (no 'fields' object) — nothing written")
+    if cur.get("key") not in (None, key):
+        sys.exit(f"FATAL: view payload is for '{cur.get('key')}', not '{key}' — nothing written")
+    desc = cur["fields"].get("description") or {"type": "doc", "version": 1, "content": []}
     nodes = desc.get("content", [])
 
     if mode == "append":

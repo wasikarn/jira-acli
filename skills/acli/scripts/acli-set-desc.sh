@@ -13,11 +13,11 @@
 #   bash acli-set-desc.sh KEY desc.md            # replace (asks acli to confirm via --yes)
 #   bash acli-set-desc.sh KEY desc.md --dry-run  # render the new body, send nothing
 set -euo pipefail
-HERE="$(cd "$(dirname "$0")" && pwd)"
+HERE="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HERE/_dry-run.sh"  # sets DRY_RUN, strips --dry-run from "$@"
 
 KEY="${1:-}"
 DESC="${2:-}"
-DRY="${3:-}"
 if [ -z "$KEY" ] || [ -z "$DESC" ]; then
   echo "usage: acli-set-desc.sh KEY desc.md [--dry-run]" >&2
   exit 2
@@ -27,7 +27,7 @@ fi
 # Bare ADF doc (no -s/-p/-t → md2adf prints just the description document).
 ADF="$(python3 "$HERE/md2adf.py" "$DESC")"
 
-if [ "$DRY" = "--dry-run" ]; then
+if [ "$DRY_RUN" = "true" ]; then
   echo "⚠️  REPLACES the ENTIRE description of $KEY (use acli-edit.sh to append/section-edit)."
   echo "--- new description preview ---"
   printf '%s' "$ADF" | python3 "$HERE/adf2md.py"

@@ -14,7 +14,7 @@
 # rejects it ("field 'parent' is not allowed", confirmed 1.3.22-stable, ISSUES.md Issue 7)
 # regardless of JQL/issue type — for a single key's parent, use `view --fields parent` instead.
 set -euo pipefail
-HERE="$(cd "$(dirname "$0")" && pwd)"
+HERE="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FIELDS="key,summary,status,issuetype,assignee"
 
 JQL="" ; FILTER="" ; KEYS=""

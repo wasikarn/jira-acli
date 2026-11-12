@@ -28,8 +28,12 @@ the point is to eyeball that nothing unintended moved.
 """
 import argparse
 import json
+import os
 import sys
 from collections import Counter
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from adf2md import read_json
 
 
 def count_nodes(node, counter=None):
@@ -59,12 +63,7 @@ def extract_doc(data, label):
 
 
 def load(path, label):
-    raw = sys.stdin.read() if path == "-" else open(path, encoding="utf-8").read()
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError as e:
-        sys.exit(f"FATAL: {label}: invalid JSON: {e}")
-    return extract_doc(data, label)
+    return extract_doc(read_json(path, label), label)
 
 
 def print_counts(doc):
