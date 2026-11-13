@@ -8,6 +8,12 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.55] — 2026-11-13
+**`templates/acceptance-criteria.md` reworded.** Em dashes, decorative bold, emoji markers and
+stacked negations in its English prose became plain sentences. Every rule, number and example is
+unchanged, and the `AC# — <short title>` block format stays as it was because the content
+templates and the eval graders match it.
+
 ## [0.1.54] — 2026-11-13
 **Ticket keys anonymized.** Every real-looking ticket key (`TP-` plus a number) and the default
 project key `TP` became `PROJ`, and the one remaining product name became a neutral phrase, so the
