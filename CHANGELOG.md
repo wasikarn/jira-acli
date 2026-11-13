@@ -9,9 +9,10 @@ This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
 ## [0.1.52] — 2026-11-13
-**Marketplace renamed `wasikarn` to `jira-acli`.** The old name was already taken by the
-`method-harness` marketplace, so adding this repo overwrote that source and broke `mh@wasikarn`.
-Install is now `jira-acli@jira-acli`. No skill, agent or hook change.
+**Marketplace manifest removed.** Its name `wasikarn` was already taken by the `method-harness`
+marketplace, so adding this repo overwrote that source and broke `mh@wasikarn`.
+This repo no longer ships a marketplace: the plugin is listed in the `wasikarn` marketplace in
+`wasikarn/method-harness`, so install is `jira-acli@wasikarn`. No skill, agent or hook change.
 
 ## [0.1.51] — 2026-11-12
 **The install test now fails on half an install.** 0.1.50 checked each part only when it was
