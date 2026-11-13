@@ -8,6 +8,11 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.52] — 2026-11-13
+**Marketplace renamed `wasikarn` to `jira-acli`.** The old name was already taken by the
+`method-harness` marketplace, so adding this repo overwrote that source and broke `mh@wasikarn`.
+Install is now `jira-acli@jira-acli`. No skill, agent or hook change.
+
 ## [0.1.51] — 2026-11-12
 **The install test now fails on half an install.** 0.1.50 checked each part only when it was
 there, so a dangling `~/.claude/hooks/acli-guard.py` link, or a linked script whose settings

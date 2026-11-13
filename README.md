@@ -68,10 +68,10 @@ duplicating credentials and rewriting every MCP tool literal for no functional g
 
 ```
 /plugin marketplace add wasikarn/jira-acli
-/plugin install jira-acli@wasikarn
+/plugin install jira-acli@jira-acli
 ```
 
-Ships `defaultEnabled: false` — add `"jira-acli@wasikarn": true` to your Claude Code
+Ships `defaultEnabled: false` — add `"jira-acli@jira-acli": true` to your Claude Code
 `settings.json` after install, then restart.
 
 ## Versioning
