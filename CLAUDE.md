@@ -61,3 +61,17 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
 - **Cross-skill coupling:** `jira-content` wraps `acli` scripts via `../../..` climbs; an ADF or
   script-interface change in `acli` must be checked there. New wrappers resolve their dir with
   `BASH_SOURCE[0]`, not `dirname "$0"`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on wasikarn/jira-acli, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five roles: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
