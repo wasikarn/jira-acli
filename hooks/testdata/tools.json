@@ -81,7 +81,7 @@
   "want": "allow",
   "tool_name": "Bash",
   "tool_input": {
-   "command": "git -C /Users/kobig/Codes/Personals/jira-acli log --oneline -5",
+   "command": "git -C /work/jira-acli log --oneline -5",
    "description": "Show recent acli plugin commits"
   }
  },

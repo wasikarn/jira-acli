@@ -143,15 +143,15 @@ print('table count:', count_tables(d['fields']['description'] or {}))
 
 **Symptom (the original bug, still real, just narrower than documented):**
 ```bash
-acli jira workitem assign --key TP-880 --assignee "712020:aa9ef966-977c-47f3-865a-0da1a416b388"
+acli jira workitem assign --key TP-880 --assignee "712020:<account-id>"
 # → silently unassigns instead of assigning (documented 2026-06/07, re-confirmed by the pre-existing ⚠️ in SKILL.md)
 ```
 
 **Working path (found 2026-07-15, while assigning TP-880/TP-882/TP-539 for real during a TP-807 readiness check):**
 ```bash
-bash skills/acli/scripts/acli-assign.sh TP-880 "712020:aa9ef966-977c-47f3-865a-0da1a416b388"
+bash skills/acli/scripts/acli-assign.sh TP-880 "712020:<account-id>"
 # → SUCCESS - Work item TP-880 has been successfully edited
-# under the hood: acli jira workitem edit --from-json '{"issues":["TP-880"],"assignee":"712020:aa9ef966-..."}' --yes
+# under the hood: acli jira workitem edit --from-json '{"issues":["TP-880"],"assignee":"712020:<account-id>"}' --yes
 ```
 
 **Why the discrepancy:** unclear without acli's source — plausibly `assign --assignee` runs its own client-side email/`@me`/`default` resolution and falls through to "clear assignee" on anything that doesn't match those three shapes, while `edit --from-json`'s `assignee` field passes through closer to the raw REST API body, which accepts either an email or an accountId server-side. Not confirmed against acli's source, just against observed behavior.
@@ -160,7 +160,7 @@ bash skills/acli/scripts/acli-assign.sh TP-880 "712020:aa9ef966-977c-47f3-865a-0
 
 ## Issue 7: acli 1.3.22-stable drift — `transition --list` removed, bare `search --json`/`--csv` silently caps at ~30 rows
 
-**Severity:** High (two independent fail-loud violations, found via empirical skill-creator review — 3 real test tasks run against prod 100-stars.atlassian.net, 2026-07-24)
+**Severity:** High (two independent fail-loud violations, found via empirical skill-creator review — 3 real test tasks run against a prod Atlassian Cloud site, 2026-07-24)
 
 **Impact:**
 - `acli jira workitem transition --key/--jql ... --list` — documented across `SKILL.md`, `REFERENCE.md`, `references/REFERENCE-detail.md`, and `agents/jira-expert.md` as the way to discover valid transitions read-only — no longer exists. `✗ Error: unknown flag: --list` on the installed `1.3.22-stable` (docs were previously verified against `1.3.18-stable`). No replacement acli command exists — `view` never exposes transitions, no `acli jira workflow` subcommand.
@@ -191,7 +191,7 @@ acli jira workitem search --jql "project = TP AND statusCategory != Done" --coun
 
 ## Issue 8: `acli confluence space view` takes `--id`, not `--key` — breaks the pattern of every other `space` subcommand
 
-**Severity:** Medium (one broken documented command, found via empirical `confluence-content` skill review — 3 real test tasks run against prod 100-stars.atlassian.net via `confluence-expert`, 2026-07-24)
+**Severity:** Medium (one broken documented command, found via empirical `confluence-content` skill review — 3 real test tasks run against a prod Atlassian Cloud site via `confluence-expert`, 2026-07-24)
 
 **Impact:** `confluence-content/SKILL.md`'s Step 3 metadata-resolution table told callers to run `acli confluence space view --key <KEY> --json` to resolve a space. That flag doesn't exist on `space view` — confirmed live, and independently rediscovered by two of the three test agents (the draft-new-page test and, separately, this session's own live verification). `create`/`archive`/`update`/`restore` all resolve by `--key SPACEKEY` consistently — `view` alone rejects `--key` and requires the numeric `--id` instead, with no warning that it's the odd one out.
 
@@ -204,7 +204,7 @@ acli jira workitem search --jql "project = TP AND statusCategory != Done" --coun
 ```bash
 acli confluence space view --key BEP --json     # ✗ Error: unknown flag: --key
 acli confluence space list --keys BEP --json    # works — but --keys is a no-op (see 2026-08-04 addendum below); BEP is present, just not filtered to
-acli confluence space view --id 1081347 --json  # works
+acli confluence space view --id <space-id> --json  # works
 ```
 
 **Workaround:** resolve the numeric id first via `space list --json`, matching the target `key` client-side (`python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='<KEY>'][0])"`), then `space view --id <id>` only if you need more detail than `list` already returned.

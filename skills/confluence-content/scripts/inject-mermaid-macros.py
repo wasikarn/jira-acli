@@ -41,8 +41,7 @@ each diagram renders exactly once, no wrapping, no duplication (both tests
 on Atlassian MCP v1; not re-tested on v2). Use "adf",
 never "html", for this.
 
-Discovered 2026-07-14 (Atlassian MCP v1; not re-tested on v2) against TP-807's spec page (100-stars.atlassian.net,
-space BEP) by inserting the macro once by hand via the Confluence editor's
+Discovered 2026-07-14 (Atlassian MCP v1; not re-tested on v2) against a Spec page on one Cloud site by inserting the macro once by hand via the Confluence editor's
 `/mermaid` slash command, then reading the page back with
 v1 `getConfluencePage(contentFormat="adf")` (v2: getConfluenceContent with content_format) to see the real extension node shape
 Confluence itself produces — confirmed identical in every field to this
@@ -111,27 +110,24 @@ that already has some rendered.
 import argparse
 import copy
 import json
+import os
 import sys
 import uuid
 from dataclasses import dataclass
 
-# ── site-specific constants (100-stars.atlassian.net / TaThep) ─────────────
-# Re-derive these if this script is ever pointed at a different Atlassian
-# site: insert the macro once by hand via the editor, then diff the page's
-# contentFormat="adf" body against this script's output.
-DEFAULT_EXTENSION_KEY = (
-    "23392b90-4271-4239-98ca-a3e96c663cbb/"
-    "63d4d207-ac2f-4273-865c-0240d37f044a/static/mermaid-diagram"
-)
+# ── site-specific constants ────────────────────────────────────────────────
+# These identify one Atlassian site and one Mermaid app install, so none ships
+# in the repo: set the MERMAID_* env vars (or pass the flags) for your site.
+# Re-derive them if this script is ever pointed at a different site: insert the
+# macro once by hand via the editor, then diff the page's contentFormat="adf"
+# body against this script's output.
+DEFAULT_EXTENSION_KEY = os.environ.get("MERMAID_EXTENSION_KEY", "")
 DEFAULT_EXTENSION_TYPE = "com.atlassian.ecosystem"
-DEFAULT_CLOUD_ID = "85ad5bd2-ef9c-477e-b000-062f1421d0c0"
-DEFAULT_ACCOUNT_ID = "712020:64219948-720a-4925-a48c-d7a53557993c"
-DEFAULT_WORKSPACE_ARI = (
-    "ari:cloud:confluence:85ad5bd2-ef9c-477e-b000-062f1421d0c0:"
-    "workspace/2f960cad-efff-4621-bb36-aa7f65cf74df"
-)
-DEFAULT_SPACE_KEY = "BEP"
-DEFAULT_SPACE_ID = "1081347"
+DEFAULT_CLOUD_ID = os.environ.get("MERMAID_CLOUD_ID", "")
+DEFAULT_ACCOUNT_ID = os.environ.get("MERMAID_ACCOUNT_ID", "")
+DEFAULT_WORKSPACE_ARI = os.environ.get("MERMAID_WORKSPACE_ARI", "")
+DEFAULT_SPACE_KEY = os.environ.get("MERMAID_SPACE_KEY", "")
+DEFAULT_SPACE_ID = os.environ.get("MERMAID_SPACE_ID", "")
 CONTENT_VERSION = 1  # observed constant across all instances — not the page version
 
 
@@ -303,6 +299,9 @@ def main():
                          "(e.g. native /mermaid editor inserts) in the collapse — off by "
                          "default so existing diagrams are never touched without asking")
     args = p.parse_args()
+    for flag in ("extension_key", "cloud_id", "account_id", "workspace_ari", "space_key", "space_id"):
+        if not getattr(args, flag):
+            sys.exit(f"FATAL: --{flag.replace('_', '-')} is empty; pass the flag or set MERMAID_{flag.upper()}")
 
     raw = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
     try:

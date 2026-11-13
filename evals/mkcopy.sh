@@ -2,7 +2,7 @@
 # Builds an eval copy of jira-acli: HEAD's tracked files plus the working tree's evals/, with defaultEnabled true
 # (claude plugin eval runs the with-arm without a plugin whose manifest sets defaultEnabled false).
 set -euo pipefail
-repo=/Users/kobig/Codes/Personals/jira-acli
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 dest=${1:?usage: mkcopy.sh <dest dir>}
 mkdir -p "$dest"
 git -C "$repo" archive HEAD | tar -x -C "$dest"

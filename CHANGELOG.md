@@ -8,6 +8,15 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.53] — 2026-11-13
+**Site and person identifiers removed from the repo.** A scan found one Atlassian Cloud site's
+hostname, space key and id, a cloudId, accountIds, an ARI and the Mermaid app's extension key in
+docs, `inject-mermaid-macros.py` and test data, plus the author's home path. They are now
+placeholders. `inject-mermaid-macros.py` reads the site values from `MERMAID_*` env vars or its
+flags and exits with `FATAL` when one is empty, instead of silently using another site's ids.
+`evals/mkcopy.sh` finds the repo from its own path. The ids stay in git history; ticket keys
+such as `TP-807` stay as incident references.
+
 ## [0.1.52] — 2026-11-13
 **Marketplace manifest removed.** Its name `wasikarn` was already taken by the `method-harness`
 marketplace, so adding this repo overwrote that source and broke `mh@wasikarn`.
@@ -471,7 +480,7 @@ one.
 
 `confluence-expert` (agent): first-ever fixture-eval + `kbg:review-fixtures` + `kbg:iterate-skill`
 loop against this agent (no prior workspace existed). 3 evals × with_agent/baseline, grounded in
-live production data on `100-stars.atlassian.net`: a real Confluence page (TP-807 Spec, id
+live production data on a production Atlassian Cloud site: a real Confluence page (TP-807 Spec, id
 `217743376`, independently confirmed to carry 7 `expand` + 7 `extension` macro nodes — the exact
 page that lost all 7 diagram macros to a markdown-format full-body-replace in a real 2026-07-14
 incident already documented in `confluence-content/SKILL.md`), a confirmed-nonexistent "incident

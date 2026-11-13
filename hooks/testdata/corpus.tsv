@@ -28,7 +28,7 @@ allow	B17	acli jira workitem list-watchers --key TP-1 --json
 allow	B17	acli jira filter get-columns --id 1 --json
 deny	B17-dropped	acli jira workitem link type --json
 allow	B18	python3 -c "import json;json.load(open('/private/tmp/claude-501/-Users-kobig-Codes-Personals-jira-acli/s/x.json'))"
-allow	B18	bash -c 'git -C /Users/kobig/Codes/Personals/jira-acli log --oneline -5'
+allow	B18	bash -c 'git -C /work/jira-acli log --oneline -5'
 deny	B19-dropped	bash -n skills/acli/scripts/acli-assign.sh
 deny	B19-dropped	bash skills/acli/scripts/acli-set-desc.sh --help
 deny	B23	bash skills/acli/scripts/acli-assign.sh TP-1 acc123
@@ -59,12 +59,12 @@ allow	must	acli confluence page view --id 1 --body-format atlas_doc_format --jso
 deny	accepted	acli --help
 allow	must	acli jira workitem view TP-1 --json | python3 skills/acli/scripts/adf2md.py -
 allow	must	bash skills/acli/scripts/acli-ls.sh --jql "project = TP"
-allow	must	git -C /Users/kobig/Codes/Personals/jira-acli log --oneline -5
+allow	must	git -C /work/jira-acli log --oneline -5
 allow	must	python3 -m py_compile skills/acli/scripts/md2adf.py
 allow	must	python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/adf2md.py -
 allow	must	python3 skills/acli/scripts/test_acli_edit.py
-deny	accepted	git -C /Users/kobig/Codes/Personals/jira-acli diff -- skills/acli/scripts/acli-edit.sh
-deny	accepted	git -C /Users/kobig/Codes/Personals/jira-acli log --oneline -- skills/acli/scripts/acli-new.sh
+deny	accepted	git -C /work/jira-acli diff -- skills/acli/scripts/acli-edit.sh
+deny	accepted	git -C /work/jira-acli log --oneline -- skills/acli/scripts/acli-new.sh
 allow	must	git commit -m "fix: stop acli-edit wiping a description"
 allow	must	python3 skills/acli/scripts/acli-edit.py --help
 allow	must	ls skills/acli/scripts

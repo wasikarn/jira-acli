@@ -116,7 +116,7 @@ A plain ` ```mermaid ` fenced code block in `contentFormat: "markdown"` converts
 native Confluence `code` macro (language=mermaid, wide breakout) — but that only gets you
 **syntax-highlighted text**. Confluence Cloud has no built-in Mermaid renderer. If the target site
 has the **"Mermaid diagram"** marketplace app installed (a Forge custom-UI macro,
-`extension-type: com.atlassian.ecosystem` — confirmed installed on `100-stars.atlassian.net`,
+`extension-type: com.atlassian.ecosystem` — confirmed installed on the author's Atlassian Cloud site,
 space `BEP`), each code block needs a **separate macro instance immediately after it** to actually
 render as a diagram — one macro renders one code block, it does not scan the whole page.
 
