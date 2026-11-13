@@ -99,8 +99,8 @@ Usage:
   #      v1: updateConfluencePage(cloudId, pageId, body=<output>, contentFormat="adf")
   # v2 is not yet run: the v2 response shape and "adf" as a body.format are
   # unverified (see confluence-content SKILL.md "Embedding Mermaid diagrams").
-  python3 inject-mermaid-macros.py page.json --page-id 217743376 > doc.json
-  python3 inject-mermaid-macros.py - --page-id 217743376 < page.json > doc.json
+  python3 inject-mermaid-macros.py page.json --page-id <page-id> > doc.json
+  python3 inject-mermaid-macros.py - --page-id <page-id> < page.json > doc.json
 
 Idempotent: a mermaid codeBlock immediately followed by a matching extension
 node (from a prior run, or a manual /mermaid insert) is left untouched and

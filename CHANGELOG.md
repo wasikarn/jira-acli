@@ -8,6 +8,17 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.57] — 2026-11-13
+**Leftover identifiers removed, Mermaid setup documented.** A deep-audit of 0.1.53-0.1.56 found the
+0.1.53 scrub incomplete: two Confluence space keys and a space id, a page id (in the script's usage lines and
+CHANGELOG notes) and a scratch path holding the author's username were still tracked. They are now
+placeholders; the ids stay in git history. 0.1.53 also made `inject-mermaid-macros.py` exit with
+`FATAL` unless the `MERMAID_*` env vars or flags are set, but `confluence-content/SKILL.md` never
+named them, so its own command failed. `SKILL.md` now lists all six, and two tests pin it:
+`main()` exits non-zero while they are unset, and `SKILL.md` names every `MERMAID_*` var the
+script reads. The default project `PROJ` in `jira-content` is unchanged: a real project key is
+still the operator's call.
+
 ## [0.1.56] — 2026-11-13
 **`evals/` removed; `jira-content/templates/README.md` reworded.** The blind A/B cases, graders and
 result files are gone from the tree (they stay in git history up to 0.1.55). The README's prose lost
@@ -17,11 +28,11 @@ its em dashes and decorative bold. No rule changed.
 **`templates/acceptance-criteria.md` reworded.** Em dashes, decorative bold, emoji markers and
 stacked negations in its English prose became plain sentences. Every rule, number and example is
 unchanged, and the `AC# — <short title>` block format stays as it was because the content
-templates and the eval graders match it.
+templates match it (0.1.56 later removed the eval graders).
 
 ## [0.1.54] — 2026-11-13
-**Ticket keys anonymized.** Every real-looking ticket key (`TP-` plus a number) and the default
-project key `TP` became `PROJ`, and the one remaining product name became a neutral phrase, so the
+**Ticket keys anonymized.** Every real-looking ticket key (a two-letter prefix plus a number) and the default
+project key became `PROJ`, and the one remaining product name became a neutral phrase, so the
 repo no longer points at a real project. Incident notes keep their numbers. The live copy of
 `acli-guard.py` in the operator's dotfiles got the same comment edit so the install test still
 passes. No behaviour change except that the templates and script examples now default to `PROJ`.
@@ -33,7 +44,7 @@ docs, `inject-mermaid-macros.py` and test data, plus the author's home path. The
 placeholders. `inject-mermaid-macros.py` reads the site values from `MERMAID_*` env vars or its
 flags and exits with `FATAL` when one is empty, instead of silently using another site's ids.
 `evals/mkcopy.sh` finds the repo from its own path. The ids stay in git history; ticket keys
-such as `PROJ-807` stay as incident references.
+such as `PROJ-807` stay as incident references (0.1.54 replaced the original prefix).
 
 ## [0.1.52] — 2026-11-13
 **Marketplace manifest removed.** Its name `wasikarn` was already taken by the `method-harness`
@@ -464,7 +475,7 @@ of being threaded individually.
 `jira-expert` (agent): closed the asymmetry flagged as un-actioned in 0.1.25 — does
 `jira-expert.md`'s Hard Rule 4 ("Never touch Confluence") have the same read-only-lookup gap
 `confluence-expert.md`'s Hard Rule 4 had before its 0.1.25 fix? A purpose-built eval (real PROJ-807,
-its 10 real sub-tasks, its linked Confluence spec page id 217743376) confirmed yes, plus a second,
+its 10 real sub-tasks, its linked Confluence spec page id <page-id>) confirmed yes, plus a second,
 unrelated gap. Iteration 1's 2-reviewer review found two double-confirmed major findings: (1) Hard
 Rule 4 gap — with_agent correctly deferred all Confluence access but couldn't answer the user's
 direct "is the spec finalized?" question at all, forcing a needless second-agent round-trip;
@@ -488,7 +499,7 @@ zero factual harm, and confirmed unreachable in real deployment: `jira-expert.md
 mechanism silence, and the actual frontmatter grant (`Read, Grep, Glob, Bash`) confirms it —
 logged as un-actioned, matching this file's own "flag, don't silently ship" pattern. A second new
 finding (with_agent's volunteered "correction" about the Confluence space key was itself wrong —
-BEP is the real key, the task brief was right) was double-confirmed but not tallied: it's a
+the brief's space key was the real one) was double-confirmed but not tallied: it's a
 general model-accuracy slip (inferring a canonical identifier from a URL path) rather than
 anything Hard Rule 4 governs, though it arguably falls under Hard Rule 1's existing
 under-verified-secondary-claims addendum — noted for a future pass rather than folded into this
@@ -499,10 +510,10 @@ one.
 `confluence-expert` (agent): first-ever fixture-eval + `kbg:review-fixtures` + `kbg:iterate-skill`
 loop against this agent (no prior workspace existed). 3 evals × with_agent/baseline, grounded in
 live production data on a production Atlassian Cloud site: a real Confluence page (PROJ-807 Spec, id
-`217743376`, independently confirmed to carry 7 `expand` + 7 `extension` macro nodes — the exact
+`<page-id>`, independently confirmed to carry 7 `expand` + 7 `extension` macro nodes — the exact
 page that lost all 7 diagram macros to a markdown-format full-body-replace in a real 2026-07-14
 incident already documented in `confluence-content/SKILL.md`), a confirmed-nonexistent "incident
-log" page in space BEP, and the real PROJ-826 ticket (also used in the `jira-expert` round earlier
+log" page in the author's space, and the real PROJ-826 ticket (also used in the `jira-expert` round earlier
 this session). Iteration 1's review found 0 critical/major findings and exactly 1 double-confirmed
 minor: `agents/confluence-expert.md`'s Hard Rule 4 ("Never touch Jira work items") has no read-only
 carve-out, so a run correctly deferred a Jira transition but declined even a one-line status check

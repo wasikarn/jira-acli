@@ -116,8 +116,8 @@ A plain ` ```mermaid ` fenced code block in `contentFormat: "markdown"` converts
 native Confluence `code` macro (language=mermaid, wide breakout) — but that only gets you
 **syntax-highlighted text**. Confluence Cloud has no built-in Mermaid renderer. If the target site
 has the **"Mermaid diagram"** marketplace app installed (a Forge custom-UI macro,
-`extension-type: com.atlassian.ecosystem` — confirmed installed on the author's Atlassian Cloud site,
-space `BEP`), each code block needs a **separate macro instance immediately after it** to actually
+`extension-type: com.atlassian.ecosystem` — confirmed installed on the author's Atlassian Cloud site),
+each code block needs a **separate macro instance immediately after it** to actually
 render as a diagram — one macro renders one code block, it does not scan the whole page.
 
 ⚠️ **Use `contentFormat: "adf"` for the fetch-inject-write cycle below — never `"html"`.** Writing
@@ -129,6 +129,14 @@ visual screenshot 2026-07-14. Writing the identical macro as a proper ADF `exten
 `contentFormat="adf"` does not trigger this — confirmed by both a structural read-back and a
 screenshot, same day, same page: one clean render per diagram, no wrapping, no duplication.
 (Both results are from v1 `updateConfluencePage`; not re-tested on v2.)
+
+The script ships no site values: before the first run, give it `MERMAID_EXTENSION_KEY`,
+`MERMAID_CLOUD_ID`, `MERMAID_ACCOUNT_ID`, `MERMAID_WORKSPACE_ARI`, `MERMAID_SPACE_KEY` and
+`MERMAID_SPACE_ID` (or the matching `--extension-key`, `--cloud-id`, `--account-id`,
+`--workspace-ari`, `--space-key`, `--space-id` flags). An empty one exits with `FATAL` before
+anything is written. Keep the values in the operator's shell profile or private dotfiles, never in
+this repo; each Bash call starts a fresh shell, so an `export` in an earlier call is gone. Derive
+them per the script's docstring (insert the macro once by hand, then read its node).
 
 ```bash
 # 1. Write/update the page normally first (Step 5, or the edit flow below) with the
@@ -158,9 +166,7 @@ the raw syntax tucked behind a click, not a wall of mermaid text above every dia
 already followed by a bare (unwrapped) macro — e.g. one inserted natively via the editor's
 `/mermaid` command before this script ever touched the page — is left exactly as-is, not
 retroactively wrapped.
-The script's default constants (extension key, cloud ID, account ID, workspace ARI) are specific to
-this site/author — see the script's own docstring for how to re-derive them if pointed at a
-different Atlassian site. If the target site doesn't have this app installed, the mermaid code
+If the target site doesn't have this app installed, the mermaid code
 blocks still render as readable syntax-highlighted text — degrade gracefully, don't treat the macro
 step as required.
 
@@ -280,6 +286,8 @@ version, update only on the user's explicit go-ahead.
 
 - Atlassian MCP not available; ask the user to enable it (no acli fallback exists for page create/update).
 - Space not found or ambiguous; ask the user to confirm.
+- `inject-mermaid-macros.py` exits `FATAL` on an empty site value: stop and ask the user for it. Never
+  guess it or copy it from another site; the page stays as plain code blocks until it is set.
 - Confluence page ID not found or ambiguous (title search returns >1 match); ask the user to
   confirm the page or paste its URL/tiny-link.
 - User does not confirm at preview gate — creation/edit is skipped.

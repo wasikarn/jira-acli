@@ -97,6 +97,30 @@ def test_nested_code_block_is_not_touched():
     assert result == content
 
 
+def test_main_fails_loud_when_any_site_value_is_unset():
+    import os
+    import subprocess
+    names = ["MERMAID_EXTENSION_KEY", "MERMAID_CLOUD_ID", "MERMAID_ACCOUNT_ID",
+             "MERMAID_WORKSPACE_ARI", "MERMAID_SPACE_KEY", "MERMAID_SPACE_ID"]
+    base = {k: v for k, v in os.environ.items() if not k.startswith("MERMAID_")}
+    script = str(Path(__file__).parent / "inject-mermaid-macros.py")
+    for blank in names:
+        env = dict(base, **{n: "x" for n in names if n != blank})
+        r = subprocess.run([sys.executable, script, "-", "--page-id", "1"],
+                           input="{}", capture_output=True, text=True, env=env)
+        assert r.returncode == 1 and "FATAL" in r.stderr and blank in r.stderr, (blank, r.returncode, r.stderr)
+
+
+def test_skill_documents_every_env_var_the_script_reads():
+    import re
+    src = (Path(__file__).parent / "inject-mermaid-macros.py").read_text()
+    skill = (Path(__file__).parents[1] / "SKILL.md").read_text()
+    names = set(re.findall(r'environ\.get\("(MERMAID_[A-Z_]+)"', src))
+    assert names, "script reads no MERMAID_* vars?"
+    missing = sorted(n for n in names if n not in skill)
+    assert not missing, f"SKILL.md does not name: {missing}"
+
+
 if __name__ == "__main__":
     tests = [v for k, v in list(globals().items()) if k.startswith("test_")]
     failed = 0

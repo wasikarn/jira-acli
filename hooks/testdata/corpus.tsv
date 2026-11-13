@@ -27,7 +27,7 @@ allow	B17	acli jira board list-sprints --id 1 --json
 allow	B17	acli jira workitem list-watchers --key PROJ-1 --json
 allow	B17	acli jira filter get-columns --id 1 --json
 deny	B17-dropped	acli jira workitem link type --json
-allow	B18	python3 -c "import json;json.load(open('/private/tmp/claude-501/-Users-kobig-Codes-Personals-jira-acli/s/x.json'))"
+allow	B18	python3 -c "import json;json.load(open('/tmp/jira-acli/s/x.json'))"
 allow	B18	bash -c 'git -C /work/jira-acli log --oneline -5'
 deny	B19-dropped	bash -n skills/acli/scripts/acli-assign.sh
 deny	B19-dropped	bash skills/acli/scripts/acli-set-desc.sh --help

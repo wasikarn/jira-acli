@@ -202,8 +202,8 @@ acli jira workitem search --jql "project = PROJ AND statusCategory != Done" --co
 
 **Symptom:**
 ```bash
-acli confluence space view --key BEP --json     # ✗ Error: unknown flag: --key
-acli confluence space list --keys BEP --json    # works — but --keys is a no-op (see 2026-08-04 addendum below); BEP is present, just not filtered to
+acli confluence space view --key <space-key> --json     # ✗ Error: unknown flag: --key
+acli confluence space list --keys <space-key> --json    # works — but --keys is a no-op (see 2026-08-04 addendum below); <space-key> is present, just not filtered to
 acli confluence space view --id <space-id> --json  # works
 ```
 
@@ -211,7 +211,7 @@ acli confluence space view --id <space-id> --json  # works
 
 **Status:** Fixed 2026-07-24 (this pass — corrected the Step 3 example in `confluence-content/SKILL.md`, `acli/REFERENCE.md`, and added a verified `confluence space` per-flag section to `acli/references/REFERENCE-detail.md`). Same drift class as Issue 7 — a documented flag that either never existed as written or silently diverged from the rest of its command family, caught only by actually running it against the live 1.3.22-stable binary.
 
-**Addendum (2026-08-04):** the 2026-07-24 fix's own workaround was itself incomplete — it assumed `--keys <KEY>` filters the response, so `.results[0].id` would be the match. Confirmed live it does not: `space list --keys BEP --json` and `space list --json` (no `--keys` at all) return the identical unfiltered 15-space list. For `BEP`, `.results[0]` is a different space (`GPS`, id `98307`) — blindly grabbing it would resolve the wrong space. Corrected in the same 3 files above (this time actually testing the filter, not just the flag's existence) to match `key` client-side instead of trusting result order.
+**Addendum (2026-08-04):** the 2026-07-24 fix's own workaround was itself incomplete — it assumed `--keys <KEY>` filters the response, so `.results[0].id` would be the match. Confirmed live it does not: `space list --keys <space-key> --json` and `space list --json` (no `--keys` at all) return the identical unfiltered 15-space list. For `<space-key>`, `.results[0]` is a different space (`<other-space-key>`, id `<other-space-id>`) — blindly grabbing it would resolve the wrong space. Corrected in the same 3 files above (this time actually testing the filter, not just the flag's existence) to match `key` client-side instead of trusting result order.
 
 ---
 
