@@ -1,6 +1,6 @@
 {
   "summary": "<outcome the user gets once shipped>",
-  "projectKey": "TP",
+  "projectKey": "PROJ",
   "type": "Story",
   "labels": [
     "<area>"

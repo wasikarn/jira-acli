@@ -2,7 +2,7 @@
 """acli-guard — PreToolUse hook: no acli write from a subagent, no unattended acli write.
 
 acli on the operator's machine is logged in to a production Atlassian site. A subagent once ran
-`acli jira workitem assign` on a real ticket (TP-558) although its prompt said "audit only".
+`acli jira workitem assign` on a real ticket (PROJ-558) although its prompt said "audit only".
 This hook makes the plugin's preview-then-stop rule real:
 
 - Inside a subagent (hook input has `agent_id`): a Bash/Monitor call whose `command` mentions

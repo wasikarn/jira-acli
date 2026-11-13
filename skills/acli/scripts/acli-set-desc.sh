@@ -7,7 +7,7 @@
 #
 # Why it exists: create-bulk --from-json rejects rich-markdown descriptions, so the
 # verified flow is bulk-create with short placeholders, then set the real body per
-# ticket with this script (reference_acli_bulk_create_descriptions; TP-558..566).
+# ticket with this script (reference_acli_bulk_create_descriptions; PROJ-558..566).
 #
 # Usage:
 #   bash acli-set-desc.sh KEY desc.md            # replace (asks acli to confirm via --yes)

@@ -51,11 +51,11 @@ def test_corpus_tool_calls_subagent_decisions():
 
 
 MAIN_THREAD = [
-    ("ask", "acli jira workitem assign --key TP-558 --assignee @me"),
-    ("ask", "bash skills/acli/scripts/acli-edit.sh TP-1 d.md"),
+    ("ask", "acli jira workitem assign --key PROJ-558 --assignee @me"),
+    ("ask", "bash skills/acli/scripts/acli-edit.sh PROJ-1 d.md"),
     ("ask", 'acli feedback -s "bug" -d "details"'),
     ("ask", "cd /tmp && acli jira workitem edit --from-json p.json --yes"),
-    ("allow", "acli jira workitem view TP-1 --json"),
+    ("allow", "acli jira workitem view PROJ-1 --json"),
     ("allow", 'git commit -m "chore: refresh acli reference to 1.3.40-stable"'),
     ("allow", 'git commit -m "fix: stop acli-edit wiping a description"'),
     # Accepted: acli plus a WRITE word in one command asks, even inside a commit message.
@@ -76,10 +76,10 @@ def test_a_mention_only_in_the_description_never_blocks_the_main_thread():
 
 
 def test_a_write_word_only_in_the_description_does_not_make_a_main_thread_read_ask():
-    ti = {"command": 'acli jira workitem search --jql "project = TP" --json > /tmp/o.json',
+    ti = {"command": 'acli jira workitem search --jql "project = PROJ" --json > /tmp/o.json',
           "description": "Search issues to update later"}
     assert call(None, agent_id=MAIN, tool_input=ti) == "allow"
-    ti["command"] = "acli jira workitem edit --key TP-1 --summary x --yes > /tmp/o.json"
+    ti["command"] = "acli jira workitem edit --key PROJ-1 --summary x --yes > /tmp/o.json"
     assert call(None, agent_id=MAIN, tool_input=ti) == "ask"
 
 
@@ -87,15 +87,15 @@ def test_an_internal_error_fails_closed_on_acli_mentions():
     real = guard._read_safe
     setattr(guard, "_read_safe", lambda _c: 1 / 0)  # fault injection: any crash inside the read check
     try:
-        assert call("acli jira workitem view TP-1 --json") == "deny"
-        assert call("acli jira workitem view TP-1 --json", agent_id=MAIN) == "ask"
+        assert call("acli jira workitem view PROJ-1 --json") == "deny"
+        assert call("acli jira workitem view PROJ-1 --json", agent_id=MAIN) == "ask"
         assert call("ls -la") == "allow"
     finally:
         setattr(guard, "_read_safe", real)
 
 
 def test_ctx_batch_write_is_denied_in_subagent_and_asks_in_main():
-    ti = {"commands": [{"label": "x", "command": "acli jira workitem assign --key TP-558 --assignee @me"}], "queries": ["x"]}
+    ti = {"commands": [{"label": "x", "command": "acli jira workitem assign --key PROJ-558 --assignee @me"}], "queries": ["x"]}
     tool = "mcp__plugin_context-mode_context-mode__ctx_batch"
     assert call(None, tool=tool, tool_input=ti) == "deny"
     assert call(None, agent_id=MAIN, tool=tool, tool_input=ti) == "ask"
@@ -125,7 +125,7 @@ def test_a_crash_in_the_mcp_check_fails_closed():
 def test_mcp_decisions_carry_their_own_reason():
     for agent, want, reason in (({"agent_id": "a"}, "deny", guard.MCP_DENY_REASON), ({}, "ask", guard.MCP_ASK_REASON)):
         p = _run_hook(json.dumps({"tool_name": "mcp__plugin_atlassian_atlassian__createJiraIssue", **agent,
-                                  "tool_input": {"cloudId": "x", "projectKey": "TP", "summary": "s"}}))
+                                  "tool_input": {"cloudId": "x", "projectKey": "PROJ", "summary": "s"}}))
         out = json.loads(p.stdout)["hookSpecificOutput"]
         assert out["permissionDecision"] == want and out["permissionDecisionReason"] == reason, out
     assert "main thread" in guard.MCP_DENY_REASON and "main thread" not in guard.MCP_ASK_REASON
@@ -144,7 +144,7 @@ def _run_hook(payload):
 
 def test_hook_prints_deny_json_with_a_reason():
     p = _run_hook(json.dumps({"tool_name": "Bash", "agent_id": "a",
-                              "tool_input": {"command": "acli jira workitem assign --key TP-1 --assignee @me"}}))
+                              "tool_input": {"command": "acli jira workitem assign --key PROJ-1 --assignee @me"}}))
     assert p.returncode == 0, p.stderr
     out = json.loads(p.stdout)["hookSpecificOutput"]
     assert out["permissionDecision"] == "deny" and "main thread" in out["permissionDecisionReason"]
@@ -208,7 +208,7 @@ def test_the_user_level_install_matches_this_repo():
 
 def test_deeply_nested_input_never_crashes_the_hook():
     # A crash is a block under onFailure: block. Depth past the recursion limit must decide like unparsable input.
-    for code, want in (('"ls"', ""), ('"acli jira workitem assign --key TP-1"', "deny")):
+    for code, want in (('"ls"', ""), ('"acli jira workitem assign --key PROJ-1"', "deny")):
         deep = "[" * 5000 + code + "]" * 5000
         p = _run_hook('{"tool_name": "mcp__plugin_context-mode_context-mode__ctx_execute", "agent_id": "a", '
                       '"tool_input": {"language": "shell", "code": ' + deep + "}}")
@@ -219,7 +219,7 @@ def test_deeply_nested_input_never_crashes_the_hook():
     deep = "[" * 5000 + '"x"' + "]" * 5000
     for agent in ('"agent_id": "a", ', ""):
         p = _run_hook('{"tool_name": "mcp__plugin_atlassian_atlassian__createJiraIssue", ' + agent +
-                      '"tool_input": {"projectKey": "TP", "summary": ' + deep + "}}")
+                      '"tool_input": {"projectKey": "PROJ", "summary": ' + deep + "}}")
         assert p.returncode == 0 and p.stdout, (agent, p.returncode, p.stderr[-300:])
 
 

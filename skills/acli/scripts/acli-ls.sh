@@ -6,8 +6,8 @@
 # bakes in the list-or-dict unwrap + nested-field guards everyone re-derives.
 #
 # Usage:
-#   bash acli-ls.sh --jql "project = TP AND statusCategory != Done"
-#   bash acli-ls.sh --key TP-1,TP-2,TP-3        # convenience: becomes key IN (...) ORDER BY key
+#   bash acli-ls.sh --jql "project = PROJ AND statusCategory != Done"
+#   bash acli-ls.sh --key PROJ-1,PROJ-2,PROJ-3        # convenience: becomes key IN (...) ORDER BY key
 #   bash acli-ls.sh --filter 10001
 # Columns: key · type · status · assignee · summary.
 # NOTE: `parent` used to be a column here but acli's `search --fields` unconditionally

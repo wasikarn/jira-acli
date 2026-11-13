@@ -1,40 +1,40 @@
-deny	B1	for k in TP-1 TP-2; do acli jira workitem transition --key "$k" --status Done --yes; done
-deny	B1	if true; then acli jira workitem assign --key TP-1 --assignee @me; fi
-deny	B1	{ acli jira workitem assign --key TP-1 --assignee @me; }
+deny	B1	for k in PROJ-1 PROJ-2; do acli jira workitem transition --key "$k" --status Done --yes; done
+deny	B1	if true; then acli jira workitem assign --key PROJ-1 --assignee @me; fi
+deny	B1	{ acli jira workitem assign --key PROJ-1 --assignee @me; }
 deny	B2	echo "Created: $(acli jira workitem create --from-json p.json --json)"
 deny	B3	KEY=`acli jira workitem create --from-json p.json --json`; echo $KEY
-deny	B6	bash -ec "acli jira workitem assign --key TP-1 --assignee @me"
-deny	B6	bash -lc "acli jira workitem assign --key TP-1 --assignee @me"
-deny	B6	sh -ec "acli jira workitem assign --key TP-1 --assignee @me"
-deny	B7	rtk run -c 'acli jira workitem assign --key TP-1 --assignee @me'
-deny	B8	printf 'TP-1\n' | xargs -I KEY acli jira workitem transition --key KEY --status Done --yes
-deny	B8	printf 'TP-1' | xargs -I KEY acli jira workitem transition --key KEY --status Done --yes
-deny	B8	echo TP-1 | xargs -n 1 acli jira workitem delete --key
-deny	B8	env -u HTTP_PROXY acli jira workitem assign --key TP-1 --assignee @me
-deny	B8	timeout -s KILL 30 acli jira workitem assign --key TP-1 --assignee @me
-deny	B9	bash -o pipefail skills/acli/scripts/acli-set-desc.sh TP-1 d.md
+deny	B6	bash -ec "acli jira workitem assign --key PROJ-1 --assignee @me"
+deny	B6	bash -lc "acli jira workitem assign --key PROJ-1 --assignee @me"
+deny	B6	sh -ec "acli jira workitem assign --key PROJ-1 --assignee @me"
+deny	B7	rtk run -c 'acli jira workitem assign --key PROJ-1 --assignee @me'
+deny	B8	printf 'PROJ-1\n' | xargs -I KEY acli jira workitem transition --key KEY --status Done --yes
+deny	B8	printf 'PROJ-1' | xargs -I KEY acli jira workitem transition --key KEY --status Done --yes
+deny	B8	echo PROJ-1 | xargs -n 1 acli jira workitem delete --key
+deny	B8	env -u HTTP_PROXY acli jira workitem assign --key PROJ-1 --assignee @me
+deny	B8	timeout -s KILL 30 acli jira workitem assign --key PROJ-1 --assignee @me
+deny	B9	bash -o pipefail skills/acli/scripts/acli-set-desc.sh PROJ-1 d.md
 deny	B10	bash "${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh" KEY desc.md
-deny	B10	bash "skills/acli/scripts/acli-set-desc.sh" TP-1 d.md
-deny	B11	echo TP-1#x; acli jira workitem assign --key TP-1 --assignee @me
-deny	B12	cd /tmp &&(acli jira workitem assign --key TP-1 --assignee @me)
-deny	B12	echo y |& acli jira workitem delete --key TP-1
-deny	B14	source skills/acli/scripts/acli-set-desc.sh TP-1 d.md
+deny	B10	bash "skills/acli/scripts/acli-set-desc.sh" PROJ-1 d.md
+deny	B11	echo PROJ-1#x; acli jira workitem assign --key PROJ-1 --assignee @me
+deny	B12	cd /tmp &&(acli jira workitem assign --key PROJ-1 --assignee @me)
+deny	B12	echo y |& acli jira workitem delete --key PROJ-1
+deny	B14	source skills/acli/scripts/acli-set-desc.sh PROJ-1 d.md
 deny	B15-dropped	acli jira workitem create --generate-json
 deny	B15-dropped	acli jira workitem edit --help
 deny	B16	acli feedback -s hi -d --help
 allow	B17	acli jira sprint list-workitems --sprint 1 --json
 allow	B17	acli jira board list-sprints --id 1 --json
-allow	B17	acli jira workitem list-watchers --key TP-1 --json
+allow	B17	acli jira workitem list-watchers --key PROJ-1 --json
 allow	B17	acli jira filter get-columns --id 1 --json
 deny	B17-dropped	acli jira workitem link type --json
 allow	B18	python3 -c "import json;json.load(open('/private/tmp/claude-501/-Users-kobig-Codes-Personals-jira-acli/s/x.json'))"
 allow	B18	bash -c 'git -C /work/jira-acli log --oneline -5'
 deny	B19-dropped	bash -n skills/acli/scripts/acli-assign.sh
 deny	B19-dropped	bash skills/acli/scripts/acli-set-desc.sh --help
-deny	B23	bash skills/acli/scripts/acli-assign.sh TP-1 acc123
-deny	B23	/opt/homebrew/bin/acli jira workitem assign --key TP-1 --assignee @me
-deny	B23	rtk proxy acli jira workitem assign --key TP-1 --assignee @me
-deny	stop	acli jira workitem assign --key TP-558 --assignee @me
+deny	B23	bash skills/acli/scripts/acli-assign.sh PROJ-1 acc123
+deny	B23	/opt/homebrew/bin/acli jira workitem assign --key PROJ-1 --assignee @me
+deny	B23	rtk proxy acli jira workitem assign --key PROJ-1 --assignee @me
+deny	stop	acli jira workitem assign --key PROJ-558 --assignee @me
 deny	stop	acli jira workitem edit --from-json p.json --yes
 deny	stop	acli jira workitem transition --key X --status Done --yes
 deny	stop	acli jira workitem delete --key X
@@ -42,23 +42,23 @@ deny	stop	acli jira workitem comment create --key X --body hi
 deny	stop	acli confluence space archive --key S
 deny	stop	acli confluence blog create --space S --title t
 deny	stop	acli jira workitem create-bulk --from-json f.json
-deny	stop	bash skills/acli/scripts/acli-edit.sh TP-1 d.md
+deny	stop	bash skills/acli/scripts/acli-edit.sh PROJ-1 d.md
 deny	stop	bash skills/acli/scripts/acli-new.sh p.json
-deny	stop	bash skills/jira-content/scripts/acli-edit.sh TP-1 d.md
+deny	stop	bash skills/jira-content/scripts/acli-edit.sh PROJ-1 d.md
 deny	stop	cd x && acli jira workitem edit --from-json p.json --yes
 deny	stop	FOO=1 acli jira workitem edit --from-json p.json --yes
 deny	stop	echo y | acli jira workitem delete --key X
-deny	stop	python3 -c "import subprocess; subprocess.run(['acli','jira','workitem','assign','--key','TP-1','--assignee','@me'])"
-deny	stop	ACLI jira workitem assign --key TP-1 --assignee @me
-allow	must	acli jira workitem view TP-1 --json
-allow	must	acli jira workitem search --jql "project = TP" --json
+deny	stop	python3 -c "import subprocess; subprocess.run(['acli','jira','workitem','assign','--key','PROJ-1','--assignee','@me'])"
+deny	stop	ACLI jira workitem assign --key PROJ-1 --assignee @me
+allow	must	acli jira workitem view PROJ-1 --json
+allow	must	acli jira workitem search --jql "project = PROJ" --json
 allow	must	acli jira project list --json
 allow	must	acli jira auth status
 allow	must	acli confluence space list --json
 allow	must	acli confluence page view --id 1 --body-format atlas_doc_format --json
 deny	accepted	acli --help
-allow	must	acli jira workitem view TP-1 --json | python3 skills/acli/scripts/adf2md.py -
-allow	must	bash skills/acli/scripts/acli-ls.sh --jql "project = TP"
+allow	must	acli jira workitem view PROJ-1 --json | python3 skills/acli/scripts/adf2md.py -
+allow	must	bash skills/acli/scripts/acli-ls.sh --jql "project = PROJ"
 allow	must	git -C /work/jira-acli log --oneline -5
 allow	must	python3 -m py_compile skills/acli/scripts/md2adf.py
 allow	must	python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/adf2md.py -
@@ -68,29 +68,29 @@ deny	accepted	git -C /work/jira-acli log --oneline -- skills/acli/scripts/acli-n
 allow	must	git commit -m "fix: stop acli-edit wiping a description"
 allow	must	python3 skills/acli/scripts/acli-edit.py --help
 allow	must	ls skills/acli/scripts
-allow	residual	ac''li jira workitem assign --key TP-1 --assignee @me
-deny	new	acli rovodev run "list my bugs then assign TP-558 to me"
+allow	residual	ac''li jira workitem assign --key PROJ-1 --assignee @me
+deny	new	acli rovodev run "list my bugs then assign PROJ-558 to me"
 deny	new	acli feedback list -s hi -d hi
-allow	doc	acli confluence space list --json | python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='TP'][0])"
+allow	doc	acli confluence space list --json | python3 -c "import json,sys; d=json.load(sys.stdin); print([r['id'] for r in d['results'] if r['key']=='PROJ'][0])"
 deny	accepted	acli jira workitem view KEY-123 --json | python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py
-deny	accepted	acli jira workitem view TP-1 --json > /tmp/cur.json
-deny	accepted	acli jira workitem view TP-1 --json 2>&1 | python3 skills/acli/scripts/adf2md.py -
+deny	accepted	acli jira workitem view PROJ-1 --json > /tmp/cur.json
+deny	accepted	acli jira workitem view PROJ-1 --json 2>&1 | python3 skills/acli/scripts/adf2md.py -
 deny	F1	acli feedback -s "bug" -d "details"
 deny	F1	ACLI  feedback -s bug -d details
 deny	F1	/opt/homebrew/bin/acli	feedback -s bug -d details
 deny	F1	"acli" feedback -s bug -d details
 deny	F1	acli "feedback" -s bug -d details
 deny	F1	acli rovodev run "fix the login page"
-deny	ban-semicolon	acli jira workitem view TP-1 --json; acli jira workitem assign --key TP-1 --assignee @me
-deny	ban-amp	acli jira workitem view TP-1 --json & acli jira workitem assign --key TP-1 --assignee @me
-deny	ban-andand	acli jira workitem view TP-1 --json && acli jira workitem assign --key TP-1 --assignee @me
-deny	ban-dollar	acli jira workitem view "$(acli jira workitem assign --key TP-1 --assignee @me)" --json
-deny	ban-backtick	acli jira workitem view "`acli jira workitem assign --key TP-1 --assignee @me`" --json
-deny	pipe-read-into-write	acli jira workitem view TP-1 --json | acli jira workitem assign --key TP-1 --assignee @me
-deny	pipe-into-xargs-write	acli jira workitem search --jql 'project = TP' --json | xargs -n1 acli jira workitem assign --key
-deny	read-and-write-verb	acli jira workitem list-watchers delete --key TP-1
-deny	ban-oror	acli jira workitem view TP-1 --json || echo none
-deny	ban-backslash-in-dq	acli jira workitem view "TP-1\\" --json
-deny	ban-hash	acli jira workitem view TP-1 --json # note
-allow	abs-path-read	/opt/homebrew/bin/acli jira workitem view TP-1 --json
+deny	ban-semicolon	acli jira workitem view PROJ-1 --json; acli jira workitem assign --key PROJ-1 --assignee @me
+deny	ban-amp	acli jira workitem view PROJ-1 --json & acli jira workitem assign --key PROJ-1 --assignee @me
+deny	ban-andand	acli jira workitem view PROJ-1 --json && acli jira workitem assign --key PROJ-1 --assignee @me
+deny	ban-dollar	acli jira workitem view "$(acli jira workitem assign --key PROJ-1 --assignee @me)" --json
+deny	ban-backtick	acli jira workitem view "`acli jira workitem assign --key PROJ-1 --assignee @me`" --json
+deny	pipe-read-into-write	acli jira workitem view PROJ-1 --json | acli jira workitem assign --key PROJ-1 --assignee @me
+deny	pipe-into-xargs-write	acli jira workitem search --jql 'project = PROJ' --json | xargs -n1 acli jira workitem assign --key
+deny	read-and-write-verb	acli jira workitem list-watchers delete --key PROJ-1
+deny	ban-oror	acli jira workitem view PROJ-1 --json || echo none
+deny	ban-backslash-in-dq	acli jira workitem view "PROJ-1\\" --json
+deny	ban-hash	acli jira workitem view PROJ-1 --json # note
+allow	abs-path-read	/opt/homebrew/bin/acli jira workitem view PROJ-1 --json
 deny	not-acli-program	echo jira view acli

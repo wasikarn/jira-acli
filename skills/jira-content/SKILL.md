@@ -1,12 +1,12 @@
 ---
 name: jira-content
 description: "Create or edit template-shaped Jira content — Bug/Story/Task/Epic/Sub-task descriptions and templated comments (status update/QA verification/blocker/decision record) — against the team's REQUIRED formats (GWT Acceptance Criteria, Thai PO/QA structure), whether acli or the Atlassian MCP does the write. Use BEFORE calling `acli jira workitem create/edit` or any Jira-create MCP tool — never hand-build template-shaped content."
-when_to_use: "Trigger on ANY intent to create/file/open/log/report/raise a bug, defect, issue, story, task, epic, or sub-task, or to write/format/fix a Jira issue's description or a structured comment — Thai or English, e.g. 'สร้างบั๊ก', 'แตก sub-task ให้หน่อย', 'file a bug for X', 'open a ticket about Y', 'add a status update to TP-123', 'คอมเมนต์อัปเดตความคืบหน้า TP-123'. Also trigger when ANOTHER skill's instructions say 'publish this to the tracker/backlog' or 'file this PRD as an issue' — a foreign content shape (PRD, code-review finding, to-do) is never the Jira template; convert to this skill's shape first, don't pass it straight to acli/MCP. Don't use for Confluence pages/specs/PRDs (jira-acli:confluence-content), or for search, view, transition, link, clone, bulk ops, JQL export, Confluence blog/space/admin, or a trivial one-line comment (jira-acli:acli)."
+when_to_use: "Trigger on ANY intent to create/file/open/log/report/raise a bug, defect, issue, story, task, epic, or sub-task, or to write/format/fix a Jira issue's description or a structured comment — Thai or English, e.g. 'สร้างบั๊ก', 'แตก sub-task ให้หน่อย', 'file a bug for X', 'open a ticket about Y', 'add a status update to PROJ-123', 'คอมเมนต์อัปเดตความคืบหน้า PROJ-123'. Also trigger when ANOTHER skill's instructions say 'publish this to the tracker/backlog' or 'file this PRD as an issue' — a foreign content shape (PRD, code-review finding, to-do) is never the Jira template; convert to this skill's shape first, don't pass it straight to acli/MCP. Don't use for Confluence pages/specs/PRDs (jira-acli:confluence-content), or for search, view, transition, link, clone, bulk ops, JQL export, Confluence blog/space/admin, or a trivial one-line comment (jira-acli:acli)."
 ---
 
 # Jira Content
 
-Create or edit the **content** of a Jira Bug/Story/Task/Epic/Sub-task, or a templated comment — against the team's canonical templates. Defaults to the **TP board** when the user doesn't name a project; works on any project / Atlassian site. Jira only — Confluence pages/specs are `jira-acli:confluence-content`'s job.
+Create or edit the **content** of a Jira Bug/Story/Task/Epic/Sub-task, or a templated comment — against the team's canonical templates. Defaults to the **PROJ board** when the user doesn't name a project; works on any project / Atlassian site. Jira only — Confluence pages/specs are `jira-acli:confluence-content`'s job.
 
 **Backend: acli-first with Atlassian MCP fallback** — `jira-acli:acli` is the mechanical tool this skill drives. This skill owns *what goes in the body*. Templates in `${CLAUDE_SKILL_DIR}/templates/` — see [`templates/README.md`](templates/README.md) for the index.
 
@@ -40,10 +40,10 @@ Write the body in **Thai** using the matching template. **AC format/register/cov
 
 ## Step 3 — Resolve issue metadata
 
-*(Skip for comments.)* Resolve at runtime; never hardcode IDs except the default project key `TP`.
+*(Skip for comments.)* Resolve at runtime; never hardcode IDs except the default project key `PROJ`.
 
 - **Site** — `acli jira auth status`. For MCP, `mcp__plugin_atlassian_atlassian__getAccessibleAtlassianResources`. Ask if several.
-- **Project key** — User request; default `TP` only when the content is plausibly Tathep-platform work. If the ticket is clearly about something else (a different product, a personal project, generic content with no Tathep signal), ask for the real project key instead of silently filing it under `TP` — the default is a convenience for the common case, not a license to guess the project. Validate via `acli jira project view --key <KEY>` before create. Fall back to `mcp__plugin_atlassian_atlassian__listJiraProjects` (v1: `getVisibleJiraProjects`) (deferred on v2: `executeRead(name="listJiraProjects", cloudId=…, inputs={"action": "create"})` lists projects you can create in, see `acli/SKILL.md` § "When acli can't") only if acli is unavailable/unauthed.
+- **Project key** — User request; default `PROJ` only when the content is plausibly work for that project. If the ticket is clearly about something else (a different product, a personal project, generic content with no signal for that project), ask for the real project key instead of silently filing it under `PROJ` — the default is a convenience for the common case, not a license to guess the project. Validate via `acli jira project view --key <KEY>` before create. Fall back to `mcp__plugin_atlassian_atlassian__listJiraProjects` (v1: `getVisibleJiraProjects`) (deferred on v2: `executeRead(name="listJiraProjects", cloudId=…, inputs={"action": "create"})` lists projects you can create in, see `acli/SKILL.md` § "When acli can't") only if acli is unavailable/unauthed.
 - **Issue type** — Matches Step 1's pick. acli has no issue-type-metadata command; confirm via `mcp__plugin_atlassian_atlassian__listJiraProjectIssueTypesMetadata` (v1: `getJiraProjectIssueTypesMetadata`) (deferred on v2: reach it via `executeRead`, see `acli/SKILL.md` § "When acli can't") if create rejects. If the project key is still unresolved among multiple plausible candidates, check issue-type support on those candidates proactively (same MCP call) before asking the user to pick — narrowing "which of these projects" down to only the ones that actually support the requested type is a more useful question than a blind pick-one-of-N.
 - **Priority** — **Bug:** money/data-loss/blocked-workflow → `High`; functional w/ workaround → `Medium`; cosmetic → `Low`. **Others:** `Medium` unless user says otherwise.
 - **Labels** — `bug` + 1-2 domain tags (Bug); 1-2 domain tags (others). Do NOT auto-add PO/QA labels.
@@ -174,7 +174,7 @@ acli jira workitem comment update --key KEY --id <commentId> --body-adf /tmp/not
 - **Required (Story):** Thai summary, business reason, desired behavior, in/out scope, AC.
 - **Required (Task/Epic/Sub-task):** summary, context/goal, scope, AC per `templates/README.md`; Sub-task also needs a parent.
 - **Required (templated comment):** which of the 4 templates, and its fields.
-- **Optional:** evidence (Bug), affected version (Bug), PO decision points (Story), explicit project key (defaults `TP`), explicit assignee.
+- **Optional:** evidence (Bug), affected version (Bug), PO decision points (Story), explicit project key (defaults `PROJ`), explicit assignee.
 - **Tooling:** prefers `acli` when installed + authed; falls back to Atlassian MCP. If neither, ask the user to run `acli jira auth login` or enable the Atlassian MCP.
 
 ## Output Format

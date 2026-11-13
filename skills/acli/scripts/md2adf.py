@@ -8,7 +8,7 @@ turns the Markdown people actually write into a valid ADF document.
 Usage:
   python3 md2adf.py DESC.md                       # print ADF doc object
   python3 md2adf.py - < DESC.md                   # read Markdown from stdin
-  python3 md2adf.py DESC.md -s "Summary" -p TP -t Bug [-l a,b]
+  python3 md2adf.py DESC.md -s "Summary" -p PROJ -t Bug [-l a,b]
                                                   # print a full create payload
                                                   # (description = ADF) for
                                                   # `acli jira workitem create --from-json`
@@ -209,7 +209,7 @@ def parse(md):
                 # Jira requires a localId on every taskItem and the taskList, and
                 # taskItem content must be inline nodes directly — NOT wrapped in a
                 # paragraph. Getting either wrong makes Jira reject the whole payload
-                # with INVALID_INPUT (verified TP-636). uuid4 hex is a valid localId.
+                # with INVALID_INPUT (verified PROJ-636). uuid4 hex is a valid localId.
                 items.append({"type": "taskItem",
                               "attrs": {"localId": uuid.uuid4().hex, "state": state},
                               "content": inline(mm.group(2))})

@@ -34,7 +34,7 @@ without opening the ticket, acts as a memory aid for the reader).
 | Story | The outcome the user gets once shipped | "หักยอดคงเหลือตอนลูกค้ายืนยันการสั่งซื้อ" |
 | Task | Imperative verb + concrete object — describes the work, not the user value | "เพิ่ม index ตาราง orders ให้ query ยืนยันคำสั่งซื้อ" |
 | Epic | Noun-phrase naming the initiative — broader in scope than a single fix | "ระบบคิดค่าบริการแบบ Traffic-based สำหรับ Campaign" |
-| Sub-task | `[PARENT-KEY] ` + imperative + a slice narrow enough to tell apart from sibling sub-tasks | "[TP-809] เขียน migration เพิ่มคอลัมน์ display_time_id" |
+| Sub-task | `[PARENT-KEY] ` + imperative + a slice narrow enough to tell apart from sibling sub-tasks | "[PROJ-809] เขียน migration เพิ่มคอลัมน์ display_time_id" |
 
 ## Anti-patterns
 

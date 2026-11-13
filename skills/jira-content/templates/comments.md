@@ -1,6 +1,6 @@
 # Comment templates (status update / QA verification / blocker / decision record)
 
-⚠️ Unlike the work-item templates (each derived from real TP tickets), these four are a
+⚠️ Unlike the work-item templates (each derived from real PROJ tickets), these four are a
 **starting proposal**, not mined from real usage or confirmed as a Head-of-Engineering standard —
 the [Acceptance Criteria format](../../../templates/acceptance-criteria.md) was explicitly confirmed team-wide, this
 wasn't. Revise once used in practice.

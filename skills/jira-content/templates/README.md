@@ -58,7 +58,7 @@ acli jira workitem create --from-json "${CLAUDE_SKILL_DIR}/templates/task.payloa
 
 Or write the body in Markdown (easier than editing ADF JSON) and convert first:
 ```bash
-bash "${CLAUDE_SKILL_DIR}/scripts/md2adf.sh" mytask.md -s "Summary" -p TP -t Task > /tmp/wi.json
+bash "${CLAUDE_SKILL_DIR}/scripts/md2adf.sh" mytask.md -s "Summary" -p PROJ -t Task > /tmp/wi.json
 acli jira workitem create --from-json /tmp/wi.json
 ```
 
@@ -66,7 +66,7 @@ acli jira workitem create --from-json /tmp/wi.json
 
 ### Bug — `bug.payload.json`
 
-Derived from TP-418, 447, 455, 457, 460, 461.
+Derived from PROJ-418, 447, 455, 457, 460, 461.
 
 | Section | When | Content (keep it concise) |
 |---|---|---|
@@ -98,7 +98,7 @@ User-centric work item. Derived from Atlassian [user stories guidance](https://w
 
 ### Task — `task.payload.json`
 
-Implementation work. Derived from TP-466, 467, 473, 479.
+Implementation work. Derived from PROJ-466, 467, 473, 479.
 
 | Section | When | Content |
 |---|---|---|
@@ -132,7 +132,7 @@ the AC format.
 
 ### Sub-task — `subtask.payload.json`
 
-A slice of a parent. **Must have a parent** — sub-tasks cannot be top-level. Derived from TP-436, 437, 489.
+A slice of a parent. **Must have a parent** — sub-tasks cannot be top-level. Derived from PROJ-436, 437, 489.
 
 | Section | When | Content |
 |---|---|---|
@@ -143,9 +143,9 @@ A slice of a parent. **Must have a parent** — sub-tasks cannot be top-level. D
 | Files affected | if known | paths touched |
 
 Sub-task parent: set `parentIssueId` in the JSON (or `--parent <KEY>` on the CLI). `parentIssueId`
-takes the issue **key** (e.g. `TP-479`) — verified by create+delete (sub-task created with
-`parent = TP-479`, no numeric id needed).
+takes the issue **key** (e.g. `PROJ-479`) — verified by create+delete (sub-task created with
+`parent = PROJ-479`, no numeric id needed).
 
 ---
 
-_Grounded in: real TP work items + Atlassian [bug-report template](https://www.atlassian.com/software/jira/templates/bug-report) / [user stories](https://www.atlassian.com/agile/project-management/user-stories) / [acceptance criteria](https://www.atlassian.com/work-management/project-management/acceptance-criteria) / [epics guidance](https://www.atlassian.com/agile/project-management/epics) + agile story/task/sub-task/epic breakdown best practices._
+_Grounded in: real PROJ work items + Atlassian [bug-report template](https://www.atlassian.com/software/jira/templates/bug-report) / [user stories](https://www.atlassian.com/agile/project-management/user-stories) / [acceptance criteria](https://www.atlassian.com/work-management/project-management/acceptance-criteria) / [epics guidance](https://www.atlassian.com/agile/project-management/epics) + agile story/task/sub-task/epic breakdown best practices._

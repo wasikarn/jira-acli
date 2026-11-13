@@ -1,8 +1,8 @@
 {
   "summary": "[<PARENT-KEY>] <คำกริยาสั่งการ> <slice สั้นๆ, แยกจาก sub-task พี่น้องได้ชัดเจน>",
-  "projectKey": "TP",
+  "projectKey": "PROJ",
   "type": "Sub-task",
-  "parentIssueId": "<PARENT-KEY e.g. TP-479>",
+  "parentIssueId": "<PARENT-KEY e.g. PROJ-479>",
   "labels": [
     "<area>"
   ],

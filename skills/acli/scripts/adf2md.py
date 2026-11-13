@@ -6,7 +6,7 @@ description buried under ~60 null customfields, avatar URLs, and self links —
 expensive to read and hard to scan. This flattens it to compact Markdown.
 
 Usage:
-  acli jira workitem view TP-1 --json | python3 adf2md.py   # → readable work-item card
+  acli jira workitem view PROJ-1 --json | python3 adf2md.py   # → readable work-item card
   python3 adf2md.py desc.json                               # bare ADF doc → Markdown
   python3 adf2md.py - < payload.json                        # stdin
 

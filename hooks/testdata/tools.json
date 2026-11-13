@@ -5,7 +5,7 @@
   "tool_name": "mcp__plugin_context-mode_context-mode__ctx_execute",
   "tool_input": {
    "language": "shell",
-   "code": "acli jira workitem assign --key TP-558 --assignee @me"
+   "code": "acli jira workitem assign --key PROJ-558 --assignee @me"
   }
  },
  {
@@ -14,7 +14,7 @@
   "tool_name": "mcp__plugin_context-mode_context-mode__ctx_execute",
   "tool_input": {
    "language": "shell",
-   "code": "cd /tmp\nacli jira workitem assign --key TP-558 --assignee @me"
+   "code": "cd /tmp\nacli jira workitem assign --key PROJ-558 --assignee @me"
   }
  },
  {
@@ -23,7 +23,7 @@
   "tool_name": "mcp__plugin_context-mode_context-mode__ctx_execute",
   "tool_input": {
    "language": "shell",
-   "code": "if true; then\n\tacli jira workitem assign --key TP-558 --assignee @me\nfi"
+   "code": "if true; then\n\tacli jira workitem assign --key PROJ-558 --assignee @me\nfi"
   }
  },
  {
@@ -32,7 +32,7 @@
   "tool_name": "mcp__plugin_context-mode_context-mode__ctx_batch",
   "tool_input": {
    "commands": [
-    "acli jira workitem assign --key TP-558 --assignee @me"
+    "acli jira workitem assign --key PROJ-558 --assignee @me"
    ],
    "queries": [
     "x"
@@ -44,7 +44,7 @@
   "want": "deny",
   "tool_name": "Monitor",
   "tool_input": {
-   "command": "acli jira workitem assign --key TP-558 --assignee @me",
+   "command": "acli jira workitem assign --key PROJ-558 --assignee @me",
    "description": "x",
    "timeout_ms": 1000
   }
@@ -72,8 +72,8 @@
   "want": "allow",
   "tool_name": "Bash",
   "tool_input": {
-   "command": "acli jira workitem view TP-1 --json",
-   "description": "View TP-1 as JSON"
+   "command": "acli jira workitem view PROJ-1 --json",
+   "description": "View PROJ-1 as JSON"
   }
  },
  {
@@ -99,8 +99,8 @@
   "want": "deny",
   "tool_name": "Bash",
   "tool_input": {
-   "command": "acli jira workitem assign --key TP-1 --assignee @me",
-   "description": "View TP-1"
+   "command": "acli jira workitem assign --key PROJ-1 --assignee @me",
+   "description": "View PROJ-1"
   }
  },
  {
@@ -144,8 +144,8 @@
   "want": "deny",
   "tool_name": "Bash",
   "tool_input": {
-   "command": "bash skills/acli/scripts/acli-edit.sh TP-1 d.md",
-   "description": "Update TP-1"
+   "command": "bash skills/acli/scripts/acli-edit.sh PROJ-1 d.md",
+   "description": "Update PROJ-1"
   }
  }
 ]

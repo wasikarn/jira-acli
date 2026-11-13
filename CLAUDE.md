@@ -52,7 +52,7 @@ python3 skills/acli/scripts/md2adf.py somefile.md | python3 skills/acli/scripts/
 
 - **Routing:** a skill's `description` + `when_to_use` is the routing contract; keep each
   product-specific. A foreign "publish to the tracker" instruction still goes through
-  `jira-content`/`confluence-content` for template shape, never straight to acli/MCP (TP-809, TP-806).
+  `jira-content`/`confluence-content` for template shape, never straight to acli/MCP (PROJ-809, PROJ-806).
 - **Fail loud:** scripts exit non-zero with `FATAL:` on unknown field/label/type; never drop and retry.
 - **Preview before mutate:** bulk ops preview via the same `--jql`; creates render the payload with
   `adf2md.py` first. Replicate in any new writing script.

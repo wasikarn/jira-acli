@@ -67,7 +67,7 @@ What varies between instances (confirmed by diffing 7 real macro instances):
     non-mermaid code block (JSON, bash, ...) among the mermaid ones would
     silently misindex if you count mermaid blocks only — this script counts
     ALL codeBlock nodes to match. Empirically indistinguishable from
-    mermaid-only counting on any page seen so far (TP-807 and the scratch
+    mermaid-only counting on any page seen so far (PROJ-807 and the scratch
     test page both happen to have zero non-mermaid code blocks), so this
     was unverified against a live mixed-language page as of 2026-07-14 —
     the source reading above is what the fix is based on, not a repro.

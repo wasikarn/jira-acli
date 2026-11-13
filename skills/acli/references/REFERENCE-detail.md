@@ -92,12 +92,12 @@ matching — re-use that approach when hand-editing ADF (`content[]` nodes of
 | Read body/desc from file | `--from-file` / `--body-file` / `--description-file` |
 | Markdown → ADF for `--from-json` | `python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md` |
 | Read a work item cheaply (ADF → md) | `acli ... view KEY --json \| python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (~80% fewer tokens) |
-| Create from Markdown in one step | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-new.sh desc.md -s "..." -p TP -t Bug [--dry-run]` (preview the card first — see Create safety) |
+| Create from Markdown in one step | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-new.sh desc.md -s "..." -p PROJ -t Bug [--dry-run]` (preview the card first — see Create safety) |
 | Append to a description (no loss) | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY notes.md` |
 | Remove a description section | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --remove-section "HEADING"` |
 | Replace a section in place | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-edit.sh KEY --replace-section "HEADING" new.md` |
 | **Replace** the whole description from Markdown | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh KEY desc.md [--dry-run]` (overwrites; for the bulk placeholder→body flow) |
-| List a JQL/key set as a table | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-ls.sh --jql "project = TP AND statusCategory != Done"` (or `--key TP-1,TP-2`) |
+| List a JQL/key set as a table | `bash ${CLAUDE_SKILL_DIR}/scripts/acli-ls.sh --jql "project = PROJ AND statusCategory != Done"` (or `--key PROJ-1,PROJ-2`) |
 | Render a set as readable cards | loop `view KEY --json \| python3 ${CLAUDE_SKILL_DIR}/scripts/adf2md.py` (adf2md also accepts a JSON array) |
 | Relate N items in one shot | `acli jira workitem link create --from-csv links.csv` (header `out,in,type`) |
 

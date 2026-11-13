@@ -176,7 +176,7 @@ macro check, step 2.5 and the verify step below all assume a full-body replace.)
 deletes them.** Plain Markdown has no syntax for a Forge macro (`extension` node) or a collapsible
 `expand` wrapper, so a markdown-format `updateConfluenceContent` full-body-replace drops every macro
 on the page without warning or error — the write succeeds, the page just loses them. Confirmed
-2026-07-14 on TP-807 (v1 tools; not re-tested on v2): a prose-only edit (fixing word choice, no diagram changes intended) wiped all
+2026-07-14 on PROJ-807 (v1 tools; not re-tested on v2): a prose-only edit (fixing word choice, no diagram changes intended) wiped all
 7 native "Mermaid diagram" render macros the page had; only caught because the user noticed the
 diagrams had vanished on the live page. Fetch the page as ADF first and check for `extension`/
 `expand` nodes — if any exist, the edit **must** go out as `contentFormat: "adf"` (fetch → apply
@@ -254,7 +254,7 @@ version, update only on the user's explicit go-ahead.
   take `body` as a literal text parameter — there is no way to point the tool at a script's output
   file. Any script that produces a full-page body (e.g. `scripts/inject-mermaid-macros.py`) still
   needs its output file copied into the tool call by hand, however large the page — the MCP layer
-  has no file-reference mechanism. Confirmed working this way on TP-807 (115K+ characters, 106
+  has no file-reference mechanism. Confirmed working this way on PROJ-807 (115K+ characters, 106
   top-level ADF nodes) 2026-07-14 (v1 tools; v2 not re-tested), but only because the write was verified afterward: fetch the live
   page back and diff its content against the script's own output file (see the diff pattern in
   `scripts/inject-mermaid-macros.py`'s usage). Treat that verification step as required, not

@@ -45,13 +45,13 @@ def test_extract_doc_bare():
 
 
 def test_extract_doc_from_view_payload():
-    payload = {"key": "TP-1", "fields": {"description": DOC_WITH_TABLE}}
+    payload = {"key": "PROJ-1", "fields": {"description": DOC_WITH_TABLE}}
     d = extract_doc(payload, "x")
     assert d is DOC_WITH_TABLE
 
 
 def test_extract_doc_rejects_plain_string_description():
-    payload = {"key": "TP-1", "fields": {"description": "plain text, not ADF"}}
+    payload = {"key": "PROJ-1", "fields": {"description": "plain text, not ADF"}}
     try:
         extract_doc(payload, "x")
         assert False, "should have exited on non-ADF description"

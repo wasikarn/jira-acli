@@ -8,6 +8,13 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.54] — 2026-11-13
+**Ticket keys anonymized.** Every real-looking ticket key (`TP-` plus a number) and the default
+project key `TP` became `PROJ`, and the one remaining product name became a neutral phrase, so the
+repo no longer points at a real project. Incident notes keep their numbers. The live copy of
+`acli-guard.py` in the operator's dotfiles got the same comment edit so the install test still
+passes. No behaviour change except that the templates and script examples now default to `PROJ`.
+
 ## [0.1.53] — 2026-11-13
 **Site and person identifiers removed from the repo.** A scan found one Atlassian Cloud site's
 hostname, space key and id, a cloudId, accountIds, an ARI and the Mermaid app's extension key in
@@ -15,7 +22,7 @@ docs, `inject-mermaid-macros.py` and test data, plus the author's home path. The
 placeholders. `inject-mermaid-macros.py` reads the site values from `MERMAID_*` env vars or its
 flags and exits with `FATAL` when one is empty, instead of silently using another site's ids.
 `evals/mkcopy.sh` finds the repo from its own path. The ids stay in git history; ticket keys
-such as `TP-807` stay as incident references.
+such as `PROJ-807` stay as incident references.
 
 ## [0.1.52] — 2026-11-13
 **Marketplace manifest removed.** Its name `wasikarn` was already taken by the `method-harness`
@@ -178,7 +185,7 @@ so independence was reduced.
 ## [0.1.42] — 2026-11-12
 **New: `hooks/acli-guard.py`, a PreToolUse hook that blocks acli writes from subagents.** 0.1.41
 only reworded the README: `jira-expert` and `confluence-expert` keep `Bash` for read-only acli,
-so nothing stopped a write, and a dispatched subagent once left TP-558 unassigned this way.
+so nothing stopped a write, and a dispatched subagent once left PROJ-558 unassigned this way.
 Designed with `mh:attack-proposal` (2 attack lanes, 24 breaks; validator passed in round 3 of 3;
 both lanes and the validator ran on Claude, Codex was over quota, so independence was reduced).
 - **Subagents** (hook input has `agent_id`): any Bash, Monitor or context-mode `ctx_execute`/
@@ -212,7 +219,7 @@ Fixes from a whole-project `mattpocock-skills:code-review` (Standards and Spec a
 - **`acli-edit.py` could wipe a description.** A view payload for another issue, or a dict with
   no `fields` object, became an empty doc, so append mode sent only the new text and the edit
   replaced the whole body. It now fails with `FATAL:` and writes no payload. Key matching
-  ignores case (`tp-1` matches `TP-1`), and a bare ADF doc is used as the current description,
+  ignores case (`proj-1` matches `PROJ-1`), and a bare ADF doc is used as the current description,
   as the offline testing aid in `jira-content` documents (before, append dropped it and kept only
   the new text). New `test_acli_edit.py` pins all of this.
 - `acli-new.sh` exits non-zero with `FATAL:` when a create returns no key, and says to search
@@ -319,11 +326,11 @@ usage limit). The official Atlassian plugin pins `https://mcp.atlassian.com/v2/m
 `skills/acli/SKILL.md` now says `discover` + `executeRead` is the only path for plugin
 users and scopes `?tools=all` to a self-configured server (which loses the
 `mcp__plugin_atlassian_atlassian__` prefix). `skills/acli/ISSUES.md` no longer implies the
-TP-884 check covered the v2 route. `confluence-content` no longer says
+PROJ-884 check covered the v2 route. `confluence-content` no longer says
 `updateConfluenceContent` *always* replaces the whole body: v2 lists "granular edits",
 not verified here, and granular edits stay off until checked (the macro-safety steps assume
 a full-body replace). Tests run on v1 tools (the html-vs-adf write test on a scratch page,
-the TP-807 macro wipe, the large-body write) now say so. `executeWrite`/`executeDestructive` need the same preview-and-confirm as
+the PROJ-807 macro wipe, the large-body write) now say so. `executeWrite`/`executeDestructive` need the same preview-and-confirm as
 acli writes; the v1 cutoff date cites Atlassian's upgrade page; response shapes join the
 "not verified on v2" caveat. The 0.1.31–0.1.33 entries below were reworded where they claimed
 more than the files hold.
@@ -445,7 +452,7 @@ of being threaded individually.
 
 `jira-expert` (agent): closed the asymmetry flagged as un-actioned in 0.1.25 — does
 `jira-expert.md`'s Hard Rule 4 ("Never touch Confluence") have the same read-only-lookup gap
-`confluence-expert.md`'s Hard Rule 4 had before its 0.1.25 fix? A purpose-built eval (real TP-807,
+`confluence-expert.md`'s Hard Rule 4 had before its 0.1.25 fix? A purpose-built eval (real PROJ-807,
 its 10 real sub-tasks, its linked Confluence spec page id 217743376) confirmed yes, plus a second,
 unrelated gap. Iteration 1's 2-reviewer review found two double-confirmed major findings: (1) Hard
 Rule 4 gap — with_agent correctly deferred all Confluence access but couldn't answer the user's
@@ -453,10 +460,10 @@ direct "is the spec finalized?" question at all, forcing a needless second-agent
 reviewers split on severity (minor vs major) and on fix shape (a narrow metadata-only carve-out vs
 a target-bounded, attribution-required one) — the user chose the latter (reviewer 2's design) via
 an explicit gate. (2) JQL-thoroughness gap, unrelated to Confluence — with_agent never ran
-`parent = TP-807` (pure Jira, zero Confluence involvement) and as a result falsely claimed "no
+`parent = PROJ-807` (pure Jira, zero Confluence involvement) and as a result falsely claimed "no
 visibility into implementation progress," missing all 10 real sub-tasks (2 unstarted); this fix
 landed in the "Read/search/triage" guidance, not Hard Rule 4. Iteration 2's fix closed both,
-re-verified live by 2 independent reviewers: `parent = TP-807` now runs and correctly surfaces the
+re-verified live by 2 independent reviewers: `parent = PROJ-807` now runs and correctly surfaces the
 2 unstarted sub-tasks; the Confluence carve-out held to all four of its bounds (one call, one
 page, no traversal, attribution with version/date surviving into the actual drafted comment
 payload, no contradiction-scanning) and the run now answers the user's original question via
@@ -480,11 +487,11 @@ one.
 
 `confluence-expert` (agent): first-ever fixture-eval + `kbg:review-fixtures` + `kbg:iterate-skill`
 loop against this agent (no prior workspace existed). 3 evals × with_agent/baseline, grounded in
-live production data on a production Atlassian Cloud site: a real Confluence page (TP-807 Spec, id
+live production data on a production Atlassian Cloud site: a real Confluence page (PROJ-807 Spec, id
 `217743376`, independently confirmed to carry 7 `expand` + 7 `extension` macro nodes — the exact
 page that lost all 7 diagram macros to a markdown-format full-body-replace in a real 2026-07-14
 incident already documented in `confluence-content/SKILL.md`), a confirmed-nonexistent "incident
-log" page in space BEP, and the real TP-826 ticket (also used in the `jira-expert` round earlier
+log" page in space BEP, and the real PROJ-826 ticket (also used in the `jira-expert` round earlier
 this session). Iteration 1's review found 0 critical/major findings and exactly 1 double-confirmed
 minor: `agents/confluence-expert.md`'s Hard Rule 4 ("Never touch Jira work items") has no read-only
 carve-out, so a run correctly deferred a Jira transition but declined even a one-line status check
@@ -523,7 +530,7 @@ baseline, 2 iterations, 2 independent reviewers per round — the loop stopped a
 by user choice, under the 3-iteration cap). Iteration 1's review found with_agent's ad hoc
 label-vocabulary check during Bug drafting used a bare `--json` call over a broad query,
 silently capped at 30 of 519 real matches, and concluded a label (`notification`) didn't
-exist when it actually did (in use on TP-1003 and TP-777) — inventing `push-notification`
+exist when it actually did (in use on PROJ-1003 and PROJ-777) — inventing `push-notification`
 as a new label instead of reusing existing vocabulary. This is the same nested-search-under-
 a-different-primary-task failure mode already fixed once in `confluence-content` (0.1.23),
 now independently reproduced a third time this session, this time inside `jira-expert`'s own
@@ -541,7 +548,7 @@ Per the loop's iteration cap (3), and since both target findings closed clean on
 re-verification, the user chose to stop at iteration 2 rather than continue. One new,
 single-sourced finding surfaced during the iteration-2 Verify pass — with_agent's duplicate-
 precedent search is Latin-script-only in a project where most summaries are Thai, missing a
-real related ticket (TP-777) that its own label check found by a different path — logged as a
+real related ticket (PROJ-777) that its own label check found by a different path — logged as a
 new, un-actioned follow-up for a future pass, not folded into this release. This session also
 uncovered and documented a standing methodology caveat for any future fixture round in this
 repo: this project's own `CLAUDE.md` auto-imports `acli/SKILL.md` in full, so a "baseline" (no
@@ -554,7 +561,7 @@ discriminating on acli-level knowledge alone will not discriminate in this repo'
 undercount (an `acli --json` result reported "30 hits," true count 395) in the Step 1
 Jira-cross-check step. Investigated first as a possible `acli` fix: re-tested the same class of
 gap directly against `acli`, once with 2 new fixture evals (a primary-task count query and a
-bulk-mutation preview, both grounded in real live counts on project TP) and cross-checked
+bulk-mutation preview, both grounded in real live counts on project PROJ) and cross-checked
 against an earlier, already-completed 3-iteration `acli` fixture round from earlier this session
 that had independently tested the identical pagination-cap trap (`eval-pagination-search`). Both
 rounds agree: `acli`'s existing `--count`/`--paginate` warning is reliably applied whenever a
@@ -592,7 +599,7 @@ reason its way past the rule and invent every retry-policy number, recreating th
 failure through a scoping loophole. Iteration 2's fix (widened the rule's scope to any page
 asserting specific system-behavior facts, and explicitly foreclosed the "this isn't really
 a Spec" rationalization) was independently re-verified by both reviewers via live Jira
-reads (TP-834, TP-826, TP-140) confirming the research is load-bearing — concrete AC lines,
+reads (PROJ-834, PROJ-826, PROJ-140) confirming the research is load-bearing — concrete AC lines,
 diagram steps, and a "no DLQ" domain fact all trace directly to real tickets, not decorative
 citation. Per the loop's iteration cap (3), this fix session stops here. The same final
 round surfaced one new, unrelated finding: a spec-page-draft fixture accepted an
@@ -678,7 +685,7 @@ env/version text that `bug.md` explicitly says belongs only in Jira's native
 field; `story.payload.json` had no Scope section and no standalone Impact
 section despite both being required; `story.payload.json`'s 3rd Acceptance
 Criteria placeholder literally invited dropping below Story's 3-AC minimum.
-Also: added a guard against silently defaulting non-Tathep work to the `TP`
+Also: added a guard against silently defaulting work outside the default project to the `PROJ`
 project, documented that full-body description replaces can silently drop
 table/panel/expand nodes (same defect class as the confluence-content fix),
 added the missing `-P`/parent flag to the Sub-task creation example, corrected

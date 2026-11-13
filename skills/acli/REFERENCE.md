@@ -85,7 +85,7 @@ acli jira workitem create-bulk --generate-json
 ```
 Flags → `references/REFERENCE-detail.md` § create-bulk.
 
-> ⚠️ **`create-bulk --from-json` rejects rich-markdown descriptions** (headings / code fences / backticks / newlines) → ✗ `The request body is missing or invalid.` Verified workaround (TP-558..566): bulk-create with **short placeholder** descriptions, then set the real ADF body per ticket — `bash ${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh KEY desc.md` (or loop `edit --from-json {issues:[KEY],description:<md2adf>}`). Never paste long-form Markdown into a bulk create.
+> ⚠️ **`create-bulk --from-json` rejects rich-markdown descriptions** (headings / code fences / backticks / newlines) → ✗ `The request body is missing or invalid.` Verified workaround (PROJ-558..566): bulk-create with **short placeholder** descriptions, then set the real ADF body per ticket — `bash ${CLAUDE_SKILL_DIR}/scripts/acli-set-desc.sh KEY desc.md` (or loop `edit --from-json {issues:[KEY],description:<md2adf>}`). Never paste long-form Markdown into a bulk create.
 
 ### search
 ```bash
@@ -268,7 +268,7 @@ ADF skeleton (verified via `--generate-json`): `{ type:"doc", version:1, content
 Don't hand-write ADF. Write Markdown and convert:
 ```bash
 python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md                       # → ADF doc object (stdout)
-python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md -s "Summary" -p TP -t Bug > /tmp/wi.json
+python3 ${CLAUDE_SKILL_DIR}/scripts/md2adf.py desc.md -s "Summary" -p PROJ -t Bug > /tmp/wi.json
 acli jira workitem create --from-json /tmp/wi.json      # --from-json takes a FILE PATH, not stdin ('-' fails)
 ```
 Supports `#`/`##`/`###`, ordered/bullet/task lists, `**bold**`, `*italic*`, `` `code` ``, `~~strike~~`, `[text](url)`, `` ``` `` code blocks, `>` blockquotes, `---` rules. Nested lists flatten to top-level — use H3 sub-headings + flat bullets for scannable grouping instead. See `cat "${CLAUDE_SKILL_DIR}/scripts/md2adf.py"`.

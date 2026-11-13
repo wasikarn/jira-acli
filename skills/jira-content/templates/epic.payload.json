@@ -1,6 +1,6 @@
 {
   "summary": "<objective สั้นๆ ระดับ epic, noun-phrase>",
-  "projectKey": "TP",
+  "projectKey": "PROJ",
   "type": "Epic",
   "labels": [
     "<area>"
