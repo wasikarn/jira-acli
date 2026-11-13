@@ -8,6 +8,11 @@ Pre-`1.0.0`: breaking changes may land in any `0.x` release.
 This file starts at `0.1.18` — releases before that predate the changelog. See
 `git log` for the full history back to `0.1.0`.
 
+## [0.1.56] — 2026-11-13
+**`evals/` removed; `jira-content/templates/README.md` reworded.** The blind A/B cases, graders and
+result files are gone from the tree (they stay in git history up to 0.1.55). The README's prose lost
+its em dashes and decorative bold. No rule changed.
+
 ## [0.1.55] — 2026-11-13
 **`templates/acceptance-criteria.md` reworded.** Em dashes, decorative bold, emoji markers and
 stacked negations in its English prose became plain sentences. Every rule, number and example is

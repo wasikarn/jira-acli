@@ -1,55 +1,55 @@
-# jira-content templates — Jira SSOT
+# jira-content templates: Jira SSOT
 
 Every template that defines what a created/edited Jira ticket should contain lives here.
 `jira-acli:acli` is the mechanical backend these templates get sent through (ADF conversion,
-`create --from-json`, MCP fallback) — it owns none of this content. Confluence's template lives in
-the sibling `jira-acli:confluence-content` skill instead — different product, different skill.
+`create --from-json`, MCP fallback). It owns none of this content. Confluence's template lives in
+the sibling `jira-acli:confluence-content` skill instead, since it is a different product.
 
 Files here:
 
-- `bug.md` / `story.md` — Thai, PO/QA-facing, guided single-ticket creation (used by this skill's
+- `bug.md` / `story.md`: Thai, PO/QA-facing, guided single-ticket creation (used by this skill's
   Step 1–2 gather flow).
 - `bug.payload.json` / `story.payload.json` / `task.payload.json` / `epic.payload.json` /
-  `subtask.payload.json` — ADF payloads, ready for `acli jira workitem create --from-json`.
-- `comments.md` — templated comments for an *existing* ticket (status update / QA verification /
+  `subtask.payload.json`: ADF payloads, ready for `acli jira workitem create --from-json`.
+- `comments.md`: templated comments for an *existing* ticket (status update / QA verification /
   blocker / decision record).
-- `title-conventions.md` — the summary/title rule shared by all five types (pattern, anti-patterns,
+- `title-conventions.md`: the summary/title rule shared by all five types (pattern, anti-patterns,
   when a `[Area]`/`[PARENT-KEY]` bracket prefix is and isn't redundant with `labels`).
 
 The Acceptance Criteria rule (`../../../templates/acceptance-criteria.md`) lives at the plugin
-root, not in this directory — it's shared with `confluence-content`'s Spec/PRD template, so it
-isn't owned by either product skill. Title conventions stay in this directory instead — Confluence
+root, not in this directory. It's shared with `confluence-content`'s Spec/PRD template, so it
+isn't owned by either product skill. Title conventions stay in this directory instead: Confluence
 page titles are a different concept (page hierarchy, not a work-item summary field), so there's no
 cross-product sharing need.
 
-**Wording rules — apply everywhere in this directory:** concise, plain, on-point.
+Wording rules, applied everywhere in this directory: concise, plain, on-point.
 - One idea per line. State the behavior, not a story. Numbers/IDs/paths over prose.
 - No vague language: not "ใช้ไม่ได้" but *what* fails *when* (Atlassian bug-report guidance).
-- If a section has nothing real to say, delete it — don't pad.
+- If a section has nothing real to say, delete it; don't pad.
 - Acceptance Criteria format/register/coverage rules → [`../../../templates/acceptance-criteria.md`](../../../templates/acceptance-criteria.md), not restated here.
 
 ---
 
-## Bug/Story — two audiences, two templates each, by design
+## Bug/Story: two audiences, two templates each, by design
 
-Bug and Story each have **two different templates for two different readers** — not duplicates,
-don't try to collapse them:
+Bug and Story each have two different templates for two different readers. They are not duplicates,
+so don't try to collapse them:
 
-- `bug.md` / `story.md` — Thai, PO/QA-facing, used by this skill's guided gather flow (Step 1–2).
-- `bug.payload.json` / `story.payload.json` — dev-facing ADF payload, used for direct
+- `bug.md` / `story.md`: Thai, PO/QA-facing, used by this skill's guided gather flow (Step 1–2).
+- `bug.payload.json` / `story.payload.json`: dev-facing ADF payload, used for direct
   `--from-json` create when the content is already fully known (no guided gather needed).
 
-Both share the same [Acceptance Criteria](../../../templates/acceptance-criteria.md) rule where the section applies. "Two audiences" governs phrasing/register/depth, not whether a *required* section exists at all — `bug.md`/`bug.payload.json` and `story.md`/`story.payload.json` must both carry every field `SKILL.md`'s Input Contract marks required for that type, as its own standalone section, not folded into another section's placeholder text where it's easy to drop. If you add/remove a required section on one side, mirror it on the other. This does NOT mean the two templates must be section-for-section twins — recommended/optional content (e.g. Bug's ความถี่และเงื่อนไข, or either type's Technical Notes/Dependencies) is free to differ in depth or presence between the guided and payload path; only the Input Contract's *required* fields are non-negotiable.
+Both share the same [Acceptance Criteria](../../../templates/acceptance-criteria.md) rule where the section applies. "Two audiences" governs phrasing/register/depth, not whether a *required* section exists at all: `bug.md`/`bug.payload.json` and `story.md`/`story.payload.json` must both carry every field `SKILL.md`'s Input Contract marks required for that type, as its own standalone section, not folded into another section's placeholder text where it's easy to drop. If you add/remove a required section on one side, mirror it on the other. This does NOT mean the two templates must be section-for-section twins: recommended/optional content (e.g. Bug's ความถี่และเงื่อนไข, or either type's Technical Notes/Dependencies) is free to differ in depth or presence between the guided and payload path; only the Input Contract's *required* fields are non-negotiable.
 
-## Task / Epic / Sub-task — payload only, no guided gather
+## Task / Epic / Sub-task: payload only, no guided gather
 
-These three have **only** a payload template (`task.payload.json`, `epic.payload.json`,
-`subtask.payload.json`) — there's no Thai PO/QA guided flow for them. Fill the payload's
+These three have only a payload template (`task.payload.json`, `epic.payload.json`,
+`subtask.payload.json`); there's no Thai PO/QA guided flow for them. Fill the payload's
 placeholders directly from what the user gave you, preview with `adf2md.py`, then create. Don't
 invent a guided gather step that doesn't exist for these types.
 
 Every `*.payload.json` template marks its placeholder prose `em` (italic) so it visually stands out
-as "replace me." That mark is scaffolding, not permanent styling — strip it (drop the `marks` key)
+as "replace me." That mark is scaffolding, not permanent styling, so strip it (drop the `marks` key)
 once you fill in real content; keep it only on a line that's still genuinely optional/unfilled.
 
 ```bash
@@ -62,47 +62,47 @@ bash "${CLAUDE_SKILL_DIR}/scripts/md2adf.sh" mytask.md -s "Summary" -p PROJ -t T
 acli jira workitem create --from-json /tmp/wi.json
 ```
 
-**Sections — required vs optional:**
+Sections, required vs optional:
 
-### Bug — `bug.payload.json`
+### Bug: `bug.payload.json`
 
 Derived from PROJ-418, 447, 455, 457, 460, 461.
 
 | Section | When | Content (keep it concise) |
 |---|---|---|
-| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — symptom-first, no `[Area]` bracket (that's what `labels` is for) |
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md): symptom-first, no `[Area]` bracket (that's what `labels` is for) |
 | สรุปปัญหา | always | 1–2 sentences: what broke / where / user impact |
 | ขั้นตอน Reproduce | always | numbered actions, one step per line |
 | ผลที่คาดหวัง | always | what should happen |
 | ผลที่เกิดจริง | always | what happens + error/wrong state |
 | ความรุนแรง | recommended | High/Medium/Low + one-line why |
-| ผลกระทบ | always | who's affected, how badly — required per SKILL.md's Input Contract; standalone section, not a clause inside ความรุนแรง |
-| หลักฐาน | if available | account/order/id, screenshot/log — not env/version, that's the native Environment + Affects versions fields (see bug.md's own note), don't duplicate it here |
+| ผลกระทบ | always | who's affected, how badly; required per SKILL.md's Input Contract; standalone section, not a clause inside ความรุนแรง |
+| หลักฐาน | if available | account/order/id, screenshot/log; not env/version, that's the native Environment + Affects versions fields (see bug.md's own note), don't duplicate it here |
 | Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
 | Technical Notes (dev) | if known | Root Cause / Fix / Files |
 
-### Story — `story.payload.json`
+### Story: `story.payload.json`
 
-User-centric work item. Derived from Atlassian [user stories guidance](https://www.atlassian.com/agile/project-management/user-stories) ("As a [user], I want [goal], so that [benefit]" — non-technical, end-user perspective).
+User-centric work item. Derived from Atlassian [user stories guidance](https://www.atlassian.com/agile/project-management/user-stories) ("As a [user], I want [goal], so that [benefit]": non-technical, end-user perspective).
 
 | Section | When | Content |
 |---|---|---|
-| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — the outcome, not the full "As a..." sentence (that belongs in the User Story section below, not the title) |
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md): the outcome, not the full "As a..." sentence (that belongs in the User Story section below, not the title) |
 | User Story | always | "As a <role>, I want <goal> so that <benefit>" |
-| Context | always | background / why — 1–2 sentences, non-technical |
-| Scope | always | in-scope / out-of-scope bullets — required per SKILL.md's Input Contract, don't drop it just because this is the direct-payload path |
-| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) — Story's floor is 3 ACs, never fewer |
+| Context | always | background / why, 1–2 sentences, non-technical |
+| Scope | always | in-scope / out-of-scope bullets; required per SKILL.md's Input Contract, don't drop it just because this is the direct-payload path |
+| Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md): Story's floor is 3 ACs, never fewer |
 | Technical Notes | if known | approach, constraints (delete if not yet known) |
 | Dependencies | if known | blockers or things that must be waited on |
 | References | if any | plan / Figma / PR / link |
 
-### Task — `task.payload.json`
+### Task: `task.payload.json`
 
 Implementation work. Derived from PROJ-466, 467, 473, 479.
 
 | Section | When | Content |
 |---|---|---|
-| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — imperative verb + object, no `[Area]` bracket |
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md): imperative verb + object, no `[Area]` bracket |
 | Context | always | why / goal, 1–2 sentences + plan link |
 | Scope | always | files + what changes (line refs help) |
 | Out of scope | recommended | what this task won't touch |
@@ -110,40 +110,40 @@ Implementation work. Derived from PROJ-466, 467, 473, 479.
 | Tests | recommended | what to assert |
 | References | if any | plan / Figma / PR links |
 
-### Epic — `epic.payload.json`
+### Epic: `epic.payload.json`
 
 High-level initiative that spans multiple sprints. Derived from Atlassian agile guidance ("large body of work, broken into smaller stories, scope flexes with feedback").
 
 | Section | When | Content |
 |---|---|---|
-| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — noun-phrase naming the initiative, no `[Area]` bracket |
-| Goal | always | business outcome / why this epic exists — 1–2 sentences |
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md): noun-phrase naming the initiative, no `[Area]` bracket |
+| Goal | always | business outcome / why this epic exists, 1–2 sentences |
 | Scope | always | high-level what the epic covers (not file-level) |
-| Out of scope | recommended | what the epic will not touch — prevents scope creep |
-| Success Criteria | always | yes/no testable at epic level, one per line (epic-level, not the per-scenario GWT format — see note below) |
+| Out of scope | recommended | what the epic will not touch; prevents scope creep |
+| Success Criteria | always | yes/no testable at epic level, one per line (epic-level, not the per-scenario GWT format; see note below) |
 | Key Deliverables | always | milestones / shippable pieces (not a task list) |
 | Dependencies & Risks | if known | blockers or things that must be waited on |
 | Child Work Items | if known | task/story/sub-task breakdown (or delete if not yet planned) |
 | References | if any | plan / PRD / Figma / link |
 
 Epic's "Success Criteria" is deliberately a different concept from Bug/Story/Task/Sub-task's
-"Acceptance Criteria" — epic-level outcomes aren't per-scenario GWT-shaped. Don't force it into
+"Acceptance Criteria": epic-level outcomes aren't per-scenario GWT-shaped. Don't force it into
 the AC format.
 
-### Sub-task — `subtask.payload.json`
+### Sub-task: `subtask.payload.json`
 
-A slice of a parent. **Must have a parent** — sub-tasks cannot be top-level. Derived from PROJ-436, 437, 489.
+A slice of a parent. Must have a parent: sub-tasks cannot be top-level. Derived from PROJ-436, 437, 489.
 
 | Section | When | Content |
 |---|---|---|
-| Title (`summary`) | always | see [title-conventions.md](title-conventions.md) — `[PARENT-KEY]` + imperative + slice, distinct from sibling sub-tasks |
+| Title (`summary`) | always | see [title-conventions.md](title-conventions.md): `[PARENT-KEY]` + imperative + slice, distinct from sibling sub-tasks |
 | Scope | always | one clear action + files |
 | Out of scope | recommended | what siblings handle (avoid overlap) |
 | Acceptance Criteria | always | see [acceptance-criteria.md](../../../templates/acceptance-criteria.md) |
 | Files affected | if known | paths touched |
 
 Sub-task parent: set `parentIssueId` in the JSON (or `--parent <KEY>` on the CLI). `parentIssueId`
-takes the issue **key** (e.g. `PROJ-479`) — verified by create+delete (sub-task created with
+takes the issue key (e.g. `PROJ-479`), verified by create+delete (sub-task created with
 `parent = PROJ-479`, no numeric id needed).
 
 ---
