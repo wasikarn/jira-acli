@@ -1,4 +1,0 @@
-schema_version: "1.1"
-name: holdout2-confluence-content-scheduled-s3-export
-context:
-  scaffold_script: scaffold.sh
